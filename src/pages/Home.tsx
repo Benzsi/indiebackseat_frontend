@@ -11,6 +11,7 @@ import type { BookList } from '../services/lists';
 
 interface HomeProps {
   user?: User | null;
+  searchQuery?: string;
 }
 
 interface BookWithRating extends Book {
@@ -22,7 +23,7 @@ interface BookComments {
   [bookId: number]: Comment[];
 }
 
-export function Home({ user }: HomeProps) {
+export function Home({ user, searchQuery = '' }: HomeProps) {
   const [books, setBooks] = useState<BookWithRating[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -184,6 +185,14 @@ export function Home({ user }: HomeProps) {
     }
   };
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredBooks = books.filter((book) => {
+    if (!normalizedQuery) return true;
+
+    return [book.title, book.author, book.genre, book.literaryForm]
+      .some((field) => field?.toLowerCase().includes(normalizedQuery));
+  });
+
   // Ha nincs bejelentkezve, mutasd az üdvözlő képernyőt
   if (!user) {
     return (
@@ -216,9 +225,11 @@ export function Home({ user }: HomeProps) {
         <div className="loading">Könyvek betöltése...</div>
       ) : books.length === 0 ? (
         <div className="no-books">Jelenleg nincsenek könyvek a katalógusban.</div>
+      ) : filteredBooks.length === 0 ? (
+        <div className="no-books">Nincs találat a megadott keresésre.</div>
       ) : (
         <div className="books-grid">
-          {books.map((book) => (
+          {filteredBooks.map((book) => (
             <div key={book.id} className="book-card" style={{ position: 'relative' }}>
               {flippedBookId === book.id ? (
                 <div onClick={() => handleFlipBook(book.id)} style={{ cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>

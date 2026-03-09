@@ -3,10 +3,11 @@ import logo from '../assets/bookink_logo.png';
 
 interface HeaderProps {
   isAuthenticated: boolean;
-  onLogout: () => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
 }
 
-export function Header({ isAuthenticated, onLogout }: HeaderProps) {
+export function Header({ isAuthenticated, searchQuery, onSearchChange }: HeaderProps) {
   return (
     <header className="header" style={{ paddingLeft: 350, paddingRight: 350 }}>
       <nav className="navbar" style={{ width: '100%' }}>
@@ -20,8 +21,10 @@ export function Header({ isAuthenticated, onLogout }: HeaderProps) {
           <div className="navbar-search-inline">
             <input
               type="text"
-              placeholder="Könyv keresése..."
+              placeholder="Keresés cím, szerző, műfaj, irodalmi forma alapján..."
               className="navbar-search-input"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
         </div>
