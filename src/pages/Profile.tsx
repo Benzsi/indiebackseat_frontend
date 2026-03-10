@@ -77,7 +77,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   }}
                   disabled={loading}
                 >
-                  ✓ Mentés
+                  Mentés
                 </button>
                 <button
                   className="btn-small btn-cancel"
@@ -89,7 +89,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   }}
                   disabled={loading}
                 >
-                  ✕ Mégsem
+                  Mégsem
                 </button>
               </div>
             ) : (
@@ -100,7 +100,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   onClick={() => setIsEditingUsername(true)}
                   style={{ marginLeft: '10px' }}
                 >
-                  ✎ Szerkesztés
+                  Szerkesztés
                 </button>
               </p>
             )}
@@ -142,7 +142,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   }}
                   disabled={loading}
                 >
-                  ✓ Mentés
+                  Mentés
                 </button>
                 <button
                   className="btn-small btn-cancel"
@@ -154,7 +154,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   }}
                   disabled={loading}
                 >
-                  ✕ Mégsem
+                  Mégsem
                 </button>
               </div>
             ) : (
@@ -165,7 +165,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   onClick={() => setIsEditingEmail(true)}
                   style={{ marginLeft: '10px' }}
                 >
-                  ✎ Szerkesztés
+                   Szerkesztés
                 </button>
               </p>
             )}
@@ -174,7 +174,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
           <div className="info-group">
             <label>Szerepkör:</label>
             <p>
-              {user.role === 'ADMIN' ? '👨‍💼 Administrator' : '👤 Felhasználó'}
+              {user.role === 'ADMIN' ? ' Administrator' : 'Felhasználó'}
             </p>
           </div>
           <div className="info-group">
@@ -190,7 +190,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
         {user.role === 'ADMIN' && (
           <div className="admin-link">
             <Link to="/admin" className="btn-primary">
-              👨‍💼 Felhasználók kezelése
+              Felhasználók kezelése
             </Link>
           </div>
         )}

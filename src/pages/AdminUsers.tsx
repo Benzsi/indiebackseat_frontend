@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UsersService } from '../services/api';
 import type { User } from '../services/api';
 
+//kulon admin?
+
 interface AdminProps {
   user: User | null;
 }

@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { StarRating } from './StarRating';
 
+//Márk
+//uj oldalra kell majd tenni a könyv részleteit, ahol a könyv hátulját 
+//jeleníti meg, és ott lesznek a kommentek is, amikhez lehet likeolni/dislikeolni
+//hover es a gomb ne forduljon kommentre es listhahoz mindig legyen
+//a csillag is legyen az uj oldalon 
+//Kommentekhez like/dislike gomb, amik megmutatják a szavazatok számát is
+
 interface BookBackProps {
   title: string;
   author: string;

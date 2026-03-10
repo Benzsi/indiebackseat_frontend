@@ -196,7 +196,10 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     if (!normalizedQuery) return true;
 
     return [book.title, book.author, book.genre, book.literaryForm]
-      .some((field) => normalizeForSearch(field ?? '').includes(normalizedQuery));
+      .some((field) => {
+        const normalized = normalizeForSearch(field ?? '');
+        return normalized.split(/\s+/).some(word => word.startsWith(normalizedQuery));
+      });
   });
 
   // Ha nincs bejelentkezve, mutasd az üdvözlő képernyőt
