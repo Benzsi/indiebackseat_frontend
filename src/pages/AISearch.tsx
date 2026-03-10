@@ -1,21 +1,11 @@
 import { useState } from 'react';
 import type { Book } from '../services/api';
-import { BooksService } from '../services/api';
-
-interface FilterParams {
-  genre?: string;
-  author?: string;
-  search?: string;
-  title?: string;
-  literaryForm?: string;
-}
 
 export function AISearch() {
   const [prompt, setPrompt] = useState('');
   const [results, setResults] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const booksService = new BooksService();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +19,8 @@ export function AISearch() {
     setResults([]);
 
     try {
-      // AI szűrő feldolgozása
-      const filterResponse = await fetch('http://localhost:3000/ai-filter', {
+      // AI ajánlás: könyv ID-k lekérése
+      const aiResponse = await fetch('http://localhost:3000/ai-filter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,83 +28,20 @@ export function AISearch() {
         body: JSON.stringify({ prompt }),
       });
 
-      if (!filterResponse.ok) {
-        throw new Error('AI feldolgozás sikertelen');
+      if (!aiResponse.ok) {
+        const errText = await aiResponse.text();
+        throw new Error(`AI feldolgozás sikertelen (${aiResponse.status}): ${errText}`);
       }
 
-      const filters: FilterParams = await filterResponse.json();
-      console.log('AI szűrők:', filters);
+      const books: Book[] = await aiResponse.json();
+      console.log('AI ajánlott könyvek:', books);
 
-      // Összes könyv lekérése
-      const allBooks = await booksService.getAllBooks();
-
-      // Szűrés alkalmazása
-      let filtered = allBooks;
-
-      // Ellenőrizzük, hogy van-e bármely szűrő
-      const hasFilters = filters.genre || filters.author || filters.search || filters.literaryForm || filters.title;
-
-      if (hasFilters) {
-        filtered = allBooks.filter(book => {
-          // Irodalmi forma szűrés (NAGYBETŰ!)
-          if (filters.literaryForm) {
-            const filterFormUpper = filters.literaryForm.toUpperCase();
-            if (book.literaryForm?.toUpperCase() !== filterFormUpper) {
-              return false;
-            }
-          }
-
-          // Műfaj szűrés
-          if (filters.genre) {
-            if (!book.genre?.toLowerCase().includes(filters.genre.toLowerCase())) {
-              return false;
-            }
-          }
-
-          // Szerző szűrés
-          if (filters.author) {
-            if (!book.author?.toLowerCase().includes(filters.author.toLowerCase())) {
-              return false;
-            }
-          }
-
-          // Cím szűrés
-          if (filters.title) {
-            if (!book.title?.toLowerCase().includes(filters.title.toLowerCase())) {
-              return false;
-            }
-          }
-
-          // Általános keresés
-          if (filters.search) {
-            if (
-              !book.title?.toLowerCase().includes(filters.search.toLowerCase()) &&
-              !book.author?.toLowerCase().includes(filters.search.toLowerCase()) &&
-              !book.genre?.toLowerCase().includes(filters.search.toLowerCase())
-            ) {
-              return false;
-            }
-          }
-
-          return true;
-        });
-      } else {
-        // Ha nincs szűrő, próbálkozzunk általános szöveges kereséssel a prompt alapján
-        console.log('🔍 Nincs szűrő, általános keresés a prompt alapján...');
-        const searchLower = prompt.toLowerCase();
-        filtered = allBooks.filter(book =>
-          book.title?.toLowerCase().includes(searchLower) ||
-          book.author?.toLowerCase().includes(searchLower) ||
-          book.genre?.toLowerCase().includes(searchLower) ||
-          book.literaryForm?.toLowerCase().includes(searchLower) ||
-          book.lyricNote?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      setResults(filtered);
-      if (filtered.length === 0) {
+      if (!Array.isArray(books) || books.length === 0) {
         setError('Nincs találat a keresésre. Próbálj másik kifejezést!');
+        return;
       }
+
+      setResults(books);
     } catch (err: any) {
       console.error('Keresési hiba:', err);
       const errorMessage = err?.response?.error?.details || err?.message || 'Hiba történt a keresés során. Kérjük, próbáld újra!';
