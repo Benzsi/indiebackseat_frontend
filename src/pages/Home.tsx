@@ -30,7 +30,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   const [userRatings, setUserRatings] = useState<Record<number, number>>({});
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState<BookWithRating | null>(null);
-  const [flippedBookId, setFlippedBookId] = useState<number | null>(null);
+  const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
   const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
@@ -134,30 +134,17 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     }
   };
 
-  const handleFlipBook = async (bookId: number) => {
-    if (flippedBookId === bookId) {
-      setFlippedBookId(null);
-    } else {
-      setFlippedBookId(bookId);
-      // Töltsd be a kommenteket a megjelenítéshez
-      if (!bookComments[bookId]) {
-        try {
-          console.log(`Betöltés kommenteket a könyvhöz: ${bookId}`);
-          const comments = await commentsService.getBookComments(bookId);
-          console.log(`Betöltött kommentek:`, comments);
-          setBookComments((prev) => {
-            const updated = { ...prev, [bookId]: comments };
-            console.log(`BookComments frissítve:`, updated);
-            return updated;
-          });
-        } catch (err) {
-          console.error('Kommentek betöltése sikertelen:', err);
-          const errorMsg = err instanceof Error ? err.message : 'Kommentek betöltése sikertelen';
-          setError(errorMsg);
-          alert(`Kommentek betöltése sikertelen: ${errorMsg}`);
-        }
-      } else {
-        console.log(`Kommentek már betöltve a(z) ${bookId} könyvhöz:`, bookComments[bookId]);
+  const handleCardMouseEnter = async (bookId: number) => {
+    setHoveredBookId(bookId);
+    // Töltsd be a kommenteket a megjelenítéshez
+    if (!bookComments[bookId]) {
+      try {
+        const comments = await commentsService.getBookComments(bookId);
+        setBookComments((prev) => ({ ...prev, [bookId]: comments }));
+      } catch (err) {
+        console.error('Kommentek betöltése sikertelen:', err);
+        const errorMsg = err instanceof Error ? err.message : 'Kommentek betöltése sikertelen';
+        setError(errorMsg);
       }
     }
   };
@@ -239,9 +226,17 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       ) : (
         <div className="books-grid">
           {filteredBooks.map((book) => (
-            <div key={book.id} className="book-card" style={{ position: 'relative' }}>
-              {flippedBookId === book.id ? (
-                <div onClick={() => handleFlipBook(book.id)} style={{ cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <div
+              key={book.id}
+              className="book-card"
+              style={{ position: 'relative' }}
+              onMouseEnter={() => {
+                void handleCardMouseEnter(book.id);
+              }}
+              onMouseLeave={() => setHoveredBookId(null)}
+            >
+              {hoveredBookId === book.id ? (
+                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   <BookBack
                     title={book.title}
                     author={book.author}
@@ -266,7 +261,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
                       <span className="badge badge-genre">{book.genre}</span>
                     </div>
                   </div>
-                  <div className="book-cover" onClick={() => handleFlipBook(book.id)} style={{ cursor: 'pointer', marginTop: '8px' }}>
+                  <div className="book-cover" style={{ marginTop: '8px' }}>
                     {book.coverUrl ? (
                       <img
                         src={book.coverUrl}
