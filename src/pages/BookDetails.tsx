@@ -20,7 +20,7 @@ export function BookDetails({ user }: BookDetailsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [savingComment, setSavingComment] = useState(false);
-  const [userRating, setUserRating] = useState(0);
+  const [pendingRating, setPendingRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -58,7 +58,7 @@ export function BookDetails({ user }: BookDetailsProps) {
           totalRatings: ratingData.totalRatings || 0,
         });
         const ownRating = userRatings.find((rating) => rating.bookId === parsedBookId)?.rating || 0;
-        setUserRating(ownRating);
+        setPendingRating(ownRating);
         setComments(commentsData);
         setError('');
       } catch (err) {
@@ -75,20 +75,26 @@ export function BookDetails({ user }: BookDetailsProps) {
     if (!user || !book) return;
     try {
       await ratingsService.rateBook(user.id, book.id, rating);
-      setUserRating(rating);
+      setPendingRating(rating);
       const freshRating = await ratingsService.getBookRating(book.id);
-      setBook({
-        ...book,
+      setBook((prev) => prev ? {
+        ...prev,
         averageRating: freshRating.averageRating || 0,
         totalRatings: freshRating.totalRatings || 0,
-      });
+      } : prev);
+      setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Hiba az értékelés során');
     }
   };
 
   const handleCreateComment = async () => {
-    if (!user || !book || !newComment.trim()) return;
+    if (!user || !book) return;
+    if (!newComment.trim()) {
+      setError('Adj meg kommentet.');
+      return;
+    }
+
     try {
       setSavingComment(true);
       const created = await commentsService.createComment(book.id, newComment.trim());
@@ -100,6 +106,32 @@ export function BookDetails({ user }: BookDetailsProps) {
     } finally {
       setSavingComment(false);
     }
+  };
+
+  const handleEditComment = async (commentId: number, content: string) => {
+    try {
+      const updated = await commentsService.updateComment(commentId, content);
+      setComments((prev) => prev.map((c) => (c.id === commentId ? updated : c)));
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Komment szerkesztése sikertelen');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!user) return;
+    try {
+      await commentsService.deleteComment(commentId, user.id);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Komment torlese sikertelen');
+    }
+  };
+
+  const handleReportComment = async (_commentId: number) => {
+    // Backend endpoint hijan itt csak UI visszajelzest adunk.
+    alert('Komment jelentve. Koszonjuk a visszajelzest.');
   };
 
   if (!user) {
@@ -138,17 +170,16 @@ export function BookDetails({ user }: BookDetailsProps) {
               ) : null}
               <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>📖</div>
             </div>
-            <div className="book-details-user-rating">
+            <div className="book-details-feedback-box">
               <div style={{ fontSize: '13px', color: '#667085', marginBottom: '6px' }}>
-                {userRating ? 'Az értékelésed:' : 'Értékeld te is:'}
+                {pendingRating ? 'Az értékelésed:' : 'Értékeld a könyvet:'}
               </div>
               <StarRating
-                rating={userRating}
+                rating={pendingRating}
                 onRate={handleRate}
                 size="medium"
               />
-            </div>
-            <div className="book-details-comment-box">
+              <div className="book-details-feedback-divider" />
               <div className="book-details-comment-title">Irj kommentet</div>
               <textarea
                 className="book-details-comment-input"
@@ -174,9 +205,14 @@ export function BookDetails({ user }: BookDetailsProps) {
               averageRating={book.averageRating}
               totalRatings={book.totalRatings}
               comments={comments.map((c) => ({
+                id: c.id,
                 user: c.user.username,
                 text: c.content,
+                isOwn: user?.id === c.user.id,
               }))}
+              onEditComment={handleEditComment}
+              onDeleteComment={handleDeleteComment}
+              onReportComment={handleReportComment}
               description={book.lyricNote}
             />
           </div>

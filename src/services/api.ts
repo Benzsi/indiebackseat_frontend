@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:3000';
 const API_URL = `${API_BASE_URL}/api`;
 
-const getAuthHeader = () => {
+const getAuthHeader = (): Record<string, string> => {
   const token = localStorage.getItem('authToken');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
@@ -311,17 +311,25 @@ export class CommentsService {
     return response.json();
   }
 
-  async deleteComment(commentId: number): Promise<void> {
-    const response = await fetch(`${API_URL}/comments/${commentId}`, {
+  async deleteComment(commentId: number, userId?: number): Promise<void> {
+    const query = userId ? `?userId=${encodeURIComponent(String(userId))}` : '';
+    const response = await fetch(`${API_URL}/comments/${commentId}${query}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        ...(userId ? { 'x-user-id': String(userId) } : {}),
         ...getAuthHeader(),
       },
+      body: userId ? JSON.stringify({ userId }) : undefined,
     });
 
     if (!response.ok) {
-      throw new Error('Komment törlése sikertelen');
+      try {
+        const error = await response.json();
+        throw new Error(error.message || 'Komment törlése sikertelen');
+      } catch {
+        throw new Error('Komment törlése sikertelen');
+      }
     }
   }
 
