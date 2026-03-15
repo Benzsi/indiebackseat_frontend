@@ -1,10 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { User, Book } from '../services/api';
-import { BooksService, RatingsService, CommentsService, type Comment } from '../services/api';
+import { BooksService, RatingsService, CommentsService } from '../services/api';
 import { StarRating } from '../components/StarRating';
 import { CommentModal } from '../components/CommentModal';
-import { BookBack } from '../components/BookBack';
 import { AddToListModal } from '../components/AddToListModal';
 import { getListsForUser, createListForUser, addBookToList } from '../services/lists';
 import type { BookList } from '../services/lists';
@@ -19,22 +18,17 @@ interface BookWithRating extends Book {
   totalRatings?: number;
 }
 
-interface BookComments {
-  [bookId: number]: Comment[];
-}
-
 export function Home({ user, searchQuery = '' }: HomeProps) {
+  const navigate = useNavigate();
   const [books, setBooks] = useState<BookWithRating[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [userRatings, setUserRatings] = useState<Record<number, number>>({});
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState<BookWithRating | null>(null);
   const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
   const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
-  const [bookComments, setBookComments] = useState<BookComments>({});
   const booksService = new BooksService();
   const ratingsService = new RatingsService();
   const commentsService = new CommentsService();
@@ -42,7 +36,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   useEffect(() => {
     if (user) {
       fetchBooks();
-      loadUserRatings();
       setLists(getListsForUser(String(user.id)));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,32 +75,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     }
   };
 
-  const loadUserRatings = async () => {
-    if (!user) return;
-    try {
-      const ratings = await ratingsService.getUserRatings(user.id);
-      const ratingsMap: Record<number, number> = {};
-      ratings.forEach((r: any) => {
-        ratingsMap[r.bookId] = r.rating;
-      });
-      setUserRatings(ratingsMap);
-    } catch (err) {
-      console.error('Felhasználó értékelésének lekérése sikertelen:', err);
-    }
-  };
-
-  const handleRate = async (bookId: number, rating: number) => {
-    if (!user) return;
-    try {
-      await ratingsService.rateBook(user.id, bookId, rating);
-      setUserRatings({ ...userRatings, [bookId]: rating });
-      // Frissítjük a könyvek listáját az új átlaggal
-      await fetchBooks();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Hiba az értékelés során');
-    }
-  };
-
   const handleOpenComment = (book: BookWithRating) => {
     setSelectedBook(book);
     setCommentModalOpen(true);
@@ -121,31 +88,10 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   const handleSaveComment = async (comment: string) => {
     if (!selectedBook || !user) return;
     try {
-      const newComment = await commentsService.createComment(selectedBook.id, comment);
-      // Frissítsd a kommenteket az adott könyvhöz
-      const existingComments = bookComments[selectedBook.id] || [];
-      setBookComments({
-        ...bookComments,
-        [selectedBook.id]: [...existingComments, newComment],
-      });
+      await commentsService.createComment(selectedBook.id, comment);
       handleCloseComment();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Komment mentése sikertelen');
-    }
-  };
-
-  const handleCardMouseEnter = async (bookId: number) => {
-    setHoveredBookId(bookId);
-    // Töltsd be a kommenteket a megjelenítéshez
-    if (!bookComments[bookId]) {
-      try {
-        const comments = await commentsService.getBookComments(bookId);
-        setBookComments((prev) => ({ ...prev, [bookId]: comments }));
-      } catch (err) {
-        console.error('Kommentek betöltése sikertelen:', err);
-        const errorMsg = err instanceof Error ? err.message : 'Kommentek betöltése sikertelen';
-        setError(errorMsg);
-      }
     }
   };
 
@@ -230,23 +176,24 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
               key={book.id}
               className="book-card"
               style={{ position: 'relative' }}
-              onMouseEnter={() => {
-                void handleCardMouseEnter(book.id);
-              }}
+              onMouseEnter={() => setHoveredBookId(book.id)}
               onMouseLeave={() => setHoveredBookId(null)}
+              onClick={() => navigate(`/books/${book.id}`)}
             >
               {hoveredBookId === book.id ? (
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                  <BookBack
-                    title={book.title}
-                    author={book.author}
-                    averageRating={book.averageRating || 0}
-                    totalRatings={book.totalRatings || 0}
-                    comments={(bookComments[book.id] || []).map((c) => ({
-                      user: c.user.username,
-                      text: c.content,
-                    }))}
-                  />
+                <div className="book-hover-preview">
+                  <div className="book-hover-block">
+                    <div className="book-hover-title">Leiras</div>
+                    <div className="book-hover-text">
+                      {book.lyricNote?.trim() || 'Itt jelenik meg a konyv rovid leirasa.'}
+                    </div>
+                  </div>
+                  <div className="book-hover-block">
+                    <div className="book-hover-title">Video</div>
+                    <div className="book-hover-text">
+                      Fenntartott hely: ide kerulhet elozetes vagy ajanlo video.
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -290,26 +237,30 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
                       />
                     </div>
 
-                    {/* Felhasználó értékelése */}
-                    <div className="user-rating-section" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #eee' }}>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>
-                        {userRatings[book.id] ? 'Az értékelésed:' : 'Értékeld te is:'}
-                      </div>
-                      <StarRating
-                        rating={userRatings[book.id] || 0}
-                        onRate={(rating) => handleRate(book.id, rating)}
-                        size="medium"
-                      />
-                    </div>
-                    
                     <span className="book-number">#{book.sequenceNumber}</span>
-                  </div>
-                  <div className="book-card-actions">
-                    <button className="btn btn-comment" onClick={() => handleOpenComment(book)}>Komment</button>
-                    <button className="btn btn-addlist" onClick={() => handleOpenAddList(book)}>Listához adás</button>
                   </div>
                 </>
               )}
+              <div className="book-card-actions">
+                <button
+                  className="btn btn-comment"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenComment(book);
+                  }}
+                >
+                  Komment
+                </button>
+                <button
+                  className="btn btn-addlist"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenAddList(book);
+                  }}
+                >
+                  Listához adás
+                </button>
+              </div>
             </div>
           ))}
         </div>

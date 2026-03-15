@@ -9,6 +9,7 @@ import { Profile } from './pages/Profile'
 import { AdminUsers } from './pages/AdminUsers'
 import { MyLists } from './pages/MyLists'
 import { AISearch } from './pages/AISearch'
+import { BookDetails } from './pages/BookDetails'
 import type { User } from './services/api'
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
       <main className="main-container">
         <Routes>
           <Route path="/" element={<Home user={user} searchQuery={searchQuery} />} />
+          <Route path="/books/:bookId" element={<BookDetails user={user} />} />
           <Route path="/mylists" element={<MyLists />} />
           <Route path="/ai-search" element={<AISearch />} />
           <Route

@@ -14,9 +14,11 @@ interface BookBackProps {
   averageRating: number;
   totalRatings: number;
   comments: { user: string; text: string; }[];
+  description?: string;
+  videoUrl?: string;
 }
 
-export function BookBack({ title, author, averageRating, totalRatings, comments }: BookBackProps) {
+export function BookBack({ title, author, averageRating, totalRatings, comments, description, videoUrl }: BookBackProps) {
   const [likes, setLikes] = useState<Record<number, number>>({});
   const [dislikes, setDislikes] = useState<Record<number, number>>({});
   const [userVotes, setUserVotes] = useState<Record<number, 'like' | 'dislike' | null>>({});
@@ -49,6 +51,26 @@ export function BookBack({ title, author, averageRating, totalRatings, comments 
       <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #eee' }}>
         <div style={{ fontSize: '12px', color: '#888', marginBottom: 4 }}>Átlagos értékelés:</div>
         <StarRating rating={averageRating} totalRatings={totalRatings} readonly size="medium" />
+      </div>
+
+      <div style={{ marginBottom: 12, padding: 12, border: '1px solid #eee', borderRadius: 8, backgroundColor: '#fafafa' }}>
+        <div style={{ fontWeight: 600, marginBottom: 6, fontSize: '14px' }}>Leírás</div>
+        <div style={{ color: '#444', fontSize: 14, lineHeight: 1.5 }}>
+          {description?.trim() || 'Ide kerulhet a konyv rovid leirasa.'}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12, padding: 12, border: '1px dashed #c7ced8', borderRadius: 8, backgroundColor: '#f6f9ff' }}>
+        <div style={{ fontWeight: 600, marginBottom: 6, fontSize: '14px' }}>Video</div>
+        {videoUrl ? (
+          <a href={videoUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontSize: 14 }}>
+            Video megnyitasa
+          </a>
+        ) : (
+          <div style={{ color: '#667085', fontSize: 14 }}>
+            Fenntartott hely: ide kerulhet elozetes vagy ajanlo video.
+          </div>
+        )}
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
