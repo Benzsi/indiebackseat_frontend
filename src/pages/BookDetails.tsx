@@ -18,6 +18,8 @@ export function BookDetails({ user }: BookDetailsProps) {
   const { bookId } = useParams();
   const [book, setBook] = useState<BookWithRating | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [savingComment, setSavingComment] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,6 +87,21 @@ export function BookDetails({ user }: BookDetailsProps) {
     }
   };
 
+  const handleCreateComment = async () => {
+    if (!user || !book || !newComment.trim()) return;
+    try {
+      setSavingComment(true);
+      const created = await commentsService.createComment(book.id, newComment.trim());
+      setComments((prev) => [...prev, created]);
+      setNewComment('');
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Komment mentése sikertelen');
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -131,19 +148,38 @@ export function BookDetails({ user }: BookDetailsProps) {
                 size="medium"
               />
             </div>
+            <div className="book-details-comment-box">
+              <div className="book-details-comment-title">Irj kommentet</div>
+              <textarea
+                className="book-details-comment-input"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Mit gondolsz errol a konyvrol?"
+                rows={4}
+              />
+              <button
+                className="btn btn-primary"
+                disabled={savingComment || !newComment.trim()}
+                onClick={handleCreateComment}
+              >
+                {savingComment ? 'Mentés...' : 'Komment mentése'}
+              </button>
+            </div>
           </div>
 
-          <BookBack
-            title={book.title}
-            author={book.author}
-            averageRating={book.averageRating}
-            totalRatings={book.totalRatings}
-            comments={comments.map((c) => ({
-              user: c.user.username,
-              text: c.content,
-            }))}
-            description={book.lyricNote}
-          />
+          <div className="book-details-main">
+            <BookBack
+              title={book.title}
+              author={book.author}
+              averageRating={book.averageRating}
+              totalRatings={book.totalRatings}
+              comments={comments.map((c) => ({
+                user: c.user.username,
+                text: c.content,
+              }))}
+              description={book.lyricNote}
+            />
+          </div>
         </div>
       )}
     </div>

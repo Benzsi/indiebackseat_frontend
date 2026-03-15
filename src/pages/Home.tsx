@@ -1,9 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { User, Book } from '../services/api';
-import { BooksService, RatingsService, CommentsService } from '../services/api';
+import { BooksService, RatingsService } from '../services/api';
 import { StarRating } from '../components/StarRating';
-import { CommentModal } from '../components/CommentModal';
 import { AddToListModal } from '../components/AddToListModal';
 import { getListsForUser, createListForUser, addBookToList } from '../services/lists';
 import type { BookList } from '../services/lists';
@@ -23,15 +22,12 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   const [books, setBooks] = useState<BookWithRating[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [commentModalOpen, setCommentModalOpen] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<BookWithRating | null>(null);
   const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
   const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
   const booksService = new BooksService();
   const ratingsService = new RatingsService();
-  const commentsService = new CommentsService();
 
   useEffect(() => {
     if (user) {
@@ -72,26 +68,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       setError(err instanceof Error ? err.message : 'Könyvek lekérése sikertelen');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOpenComment = (book: BookWithRating) => {
-    setSelectedBook(book);
-    setCommentModalOpen(true);
-  };
-
-  const handleCloseComment = () => {
-    setCommentModalOpen(false);
-    setSelectedBook(null);
-  };
-
-  const handleSaveComment = async (comment: string) => {
-    if (!selectedBook || !user) return;
-    try {
-      await commentsService.createComment(selectedBook.id, comment);
-      handleCloseComment();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Komment mentése sikertelen');
     }
   };
 
@@ -243,15 +219,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
               )}
               <div className="book-card-actions">
                 <button
-                  className="btn btn-comment"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenComment(book);
-                  }}
-                >
-                  Komment
-                </button>
-                <button
                   className="btn btn-addlist"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -265,14 +232,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
           ))}
         </div>
       )}
-
-      {/* Komment ablak */}
-      <CommentModal
-        isOpen={commentModalOpen}
-        onClose={handleCloseComment}
-        onSave={handleSaveComment}
-        bookTitle={selectedBook?.title || ''}
-      />
       <AddToListModal
         isOpen={addListModalOpen}
         onClose={handleCloseAddList}
