@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
+import './AppLists.css'
 import { Header } from './components/Header'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -59,7 +60,7 @@ function App() {
       <main className="main-container">
         <Routes>
           <Route path="/" element={<Home user={user} searchQuery={searchQuery} />} />
-          <Route path="/mylists" element={<MyLists />} />
+          <Route path="/mylists" element={<MyLists user={user} />} />
           <Route path="/ai-search" element={<AISearch />} />
           <Route
             path="/login"

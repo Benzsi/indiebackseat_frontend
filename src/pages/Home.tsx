@@ -43,10 +43,17 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     if (user) {
       fetchBooks();
       loadUserRatings();
-      setLists(getListsForUser(String(user.id)));
+      loadUserLists();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  const loadUserLists = async () => {
+    if (user) {
+      const userLists = await getListsForUser(String(user.id));
+      setLists(userLists);
+    }
+  };
 
   const fetchBooks = async () => {
     setLoading(true);
@@ -177,18 +184,26 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     setAddListModalOpen(false);
     setSelectedBookForList(null);
   };
-  const handleAddBookToList = (listId: string) => {
+  const handleAddBookToList = async (listId: number) => {
     if (user && selectedBookForList) {
-      addBookToList(String(user.id), listId, selectedBookForList.id);
-      setLists(getListsForUser(String(user.id)));
-      setAddListModalOpen(false);
-      setSelectedBookForList(null);
+      try {
+        await addBookToList(listId, selectedBookForList.id);
+        await loadUserLists();
+        setAddListModalOpen(false);
+        setSelectedBookForList(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Hiba a könyv listához adásakor');
+      }
     }
   };
-  const handleCreateList = (name: string) => {
+  const handleCreateList = async (name: string) => {
     if (user) {
-      createListForUser(String(user.id), name);
-      setLists(getListsForUser(String(user.id)));
+      try {
+        await createListForUser(String(user.id), name);
+        await loadUserLists();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Hiba a lista létrehozásakor');
+      }
     }
   };
 
