@@ -21,7 +21,7 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange }: HeaderP
           <div className="navbar-search-inline">
             <input
               type="text"
-              placeholder="Keresés cím, szerző, műfaj, irodalmi forma alapján..."
+              placeholder="Keresés.."
               className="navbar-search-input"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -29,7 +29,7 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange }: HeaderP
           </div>
         </div>
         <Link to="/ai-search" className="navbar-link">
-          🤖 AI Keresés
+            AI Keresés
         </Link>
         {isAuthenticated && (
           <Link to="/mylists" className="navbar-link">
@@ -38,7 +38,7 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange }: HeaderP
         )}
         {isAuthenticated ? (
           <Link to="/profile" className="navbar-link">
-            👤 Profil
+            Profil
           </Link>
         ) : (
           <>

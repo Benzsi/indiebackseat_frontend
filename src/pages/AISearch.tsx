@@ -34,7 +34,7 @@ export function AISearch() {
       }
 
       const books: Book[] = await aiResponse.json();
-      console.log('AI ajánlott könyvek:', books);
+      console.log('AI ajánlott játékok:', books);
 
       if (!Array.isArray(books) || books.length === 0) {
         setError('Nincs találat a keresésre. Próbálj másik kifejezést!');
@@ -53,8 +53,8 @@ export function AISearch() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
-      <h1>🤖 AI Könyv Keresés</h1>
-      <p>Írd le, hogy milyen könyvet keresel, és az AI segít megtalálni!</p>
+      <h1>AI Játék Ájanló</h1>
+      <p>Írd le, hogy milyen játékokat keresel, és az AI segít megtalálni!</p>
 
       <form onSubmit={handleSearch} style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -62,7 +62,7 @@ export function AISearch() {
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Pl: Fantasy könyveket keresek 2000 utáni kiadástól..."
+            placeholder="Pl: CO-OP játék egy rövid délutánra."
             style={{
               flex: 1,
               padding: '0.75rem',
