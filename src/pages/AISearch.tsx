@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Book } from '../services/api';
 
 export function AISearch() {
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState('');
   const [results, setResults] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,8 +117,34 @@ export function AISearch() {
               gap: '2rem',
             }}
           >
-            {results.map((book) => (
-              <div key={book.id} style={{ textAlign: 'center' }}>
+            {results.map((book) => {
+              const isHovered = hoveredBookId === book.id;
+
+              return (
+              <div
+                key={book.id}
+                style={{
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 420ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 420ms ease',
+                  transform: isHovered
+                    ? 'perspective(1000px) translateY(-2px) rotateY(3deg)'
+                    : 'perspective(1000px) translateY(0) rotateY(0deg)',
+                  boxShadow: isHovered ? '0 8px 20px rgba(24, 44, 89, 0.12)' : 'none',
+                  borderRadius: '10px',
+                }}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/books/${book.id}`)}
+                onMouseEnter={() => setHoveredBookId(book.id)}
+                onMouseLeave={() => setHoveredBookId(null)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/books/${book.id}`);
+                  }
+                }}
+              >
                 <img
                   src={book.coverUrl}
                   alt={book.title}
@@ -125,13 +154,16 @@ export function AISearch() {
                     objectFit: 'cover',
                     borderRadius: '8px',
                     marginBottom: '1rem',
+                    transition: 'transform 420ms cubic-bezier(0.22, 1, 0.36, 1)',
+                    transform: isHovered ? 'scale(1.015)' : 'scale(1)',
                   }}
                 />
                 <h3 style={{ fontSize: '0.9rem', margin: '0.5rem 0' }}>{book.title}</h3>
                 <p style={{ fontSize: '0.8rem', color: '#666', margin: 0 }}>{book.author}</p>
                 <p style={{ fontSize: '0.75rem', color: '#999' }}>Műfaj: {book.genre}</p>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
