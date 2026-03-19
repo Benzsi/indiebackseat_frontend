@@ -46,7 +46,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     setLoading(true);
     try {
       const data = await booksService.getAllBooks();
-      
+
       // Lekérjük az átlagos értékeléseket is
       const booksWithRatings = await Promise.all(
         data.map(async (book) => {
@@ -66,7 +66,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
           }
         })
       );
-      
+
       setBooks(booksWithRatings);
       setError('');
     } catch (err) {
@@ -149,9 +149,9 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   return (
     <div className="home-authenticated">
       <h1>Játékok</h1>
-      
+
       {error && <div className="error-message">{error}</div>}
-      
+
       {loading ? (
         <div className="loading">Játékok betöltése...</div>
       ) : books.length === 0 ? (
