@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #333;
-  background-color: #f5f5f5;
+  color: #27374D;
+  background-color: #DDE6ED;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,9 +13,9 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Brand Colors - or in new global.css if more needed */
-  --color-primary: #DF3C5F;
-  --color-secondary: #224193;
-  --color-accent: #6F9BD1;
+  --color-primary: #27374D;
+  --color-secondary: #526D82;
+  --color-accent: #9DB2BF;
 }
 
 a {
@@ -64,12 +64,12 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: #27374D;
+    background-color: #DDE6ED;
   }
 
   a:hover {
-    color: #747bff;
+    color: #526D82;
   }
 
   button {

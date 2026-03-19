@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import logo from '../assets/bookink_logo.png';
 
 interface HeaderProps {
   isAuthenticated: boolean;
@@ -13,8 +12,8 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange }: HeaderP
       <nav className="navbar" style={{ width: '100%' }}>
         <Link to="/" className="header-logo" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <img src={logo} alt="Bookink logo" style={{ height: 48, width: 48, objectFit: 'contain', borderRadius: 8, background: '#fff', marginRight: 8 }} />
-            Bookink
+            <img alt="indie.backseat" style={{ height: 48, width: 48, objectFit: 'contain', borderRadius: 8, background: '#fff', marginRight: 8 }} />
+            indie.backseat
           </span>
         </Link>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
@@ -29,7 +28,7 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange }: HeaderP
           </div>
         </div>
         <Link to="/ai-search" className="navbar-link">
-            AI Keresés
+          AI Keresés
         </Link>
         {isAuthenticated && (
           <Link to="/mylists" className="navbar-link">
