@@ -6,6 +6,7 @@ import { StarRating } from '../components/StarRating';
 import { AddToListModal } from '../components/AddToListModal';
 import { getListsForUser, createListForUser, addBookToList } from '../services/lists';
 import type { BookList } from '../services/lists';
+import videoFile from '../videos/horizontally spinning rat.mp4';
 
 interface HomeProps {
   user?: User | null;
@@ -164,12 +165,13 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
                       {book.lyricNote?.trim() || 'Itt jelenik meg a konyv rovid leirasa.'}
                     </div>
                   </div>
-                  <div className="book-hover-block">
-                    <div className="book-hover-title">Video</div>
-                    <div className="book-hover-text">
-                      Fenntartott hely: ide kerulhet elozetes vagy ajanlo video.
+                  <div style={{ marginBottom: 12, padding: 12, border: '1px dashed #c7ced8', borderRadius: 8, backgroundColor: '#f6f9ff' }}>
+                    <div style={{ fontWeight: 600, marginBottom: 6, fontSize: '14px' }}></div>
+                    <video width="100%" controls autoPlay muted loop playsInline preload="auto" style={{ borderRadius: 6, marginBottom: 8, maxWidth: '400px', display: 'block' }}>
+                      <source src={videoFile} type="video/mp4" />
+                      Böngésződ nem támogatja a videó lejátszást.
+                      </video>
                     </div>
-                  </div>
                 </div>
               ) : (
                 <>

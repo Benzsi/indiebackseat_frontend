@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StarRating } from './StarRating';
+import videoFile from '../videos/horizontally spinning rat.mp4';
 
 //Márk
 //uj oldalra kell majd tenni a könyv részleteit, ahol a könyv hátulját 
@@ -154,15 +155,10 @@ export function BookBack({
 
       <div style={{ marginBottom: 12, padding: 12, border: '1px dashed #c7ced8', borderRadius: 8, backgroundColor: '#f6f9ff' }}>
         <div style={{ fontWeight: 600, marginBottom: 6, fontSize: '14px' }}>Video</div>
-        {videoUrl ? (
-          <a href={videoUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontSize: 14 }}>
-            Video megnyitasa
-          </a>
-        ) : (
-          <div style={{ color: '#667085', fontSize: 14 }}>
-            Fenntartott hely: ide kerulhet elozetes vagy ajanlo video.
-          </div>
-        )}
+        <video width="100%" controls autoPlay muted loop style={{ borderRadius: 6, marginBottom: 8, maxWidth: '400px', display: 'block' }}>
+          <source src={videoFile} type="video/mp4" />
+          Böngésződ nem támogatja a videó lejátszást.
+        </video>
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
