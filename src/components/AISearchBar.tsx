@@ -20,7 +20,7 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
   const handleAISubmit = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai-filter', {
+      const response = await fetch('http://localhost:3000/ai-filter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: input }),
@@ -37,13 +37,13 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-md">
-      <p className="text-sm mb-2 font-semibold">AI Könyvasszisztens</p>
+      <p className="text-sm mb-2 font-semibold">AI játék ajánló</p>
       <div className="flex gap-2">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Pl: Keress nekem Stephen King horror könyveket 1990-ből..."
+          placeholder="Pl: Keress nekem egy cozy játékot.."
           className="flex-1 p-2 border rounded"
         />
         <button 

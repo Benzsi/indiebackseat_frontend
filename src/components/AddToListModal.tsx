@@ -3,16 +3,17 @@ import React from 'react';
 interface AddToListModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (listId: string) => void;
-  lists: { id: string; name: string }[];
+  onAdd: (listId: number) => void;
+  lists: { id: number; name: string }[];
   bookTitle: string;
-  onCreateList?: (name: string) => void;
+  onCreateList?: (name: string) => Promise<void>;
 }
 
 export function AddToListModal({ isOpen, onClose, onAdd, lists, bookTitle, onCreateList }: AddToListModalProps) {
-  const [selectedList, setSelectedList] = React.useState<string>('');
+  const [selectedList, setSelectedList] = React.useState<number | ''>('');
   const [newListName, setNewListName] = React.useState('');
   const [showNewList, setShowNewList] = React.useState(false);
+  const [isCreating, setIsCreating] = React.useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -34,7 +35,7 @@ export function AddToListModal({ isOpen, onClose, onAdd, lists, bookTitle, onCre
           <>
             <select
               value={selectedList}
-              onChange={e => setSelectedList(e.target.value)}
+              onChange={e => setSelectedList(e.target.value ? Number(e.target.value) : '')}
               style={{ width: '100%', fontSize: 17, padding: 10, borderRadius: 8, border: '1.5px solid var(--color-primary)', marginBottom: 18, background: '#f8faff', color: '#222' }}
             >
               <option value="">Válassz listát...</option>
@@ -56,20 +57,27 @@ export function AddToListModal({ isOpen, onClose, onAdd, lists, bookTitle, onCre
               style={{ width: '100%', fontSize: 17, padding: 10, borderRadius: 8, border: '1.5px solid var(--color-primary)', marginBottom: 10, background: '#f8faff', color: '#222' }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn" style={{ color: '#fff', background: '#e74c3c', border: 'none' }} onClick={() => setShowNewList(false)}>Mégse</button>
-              <button className="btn btn-primary" disabled={!newListName.trim()} onClick={() => {
+              <button className="btn" style={{ color: '#fff', background: '#e74c3c', border: 'none' }} onClick={() => setShowNewList(false)} disabled={isCreating}>Mégse</button>
+              <button className="btn btn-primary" disabled={!newListName.trim() || isCreating} onClick={async () => {
                 if (onCreateList && newListName.trim()) {
-                  onCreateList(newListName.trim());
-                  setShowNewList(false);
+                  setIsCreating(true);
+                  try {
+                    await onCreateList(newListName.trim());
+                    setShowNewList(false);
+                  } finally {
+                    setIsCreating(false);
+                  }
                 }
-              }}>Létrehozás</button>
+              }}>
+                {isCreating ? 'Létrehozás...' : 'Létrehozás'}
+              </button>
             </div>
           </div>
         )}
         {!showNewList && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <button className="btn" style={{ fontSize: 16, padding: '10px 22px', color: '#fff', background: '#e74c3c', border: 'none' }} onClick={onClose}>Mégse</button>
-            <button className="btn btn-primary" style={{ fontSize: 16, padding: '10px 22px' }} onClick={() => onAdd(selectedList)} disabled={!selectedList}>
+            <button className="btn btn-primary" style={{ fontSize: 16, padding: '10px 22px' }} onClick={() => onAdd(selectedList as number)} disabled={selectedList === ''}>
               Hozzáadás
             </button>
           </div>

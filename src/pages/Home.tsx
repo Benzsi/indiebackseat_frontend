@@ -31,17 +31,22 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
 
   useEffect(() => {
     if (user) {
-      fetchBooks();
-      setLists(getListsForUser(String(user.id)));
+      void fetchBooks();
+      void loadUserLists(String(user.id));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  const loadUserLists = async (userId: string) => {
+    const userLists = await getListsForUser(userId);
+    setLists(userLists);
+  };
 
   const fetchBooks = async () => {
     setLoading(true);
     try {
       const data = await booksService.getAllBooks();
-      
+
       // Lekérjük az átlagos értékeléseket is
       const booksWithRatings = await Promise.all(
         data.map(async (book) => {
@@ -61,7 +66,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
           }
         })
       );
-      
+
       setBooks(booksWithRatings);
       setError('');
     } catch (err) {
@@ -79,18 +84,26 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     setAddListModalOpen(false);
     setSelectedBookForList(null);
   };
-  const handleAddBookToList = (listId: string) => {
+  const handleAddBookToList = async (listId: number) => {
     if (user && selectedBookForList) {
-      addBookToList(String(user.id), listId, selectedBookForList.id);
-      setLists(getListsForUser(String(user.id)));
-      setAddListModalOpen(false);
-      setSelectedBookForList(null);
+      try {
+        await addBookToList(listId, selectedBookForList.id);
+        await loadUserLists(String(user.id));
+        setAddListModalOpen(false);
+        setSelectedBookForList(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'A könyv listához adása sikertelen');
+      }
     }
   };
-  const handleCreateList = (name: string) => {
+
+  const handleCreateList = async (name: string) => {
     if (user) {
-      createListForUser(String(user.id), name);
-      setLists(getListsForUser(String(user.id)));
+      const created = await createListForUser(String(user.id), name);
+      if (!created) {
+        throw new Error('Lista létrehozása sikertelen');
+      }
+      await loadUserLists(String(user.id));
     }
   };
 
@@ -115,7 +128,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   if (!user) {
     return (
       <div className="home">
-        <h1>Üdvözlünk a Bookinkben!</h1>
+        <h1>indie.backseat</h1>
         <p>
           Fedezd fel a világ legszebb könyveit, ossz meg ajánlásokat az olvasók
           közösségével, és építsd ki saját könyvtáradat.
@@ -135,14 +148,14 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   // Ha bejelentkezve van, mutasd a könyveket
   return (
     <div className="home-authenticated">
-      <h1>Könyvek katalógusa</h1>
-      
+      <h1>Játékok</h1>
+
       {error && <div className="error-message">{error}</div>}
-      
+
       {loading ? (
-        <div className="loading">Könyvek betöltése...</div>
+        <div className="loading">Játékok betöltése...</div>
       ) : books.length === 0 ? (
-        <div className="no-books">Jelenleg nincsenek könyvek a katalógusban.</div>
+        <div className="no-books">Jelenleg nincsenek játékok  a katalógusban.</div>
       ) : filteredBooks.length === 0 ? (
         <div className="no-books">Nincs találat a megadott keresésre.</div>
       ) : (

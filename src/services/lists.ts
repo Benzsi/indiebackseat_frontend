@@ -1,46 +1,81 @@
-// Egyszerű in-memory listakezelő demo
-// Később backend API-ra cserélhető
+const API_URL = 'http://localhost:3000/api';
 
 export interface BookList {
-  id: string;
+  id: number;
   name: string;
-  bookIds: number[];
+  userId: number;
+  items: { bookId: number }[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-let userLists: Record<string, BookList[]> = {};
-
-export function getListsForUser(userId: string): BookList[] {
-  return userLists[userId] || [];
-}
-
-export function createListForUser(userId: string, name: string): BookList {
-  const newList: BookList = {
-    id: Math.random().toString(36).substr(2, 9),
-    name,
-    bookIds: [],
-  };
-  if (!userLists[userId]) userLists[userId] = [];
-  userLists[userId].push(newList);
-  return newList;
-}
-
-export function addBookToList(userId: string, listId: string, bookId: number) {
-  const lists = userLists[userId] || [];
-  const list = lists.find(l => l.id === listId);
-  if (list && !list.bookIds.includes(bookId)) {
-    list.bookIds.push(bookId);
+export async function getListsForUser(userId: string | number): Promise<BookList[]> {
+  try {
+    const res = await fetch(`${API_URL}/lists/${userId}`);
+    if (!res.ok) throw new Error('Hiba a listák lekérésekor');
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    return [];
   }
 }
 
-export function removeBookFromList(userId: string, listId: string, bookId: number) {
-  const lists = userLists[userId] || [];
-  const list = lists.find(l => l.id === listId);
-  if (list) {
-    list.bookIds = list.bookIds.filter(id => id !== bookId);
+export async function createListForUser(userId: string | number, name: string): Promise<BookList | null> {
+  try {
+    const res = await fetch(`${API_URL}/lists/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error('Hiba a lista létrehozásakor');
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    return null;
   }
 }
 
-export function removeList(userId: string, listId: string) {
-  if (!userLists[userId]) return;
-  userLists[userId] = userLists[userId].filter(l => l.id !== listId);
+export async function addBookToList(listId: string | number, bookId: number) {
+  try {
+    const res = await fetch(`${API_URL}/lists/${listId}/books`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ bookId }),
+    });
+    if (!res.ok) throw new Error('Hiba a könyv hozzáadásakor');
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export async function removeBookFromList(listId: string | number, bookId: number) {
+  try {
+    const res = await fetch(`${API_URL}/lists/${listId}/books/${bookId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Hiba a könyv eltávolításakor');
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export async function removeList(listId: string | number) {
+  try {
+    const res = await fetch(`${API_URL}/lists/${listId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Hiba a lista törlésekor');
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 }
