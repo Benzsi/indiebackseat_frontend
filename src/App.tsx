@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
-// import './AppLists.css' // File missing; import commented out to resolve error
+import './components.css'
 import { Header } from './components/Header'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -11,6 +11,8 @@ import { AdminUsers } from './pages/AdminUsers'
 import { MyLists } from './pages/MyLists'
 import { AISearch } from './pages/AISearch'
 import { BookDetails } from './pages/BookDetails'
+import { DevLogs } from './pages/DevLogs'
+import { DevLogDetail } from './pages/DevLogDetail'
 import type { User } from './services/api'
 
 function App() {
@@ -63,7 +65,7 @@ function App() {
           <Route path="/" element={<Home user={user} searchQuery={searchQuery} />} />
           <Route path="/books/:bookId" element={<BookDetails user={user} />} />
           <Route path="/mylists" element={<MyLists user={user} />} />
-          <Route path="/ai-search" element={<AISearch />} />
+          <Route path="/ai-search" element={<AISearch user={user} />} />
           <Route
             path="/login"
             element={
@@ -86,6 +88,8 @@ function App() {
           />
           <Route path="/profile" element={<Profile user={user} onUserUpdate={handleUserUpdate} />} />
           <Route path="/admin" element={<AdminUsers user={user} />} />
+          <Route path="/devlogs" element={<DevLogs user={user} />} />
+          <Route path="/devlogs/:id" element={<DevLogDetail user={user} />} />
         </Routes>
       </main>
     </BrowserRouter>
