@@ -1,0 +1,505 @@
+/* ======================================================
+   components.css - Újrafelhasználható komponens stílusok
+   Az App.css-ből és inline CSS-ből kiszervezett közös stílusok
+   ====================================================== */
+
+/* ── Kurzor javítás – input mezőkben maradjon látható ── */
+input,
+textarea,
+select {
+    cursor: text;
+    caret-color: var(--color-primary);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    cursor: pointer;
+}
+
+/* ── Admin / közös kártya konténer ── */
+.panel-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(39, 55, 77, 0.08);
+    overflow: hidden;
+}
+
+/* ── Oldal fejléc (back + title + action) 3-oszlopos grid ── */
+.page-header-grid {
+    display: grid;
+    grid-template-columns: min-content auto min-content;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+/* ── Visszagomb / pill navigáció ── */
+.nav-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s;
+    white-space: nowrap;
+}
+
+.nav-pill-light {
+    background: #fff;
+    color: var(--color-secondary);
+    box-shadow: 0 2px 8px rgba(39, 55, 77, 0.05);
+    border: none;
+}
+
+.nav-pill-light:hover {
+    box-shadow: 0 4px 12px rgba(39, 55, 77, 0.10);
+}
+
+.nav-pill-primary {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(39, 55, 77, 0.05);
+    border: none;
+}
+
+.nav-pill-primary:hover {
+    box-shadow: 0 4px 12px rgba(39, 55, 77, 0.15);
+}
+
+/* ── Értesítő bannerek (hiba / siker) ── */
+.alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    border-left: 4px solid transparent;
+}
+
+.alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border-left-color: #ef4444;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    color: #0f766e;
+    border-left-color: #0d9488;
+}
+
+/* ── Form mezők (label + input csoport) ── */
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-field label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--color-primary);
+    transition: border-color 0.2s;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 3px rgba(82, 109, 130, 0.12);
+}
+
+/* ── Táblázat ikon-gombok (szerkesztés / törlés) ── */
+.icon-btn {
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.icon-btn-edit {
+    background: #fff;
+    color: var(--color-secondary);
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.icon-btn-edit:hover {
+    border-color: var(--color-secondary);
+}
+
+.icon-btn-delete {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.icon-btn-delete:hover {
+    background: #fecaca;
+}
+
+.icon-btn-save {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.icon-btn-cancel {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+/* ── Szerepkör / tag badge-ek (admin tábla) ── */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.role-badge-admin {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.role-badge-user {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* ── AI Search görgetés scrollbar ── */
+.ai-scroll-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ai-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.ai-scroll-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid #f8fafc;
+}
+
+.ai-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ── Vegyes segédosztályok ── */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-gap-8 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flex-gap-12 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.flex-gap-16 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.text-muted {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.text-small {
+    font-size: 13px;
+}
+
+.fw-700 {
+    font-weight: 700;
+}
+
+.fw-800 {
+    font-weight: 800;
+}
+
+.rounded-full {
+    border-radius: 999px;
+}
+
+/* ── Profil avatar (gradient körös) ── */
+.avatar-circle {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(39, 55, 77, 0.1);
+    flex-shrink: 0;
+}
+
+/* ── Profil info-sor (ikon + adat) ── */
+.info-row {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    min-height: 80px;
+    box-sizing: border-box;
+    gap: 20px;
+}
+
+.info-row-icon {
+    flex-shrink: 0;
+    color: var(--color-secondary);
+}
+
+.info-row-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-row-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+}
+
+.info-row-value {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+/* ── Szerkesztés (ceruza) ikon-gomb a profil sorokban ── */
+.edit-icon-btn {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    color: var(--color-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    flex-shrink: 0;
+}
+
+.edit-icon-btn:hover {
+    border-color: var(--color-secondary);
+}
+
+/* Mentés / Mégsem gombok szerkesztéskor */
+.edit-save-btn {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.edit-save-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.edit-cancel-btn {
+    background: #e2e8f0;
+    color: #475569;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.edit-cancel-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+/* Inline szerkesztő input a profilnál */
+.edit-input {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 2px solid #cbd5e1;
+    flex: 1;
+    outline: none;
+    font-size: 15px;
+    color: var(--color-primary);
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.edit-input:focus {
+    border-color: var(--color-secondary);
+}
+
+/* ── Kijelentkezés gomb ── */
+.btn-logout-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    transition: background 0.2s;
+}
+
+.btn-logout-danger:hover {
+    background: #fecaca;
+}
+
+/* ── Lista fejléc sor (Library icon + cím + + gomb + törlés) ── */
+.list-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 14px 20px;
+    border-radius: 8px 8px 0 0;
+    transition: background 0.2s;
+}
+
+.list-header-row:hover {
+    background: var(--color-bg);
+}
+
+/* ── Lista kártya ── */
+.list-card-wrapper {
+    margin-bottom: 16px;
+    border: 1px solid var(--color-accent);
+    border-radius: 8px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── Oldal section fejléc (ikon box + cím egymás mellett) ── */
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    border-bottom: 2px solid var(--color-bg);
+    padding-bottom: 1.5rem;
+    gap: 20px;
+}
+
+.section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.section-icon-box {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: 12px;
+    border-radius: 12px;
+    color: #fff;
+    display: flex;
+    box-shadow: 0 4px 12px rgba(39, 55, 77, 0.15);
+}
+
+/* ── Lista létrehozó form pill ── */
+.create-list-pill {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px;
+    box-shadow: 0 4px 12px rgba(39, 55, 77, 0.06);
+    border: 1px solid #c9d5df;
+    transition: border-color 0.2s;
+    width: 400px;
+    max-width: 100%;
+}
+
+/* ── Üres lista / betöltés üzenet ── */
+.empty-state {
+    padding: 3rem 2rem;
+    background: #fff;
+    border: 1px dashed var(--color-accent);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.empty-state-title {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.empty-state-sub {
+    color: var(--color-secondary);
+    margin-bottom: 0;
+}
