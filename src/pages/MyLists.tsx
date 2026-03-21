@@ -4,6 +4,7 @@ import type { User } from '../services/api';
 import { getListsForUser, removeList, removeBookFromList, createListForUser, type BookList } from '../services/lists';
 import { RatingsService } from '../services/api';
 import { StarRating } from '../components/StarRating';
+import { Library, Plus, Trash2, ChevronDown, ChevronUp, FolderPlus } from 'lucide-react';
 
 
 interface MyListsProps {
@@ -113,11 +114,12 @@ export function MyLists({ user }: MyListsProps) {
 
   if (!user) {
     return (
-      <div className="mylists-container">
-        <h2>Saját listáim</h2>
+      <div className="mylists-container" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+        <Library size={56} color="var(--color-primary)" style={{ opacity: 0.9, marginBottom: '16px' }} />
+        <h2 style={{ color: 'var(--color-primary)' }}>Saját listáim</h2>
         <div className="no-lists-message">
           <p>Kérlek jelentkezz be a listáid megtekintéséhez.</p>
-          <Link to="/login" className="btn btn-primary">Bejelentkezés</Link>
+          <Link to="/login" className="nav-pill nav-pill-primary" style={{ marginTop: '16px' }}>Bejelentkezés</Link>
         </div>
       </div>
     );
@@ -125,69 +127,79 @@ export function MyLists({ user }: MyListsProps) {
 
   return (
     <div className="mylists-container">
-      <div className="mylists-header">
-        <h2>Saját listáim</h2>
+      <div className="section-header">
+        <div className="section-header-left">
+          <div className="section-icon-box">
+            <Library size={28} />
+          </div>
+          <h2 style={{ margin: 0, color: 'var(--color-primary)' }}>Saját listáim</h2>
+        </div>
 
-        <form onSubmit={handleCreateList} className="create-list-form">
+        <form onSubmit={handleCreateList} className="create-list-pill">
+          <FolderPlus size={20} color="var(--color-secondary)" style={{ marginLeft: '12px' }} />
           <input
             type="text"
             value={newListName}
             onChange={(e) => setNewListName(e.target.value)}
             placeholder="Új lista neve..."
-            className="create-list-input"
             disabled={isCreating}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--color-primary)', marginLeft: '8px', fontSize: '15px' }}
           />
-          <button type="submit" className="btn btn-primary" disabled={!newListName.trim() || isCreating}>
+          <button type="submit" className="nav-pill nav-pill-primary" disabled={!newListName.trim() || isCreating} style={{ padding: '8px 16px' }}>
+            <Plus size={16} />
             {isCreating ? 'Létrehozás...' : 'Új lista'}
           </button>
         </form>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="alert alert-error">{error}</div>}
 
       {loading ? (
-        <div className="loading">Listák betöltése...</div>
+        <div className="loading" style={{ color: 'var(--color-secondary)' }}>Listák betöltése...</div>
       ) : lists.length === 0 ? (
-        <div className="no-lists-message">
-          <p>Még nem hoztál létre egy listát sem.</p>
-          <p>Keresgélj a játékok között, és add hozzá őket a saját listáidhoz!</p>
-          <Link to="/" className="btn btn-primary" style={{ marginTop: '16px' }}>Böngészés</Link>
+        <div className="empty-state">
+          <p className="empty-state-title">Még nem hoztál létre egy listát sem.</p>
+          <p className="empty-state-sub">Keresgélj a játékok között, és add hozzá őket a saját listáidhoz!</p>
+          <Link to="/" className="nav-pill nav-pill-primary" style={{ marginTop: '16px', display: 'inline-flex' }}>Böngészés</Link>
         </div>
       ) : (
         <div className="lists-container">
           {lists.map(list => (
             <div
               key={list.id}
-              className="list-card"
-              style={{
-                marginBottom: 16,
-                border: '1px solid #ddd',
-                borderRadius: 8,
-                minHeight: openListId === list.id ? 0 : 220,
-                background: '#fff',
-                transition: 'min-height 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                width: 'calc(4 * 220px + 3 * 16px)', // 4 card (220px) + 3 gap (16px)
-                maxWidth: '100%',
-                boxSizing: 'border-box',
-                alignSelf: 'center'
-              }}
+              className="list-card-wrapper"
+              style={{ width: 'calc(4 * 220px + 3 * 16px)', alignSelf: 'center' }}
             >
-              <div className="list-header" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', justifyContent: 'space-between', padding: '8px 16px', background: '#f7f7f7', borderRadius: '8px 8px 0 0' }}
-                onClick={() => setOpenListId(openListId === list.id ? null : list.id)}>
-                <h3 style={{ margin: 0 }}>{list.name}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                className="list-header-row"
+                style={{ background: openListId === list.id ? 'var(--color-bg)' : '#f4f7f9', borderBottom: openListId === list.id ? '1px solid var(--color-accent)' : 'none' }}
+                onClick={() => setOpenListId(openListId === list.id ? null : list.id)}
+              >
+                <div className="flex-gap-12">
+                  <Library size={20} color="var(--color-primary)" />
+                  <h3 style={{ margin: 0, color: 'var(--color-primary)' }}>{list.name}</h3>
+                  <span style={{ fontSize: '13px', background: 'var(--color-accent)', color: '#fff', padding: '2px 8px', borderRadius: '999px' }}>{list.items?.length || 0}</span>
+                </div>
+                <div className="flex-gap-12">
+                  <Link
+                    to="/"
+                    onClick={e => e.stopPropagation()}
+                    title="Új játék felvétele (Tovább a főoldalra)"
+                    className="icon-btn"
+                    style={{ background: '#e0e7ff', color: 'var(--color-primary)', textDecoration: 'none' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#c7d2fe'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#e0e7ff'}
+                  >
+                    <Plus size={16} />
+                  </Link>
                   <button
                     onClick={e => { e.stopPropagation(); handleDeleteList(list.id); }}
-                    className="btn-icon delete-list-btn"
                     title="Lista törlése"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}
+                    className="icon-btn icon-btn-delete"
                   >
-                    🗑️
+                    <Trash2 size={16} />
                   </button>
-                  <span style={{ fontSize: 18 }}>{openListId === list.id ? '▲' : '▼'}</span>
+                  <span style={{ color: 'var(--color-secondary)' }}>{openListId === list.id ? <ChevronUp size={22} /> : <ChevronDown size={22} />}</span>
                 </div>
               </div>
               {openListId === list.id && (
@@ -208,30 +220,31 @@ export function MyLists({ user }: MyListsProps) {
                             key={book.id}
                             className="book-card"
                             style={{
-                              gridColumn: isExpanded ? '1 / -1' : 'auto', // Ha nyitva van, a teljes sort átfogja!
+                              gridColumn: isExpanded ? '1 / -1' : 'auto', // STRICTLY KEPT
                               position: 'relative',
                               display: 'flex',
-                              flexDirection: 'row', // Mindig egymás mellett!
+                              flexDirection: 'row', // STRICTLY KEPT
                               width: '100%',
-                              height: isExpanded ? '550px' : 'auto',
+                              height: 'auto', // Lenyitva is auto, így nem csúsznak el az elemek
+                              minHeight: isExpanded ? '520px' : 'auto',
                               cursor: 'pointer',
                               alignItems: 'stretch',
                               background: '#fff',
                               transition: 'all 0.3s ease',
-                              boxShadow: isExpanded ? '0 10px 25px rgba(0,0,0,0.1)' : 'none',
+                              boxShadow: isExpanded ? '0 10px 25px rgba(39,55,77,0.1)' : '0 2px 8px rgba(39,55,77,0.05)',
                               borderRadius: '8px',
                               zIndex: isExpanded ? 10 : 1,
-                              border: '1px solid #ddd'
+                              border: '1px solid var(--color-accent)' // Color changed
                             }}
                             onClick={() => setExpandedBooks(prev => ({ ...prev, [book.id]: !prev[book.id] }))}
                           >
                             {/* Bal oldal / Zárt állapot */}
                             <div style={{
-                              width: '280px', // A bal oldal mindig pontosan 280px széles
-                              minWidth: '280px',
+                              width: '280px', // STRICTLY KEPT
+                              minWidth: '280px', // STRICTLY KEPT
                               display: 'flex',
                               flexDirection: 'column',
-                              borderRight: '1px solid #eee',
+                              borderRight: '1px solid var(--color-accent)', // Color changed
                             }}>
                               <div className="book-header" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: isExpanded ? '8px' : '0' }}>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', flexWrap: 'wrap' }}>
@@ -247,7 +260,7 @@ export function MyLists({ user }: MyListsProps) {
 
                               {isExpanded && (
                                 <>
-                                  <div className="book-cover" style={{ marginTop: '8px', height: '280px' }}>
+                                  <div className="book-cover" style={{ position: 'relative', marginTop: '8px', height: '280px', border: '3px solid var(--color-primary)', borderRadius: '6px', margin: '0 12px 12px', overflow: 'hidden', display: 'block' }}>
                                     {book.coverUrl ? (
                                       <img
                                         src={book.coverUrl}
@@ -258,11 +271,12 @@ export function MyLists({ user }: MyListsProps) {
                                           (e.target as HTMLImageElement).style.display = 'none';
                                           (e.target as HTMLImageElement).parentElement!.querySelector('.cover-placeholder')!.classList.remove('hidden-placeholder');
                                         }}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 10 }}
                                       />
                                     ) : null}
-                                    <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>📖</div>
+                                    <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`} style={{ position: 'absolute', top: 0, left: 0, fontSize: '3rem', width: '100%', height: '100%', background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>📖</div>
                                   </div>
-                                  <div className="book-info" style={{ padding: '12px 16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '8px' }}>
+                                  <div className="book-info" style={{ padding: '0 16px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '8px' }}>
                                     <div className="book-rating-section" style={{ background: '#f8fafc', padding: '8px', borderRadius: '6px', border: '1px solid #eee' }}>
                                       <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>
                                         Saját értékelésed
@@ -275,7 +289,6 @@ export function MyLists({ user }: MyListsProps) {
                                         />
                                       </div>
                                     </div>
-                                    <span className="book-number" style={{ fontSize: '12px', textAlign: 'right', marginTop: 'auto', color: '#94a3b8' }}>#{book.sequenceNumber}</span>
                                   </div>
                                   <div className="book-card-actions" style={{ padding: '12px 16px 14px 16px', borderTop: '1px solid #eee', background: '#fafbff', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     <button
@@ -307,12 +320,12 @@ export function MyLists({ user }: MyListsProps) {
                             {/* Jobb oldal: Teljesítmény (progress) sáv és jövőbeli funkciók */}
                             <div style={{
                               flex: 1,
-                              background: '#f8fafc',
-                              padding: '20px 24px',
+                              background: 'var(--color-bg)',
+                              padding: '24px',
                               display: 'flex',
                               flexDirection: 'column',
-                              borderTopRightRadius: '10px',
-                              borderBottomRightRadius: '10px'
+                              borderTopRightRadius: '8px',
+                              borderBottomRightRadius: '8px'
                             }}>
                               <div className="progress-section" style={{ width: '100%' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -339,14 +352,14 @@ export function MyLists({ user }: MyListsProps) {
                                   }}></div>
                                 </div>
                                 <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '10px', margin: '10px 0 0 0', fontStyle: 'italic' }}>
-                                  Kezd el!
+                                  Kezdd el!
                                 </p>
                               </div>
 
                               {/* Lenyitott állapot esetén megjelenő extra funkciók */}
                               {isExpanded && (
                                 <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '24px', flex: 1 }}>
-                                  
+
                                   {/* Achievements (Eredmények) rész */}
                                   <div className="achievements-section">
                                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', display: 'block' }}>
@@ -363,8 +376,8 @@ export function MyLists({ user }: MyListsProps) {
                                       <span style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                         Backseat
                                       </span>
-                                      <button 
-                                        className="btn btn-primary" 
+                                      <button
+                                        className="btn btn-primary"
                                         style={{ padding: '6px 16px', fontSize: '12px', background: 'var(--color-secondary)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
                                         onClick={(e) => {
                                           e.stopPropagation();

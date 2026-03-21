@@ -1,8 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import type { User, Book } from '../services/api';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import type { User } from '../services/api';
 import { BooksService, RatingsService } from '../services/api';
-import { StarRating } from '../components/StarRating';
+import { BookCard } from '../components/BookCard';
+import type { BookWithRating } from '../components/BookCard';
 import { AddToListModal } from '../components/AddToListModal';
 import { getListsForUser, createListForUser, addBookToList } from '../services/lists';
 import type { BookList } from '../services/lists';
@@ -12,16 +14,13 @@ interface HomeProps {
   searchQuery?: string;
 }
 
-interface BookWithRating extends Book {
-  averageRating?: number;
-  totalRatings?: number;
-}
-
 export function Home({ user, searchQuery = '' }: HomeProps) {
-  const navigate = useNavigate();
   const [books, setBooks] = useState<BookWithRating[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Összes');
+  const [selectedMode, setSelectedMode] = useState<string>('Összes');
+  const [isModesOpen, setIsModesOpen] = useState<boolean>(false);
   const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
@@ -114,7 +113,17 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       .replace(/[\u0300-\u036f]/g, '');
 
   const normalizedQuery = normalizeForSearch(searchQuery.trim());
+  
+  const categories = ['Összes', ...Array.from(new Set(books.map(b => b.genre).filter(Boolean)))];
+  const modes = ['Összes', ...Array.from(new Set(books.map(b => b.literaryForm).filter(Boolean)))];
+
   const filteredBooks = books.filter((book) => {
+    const categoryMatch = selectedCategory === 'Összes' || book.genre === selectedCategory;
+    if (!categoryMatch) return false;
+
+    const modeMatch = selectedMode === 'Összes' || book.literaryForm === selectedMode;
+    if (!modeMatch) return false;
+
     if (!normalizedQuery) return true;
 
     return [book.title, book.author, book.genre, book.literaryForm]
@@ -148,7 +157,91 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   // Ha bejelentkezve van, mutasd a könyveket
   return (
     <div className="home-authenticated">
-      <h1>Játékok</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #cbd5e1' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 800, color: 'var(--color-primary)', marginRight: '8px', fontSize: '18px' }}>Játékok:</span>
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '9999px',
+                  border: selectedCategory === cat ? '1.5px solid transparent' : '1.5px solid #cbd5e1',
+                  background: selectedCategory === cat ? 'var(--color-primary)' : '#fff',
+                  color: selectedCategory === cat ? '#fff' : '#27374D',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <Link to="/devlogs" className="devlogs-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Dev Logs
+          </Link>
+        </div>
+
+        {/* Coded toggle arrow under the row */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-1px' }}>
+           <button
+             onClick={() => setIsModesOpen(!isModesOpen)}
+             title="Módok szűrése"
+             style={{
+               background: '#fff',
+               border: '1px solid #cbd5e1',
+               borderTop: '1px solid #fff',
+               padding: '2px 14px',
+               borderBottomLeftRadius: '12px',
+               borderBottomRightRadius: '12px',
+               cursor: 'pointer',
+               color: 'var(--color-secondary)',
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+             }}
+           >
+             {isModesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+           </button>
+        </div>
+        
+        {/* Lenyíló rész */}
+        <div style={{
+           display: 'grid',
+           gridTemplateRows: isModesOpen ? '1fr' : '0fr',
+           transition: 'grid-template-rows 0.3s ease',
+        }}>
+           <div style={{ overflow: 'hidden' }}>
+             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', paddingTop: '12px', paddingBottom: '8px' }}>
+               <span style={{ fontWeight: 700, color: 'var(--color-secondary)', marginRight: '8px', fontSize: '14px' }}>Mód:</span>
+               {modes.map(mode => (
+                 <button
+                   key={mode}
+                   onClick={() => setSelectedMode(mode)}
+                   style={{
+                     padding: '4px 12px',
+                     borderRadius: '9999px',
+                     border: selectedMode === mode ? '1.5px solid transparent' : '1.5px solid #e2e8f0',
+                     background: selectedMode === mode ? 'var(--color-secondary)' : '#f8fafc',
+                     color: selectedMode === mode ? '#fff' : '#475569',
+                     fontWeight: 600,
+                     fontSize: '12px',
+                     cursor: 'pointer',
+                     transition: 'all 0.2s'
+                   }}
+                 >
+                   {mode}
+                 </button>
+               ))}
+             </div>
+           </div>
+        </div>
+      </div>
 
       {error && <div className="error-message">{error}</div>}
 
@@ -161,87 +254,14 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       ) : (
         <div className="books-grid">
           {filteredBooks.map((book) => (
-            <div
+            <BookCard
               key={book.id}
-              className="book-card"
-              style={{ position: 'relative' }}
+              book={book}
+              isHovered={hoveredBookId === book.id}
               onMouseEnter={() => setHoveredBookId(book.id)}
               onMouseLeave={() => setHoveredBookId(null)}
-              onClick={() => navigate(`/books/${book.id}`)}
-            >
-              {hoveredBookId === book.id ? (
-                <div className="book-hover-preview">
-                  <div className="book-hover-block">
-                    <div className="book-hover-title">Leiras</div>
-                    <div className="book-hover-text">
-                      {book.lyricNote?.trim() || 'Itt jelenik meg a konyv rovid leirasa.'}
-                    </div>
-                  </div>
-                  <div className="book-hover-block">
-                    <div className="book-hover-title">Video</div>
-                    <div className="book-hover-text">
-                      Fenntartott hely: ide kerulhet elozetes vagy ajanlo video.
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="book-header" style={{ padding: '12px 16px 0', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', flexWrap: 'wrap' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#222' }}>{book.title}</h3>
-                      <p style={{ fontSize: '12px', color: '#666', margin: 0, fontStyle: 'italic' }}>-</p>
-                      <p style={{ fontSize: '12px', color: '#666', margin: 0, fontStyle: 'italic' }}>{book.author}</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <span className="badge">{book.literaryForm}</span>
-                      <span className="badge badge-genre">{book.genre}</span>
-                    </div>
-                  </div>
-                  <div className="book-cover" style={{ marginTop: '8px' }}>
-                    {book.coverUrl ? (
-                      <img
-                        src={book.coverUrl}
-                        alt={book.title}
-                        className="cover-image"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).parentElement!.querySelector('.cover-placeholder')!.classList.remove('hidden-placeholder');
-                        }}
-                      />
-                    ) : null}
-                    <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>📖</div>
-                  </div>
-                  <div className="book-info">
-                    {/* Átlagos értékelés megjelenítése */}
-                    <div className="book-rating-section" style={{ marginBottom: '12px' }}>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>
-                        Átlagos értékelés:
-                      </div>
-                      <StarRating
-                        rating={book.averageRating || 0}
-                        totalRatings={book.totalRatings || 0}
-                        readonly
-                        size="small"
-                      />
-                    </div>
-
-                    <span className="book-number">#{book.sequenceNumber}</span>
-                  </div>
-                </>
-              )}
-              <div className="book-card-actions">
-                <button
-                  className="btn btn-addlist"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenAddList(book);
-                  }}
-                >
-                  Listához adás
-                </button>
-              </div>
-            </div>
+              onOpenAddList={handleOpenAddList}
+            />
           ))}
         </div>
       )}
