@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UsersService } from '../services/api';
 import type { User } from '../services/api';
-import { ArrowLeft, User as UserIcon, Edit2, Trash2, Check, X, Shield, RefreshCw, UserPlus, UserCog } from 'lucide-react';
+import { ArrowLeft, User as UserIcon, Edit2, Trash2, Check, X, Shield, RefreshCw, UserPlus, UserCog, Code } from 'lucide-react';
 
 interface AdminProps {
   user: User | null;
@@ -17,12 +17,12 @@ export function AdminUsers({ user }: AdminProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newUsername, setNewUsername] = useState('');
   const [newEmail, setNewEmail] = useState('');
-  const [newRole, setNewRole] = useState<'USER' | 'ADMIN'>('USER');
+  const [newRole, setNewRole] = useState<'USER' | 'ADMIN' | 'DEVELOPER'>('USER');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createUsername, setCreateUsername] = useState('');
   const [createEmail, setCreateEmail] = useState('');
   const [createPassword, setCreatePassword] = useState('');
-  const [createRole, setCreateRole] = useState<'USER' | 'ADMIN'>('USER');
+  const [createRole, setCreateRole] = useState<'USER' | 'ADMIN' | 'DEVELOPER'>('USER');
 
   const usersService = new UsersService();
 
@@ -166,9 +166,10 @@ export function AdminUsers({ user }: AdminProps) {
                 </div>
                 <div className="form-field">
                   <label>Szerepkör</label>
-                  <select value={createRole} onChange={(e) => setCreateRole(e.target.value as 'USER' | 'ADMIN')}>
+                  <select value={createRole} onChange={(e) => setCreateRole(e.target.value as 'USER' | 'ADMIN' | 'DEVELOPER')}>
                     <option value="USER">Felhasználó</option>
                     <option value="ADMIN">Adminisztrátor</option>
+                    <option value="DEVELOPER">Fejlesztő</option>
                   </select>
                 </div>
                 <button type="submit" className="nav-pill nav-pill-primary" style={{ height: '42px' }}>Hozzáadás</button>
@@ -214,14 +215,15 @@ export function AdminUsers({ user }: AdminProps) {
 
                     <td style={{ padding: '16px' }}>
                       {editingId === u.id ? (
-                        <select value={newRole} onChange={(e) => setNewRole(e.target.value as 'USER' | 'ADMIN')} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff' }}>
+                        <select value={newRole} onChange={(e) => setNewRole(e.target.value as 'USER' | 'ADMIN' | 'DEVELOPER')} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff' }}>
                           <option value="USER">Felhasználó</option>
                           <option value="ADMIN">Admin</option>
+                          <option value="DEVELOPER">Fejlesztő</option>
                         </select>
                       ) : (
-                        <span className={`role-badge ${u.role === 'ADMIN' ? 'role-badge-admin' : 'role-badge-user'}`}>
-                          {u.role === 'ADMIN' ? <Shield size={14} /> : <UserIcon size={14} />}
-                          {u.role === 'ADMIN' ? 'Adminisztrátor' : 'Felhasználó'}
+                        <span className={`role-badge ${u.role === 'ADMIN' ? 'role-badge-admin' : u.role === 'DEVELOPER' ? 'role-badge-admin' : 'role-badge-user'}`}>
+                          {u.role === 'ADMIN' ? <Shield size={14} /> : u.role === 'DEVELOPER' ? <Code size={14} /> : <UserIcon size={14} />}
+                          {u.role === 'ADMIN' ? 'Adminisztrátor' : u.role === 'DEVELOPER' ? 'Fejlesztő' : 'Felhasználó'}
                         </span>
                       )}
                     </td>
