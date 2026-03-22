@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { BookBack } from '../components/BookBack';
 import { StarRating } from '../components/StarRating';
-import type { User, Book, Comment } from '../services/api';
-import { BooksService, RatingsService, CommentsService } from '../services/api';
+import type { User, Book, Comment, SteamAchievement, SteamAchievementsResponse } from '../services/api';
+import { BooksService, RatingsService, CommentsService, SteamService } from '../services/api';
 
 interface BookDetailsProps {
   user?: User | null;
@@ -18,6 +18,7 @@ export function BookDetails({ user }: BookDetailsProps) {
   const { bookId } = useParams();
   const [book, setBook] = useState<BookWithRating | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [steamData, setSteamData] = useState<SteamAchievementsResponse | null>(null);
   const [newComment, setNewComment] = useState('');
   const [savingComment, setSavingComment] = useState(false);
   const [pendingRating, setPendingRating] = useState(0);
@@ -27,24 +28,26 @@ export function BookDetails({ user }: BookDetailsProps) {
   const booksService = new BooksService();
   const ratingsService = new RatingsService();
   const commentsService = new CommentsService();
+  const steamService = new SteamService();
 
   useEffect(() => {
     const loadBookDetails = async () => {
       if (!bookId) {
-        setError('Hiányzó könyv azonosító');
+        setError('Hiányzó könyv/játék azonosító');
         setLoading(false);
         return;
       }
 
       const parsedBookId = Number(bookId);
       if (Number.isNaN(parsedBookId)) {
-        setError('Érvénytelen könyv azonosító');
+        setError('Érvénytelen könyv/játék azonosító');
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
+        // Párhuzamosan betöltjük az alapadatokat
         const [bookData, ratingData, commentsData, userRatings] = await Promise.all([
           booksService.getBook(parsedBookId),
           ratingsService.getBookRating(parsedBookId),
@@ -57,12 +60,26 @@ export function BookDetails({ user }: BookDetailsProps) {
           averageRating: ratingData.averageRating || 0,
           totalRatings: ratingData.totalRatings || 0,
         });
+
         const ownRating = userRatings.find((rating) => rating.bookId === parsedBookId)?.rating || 0;
         setPendingRating(ownRating);
         setComments(commentsData);
         setError('');
+
+        // Külön töltjük a Steam adatokat, hogy ne akassza meg a fő adatokat, ha nincs a játékosnak
+        if (user) {
+           steamService.getGameAchievements(parsedBookId)
+             .then(data => {
+                if (data.achievements && data.achievements.length > 0) {
+                   setSteamData(data);
+                }
+             })
+             .catch(() => {
+                // Ha besül a steam (nincs a fiókján ez a játék vagy nincs auth-olva, süketül elnyeljük)
+             });
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Könyv részleteinek lekérése sikertelen');
+        setError(err instanceof Error ? err.message : 'Játék részleteinek lekérése sikertelen');
       } finally {
         setLoading(false);
       }
@@ -125,13 +142,12 @@ export function BookDetails({ user }: BookDetailsProps) {
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Komment torlese sikertelen');
+      setError(err instanceof Error ? err.message : 'Komment törlése sikertelen');
     }
   };
 
   const handleReportComment = async (_commentId: number) => {
-    // Backend endpoint hijan itt csak UI visszajelzest adunk.
-    alert('Komment jelentve. Koszonjuk a visszajelzest.');
+    alert('Komment jelentve. Köszönjük a visszajelzést.');
   };
 
   if (!user) {
@@ -145,11 +161,11 @@ export function BookDetails({ user }: BookDetailsProps) {
       </div>
 
       {loading ? (
-        <div className="loading">Könyv betöltése...</div>
+        <div className="loading">Játék betöltése...</div>
       ) : error ? (
         <div className="error-message">{error}</div>
       ) : !book ? (
-        <div className="no-books">A könyv nem található.</div>
+        <div className="no-books">A játék nem található.</div>
       ) : (
         <div className="book-details-card">
           <div className="book-details-cover-wrap">
@@ -168,11 +184,12 @@ export function BookDetails({ user }: BookDetailsProps) {
                   }}
                 />
               ) : null}
-              <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>📖</div>
+              <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>🎮</div>
             </div>
-            <div className="book-details-feedback-box">
+
+            <div className="book-details-feedback-box" style={{ marginTop: '1rem' }}>
               <div style={{ fontSize: '13px', color: '#667085', marginBottom: '6px' }}>
-                {pendingRating ? 'Az értékelésed:' : 'Értékeld a könyvet:'}
+                {pendingRating ? 'Az értékelésed:' : 'Értékeld a játékot:'}
               </div>
               <StarRating
                 rating={pendingRating}
@@ -180,12 +197,12 @@ export function BookDetails({ user }: BookDetailsProps) {
                 size="medium"
               />
               <div className="book-details-feedback-divider" />
-              <div className="book-details-comment-title">Irj kommentet</div>
+              <div className="book-details-comment-title">Írj kommentet</div>
               <textarea
                 className="book-details-comment-input"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Mit gondolsz errol a konyvrol?"
+                placeholder="Mit gondolsz erről a játékról?"
                 rows={4}
               />
               <button

@@ -405,3 +405,35 @@ export class RatingsService {
     return response.json();
   }
 }
+
+export interface SteamAchievement {
+  apiName: string;
+  name: string;
+  description: string;
+  icon: string;
+  achieved: number;
+  unlockTime: number;
+}
+
+export interface SteamAchievementsResponse {
+  gameName: string;
+  achievements: SteamAchievement[];
+}
+
+export class SteamService {
+  async getGameAchievements(bookId: number): Promise<SteamAchievementsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/steam/achievementsByBook/${bookId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Steam achievementek lekérése sikertelen');
+    }
+
+    return response.json();
+  }
+}

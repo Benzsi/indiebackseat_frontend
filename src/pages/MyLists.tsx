@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import type { User } from '../services/api';
+import type { User, SteamAchievementsResponse } from '../services/api';
 import { getListsForUser, removeList, removeBookFromList, createListForUser, type BookList } from '../services/lists';
-import { RatingsService } from '../services/api';
+import { RatingsService, SteamService } from '../services/api';
 import { StarRating } from '../components/StarRating';
 import { Library, Plus, Trash2, ChevronDown, ChevronUp, FolderPlus } from 'lucide-react';
 
@@ -21,7 +21,21 @@ export function MyLists({ user }: MyListsProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [expandedBooks, setExpandedBooks] = useState<Record<number, boolean>>({});
   const [userRatings, setUserRatings] = useState<Record<number, number>>({});
+  const [bookAchievements, setBookAchievements] = useState<Record<number, SteamAchievementsResponse | 'loading' | 'none'>>(() => {
+    // Mentettük az eddig lekérteket, így oldalfrissítés után se küld felesleges API kérést a backendnek
+    if (!user) return {};
+    const cached = localStorage.getItem(`steam_ach_${user.id}`);
+    if (cached) {
+       try { return JSON.parse(cached); } catch { return {}; }
+    }
+    return {};
+  });
 
+  useEffect(() => {
+    if (user && Object.keys(bookAchievements).length > 0) {
+      localStorage.setItem(`steam_ach_${user.id}`, JSON.stringify(bookAchievements));
+    }
+  }, [bookAchievements, user]);
   useEffect(() => {
     if (user) {
       fetchLists();
@@ -31,6 +45,36 @@ export function MyLists({ user }: MyListsProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Automatikusan lekéri egy adott lista összes játékának achievementjét, amikor lenyitják a listát
+  useEffect(() => {
+    if (!openListId || !lists.length) return;
+    
+    const activeList = lists.find(l => l.id === openListId);
+    if (!activeList || !activeList.items) return;
+
+    const steamSvc = new SteamService();
+    activeList.items.forEach((item: any) => {
+      const book = item.book;
+      if (!book) return;
+
+      // Ha még se nem töltöttük le, se nem vagyunk épp letöltés alatt
+      if (!bookAchievements[book.id]) {
+        setBookAchievements(prev => ({ ...prev, [book.id]: 'loading' }));
+        
+        steamSvc.getGameAchievements(book.id)
+          .then(data => {
+            if (data.achievements && data.achievements.length > 0) {
+              setBookAchievements(prev => ({ ...prev, [book.id]: data }));
+            } else {
+              setBookAchievements(prev => ({ ...prev, [book.id]: 'none' }));
+            }
+          })
+          .catch(() => setBookAchievements(prev => ({ ...prev, [book.id]: 'none' })));
+      }
+    });
+
+  }, [openListId, lists]); // Szándékosan nem tettem be a bookAchievements-t a deps-be, különben végtelen ciklus is lehetne
 
   const fetchUserRatings = async () => {
     if (!user) return;
@@ -236,7 +280,10 @@ export function MyLists({ user }: MyListsProps) {
                               zIndex: isExpanded ? 10 : 1,
                               border: '1px solid var(--color-accent)' // Color changed
                             }}
-                            onClick={() => setExpandedBooks(prev => ({ ...prev, [book.id]: !prev[book.id] }))}
+                            onClick={() => {
+                              const nowExpanded = !expandedBooks[book.id];
+                              setExpandedBooks(prev => ({ ...prev, [book.id]: nowExpanded }));
+                            }}
                           >
                             {/* Bal oldal / Zárt állapot */}
                             <div style={{
@@ -328,32 +375,37 @@ export function MyLists({ user }: MyListsProps) {
                               borderBottomRightRadius: '8px'
                             }}>
                               <div className="progress-section" style={{ width: '100%' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Haladás
-                                  </span>
-                                  <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)' }}>
-                                    0%
-                                  </span>
-                                </div>
-                                <div style={{
-                                  width: '100%',
-                                  height: '8px',
-                                  background: '#e2e8f0',
-                                  borderRadius: '4px',
-                                  overflow: 'hidden'
-                                }}>
-                                  <div style={{
-                                    width: '0%', /* Itt lesz a dinamikus százalék */
-                                    height: '100%',
-                                    background: 'linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
-                                    borderRadius: '4px',
-                                    transition: 'width 0.3s ease'
-                                  }}></div>
-                                </div>
-                                <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '10px', margin: '10px 0 0 0', fontStyle: 'italic' }}>
-                                  Kezdd el!
-                                </p>
+                                {(() => {
+                                  const ach = bookAchievements[book.id];
+                                  const achData = (ach && ach !== 'loading' && ach !== 'none') ? ach as SteamAchievementsResponse : null;
+                                  const achievedCount = achData ? achData.achievements.filter(a => a.achieved === 1).length : 0;
+                                  const totalCount = achData ? achData.achievements.length : 0;
+                                  const pct = totalCount > 0 ? Math.round((achievedCount / totalCount) * 100) : 0;
+                                  return (
+                                    <>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                          Haladás
+                                        </span>
+                                        <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)' }}>
+                                          {ach === 'loading' ? '...' : `${pct}%`}
+                                        </span>
+                                      </div>
+                                      <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                                        <div style={{
+                                          width: ach === 'loading' ? '0%' : `${pct}%`,
+                                          height: '100%',
+                                          background: 'linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
+                                          borderRadius: '4px',
+                                          transition: 'width 0.5s ease'
+                                        }}></div>
+                                      </div>
+                                      <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '10px', margin: '10px 0 0 0', fontStyle: 'italic' }}>
+                                        {ach === 'loading' ? 'Adatok betöltése...' : achData ? `${achievedCount} / ${totalCount} achievement teljesítve` : 'Kezdd el!'}
+                                      </p>
+                                    </>
+                                  );
+                                })()}
                               </div>
 
                               {/* Lenyitott állapot esetén megjelenő extra funkciók */}
@@ -365,9 +417,57 @@ export function MyLists({ user }: MyListsProps) {
                                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', display: 'block' }}>
                                       Eredmények (Achievements)
                                     </span>
-                                    <div style={{ padding: '16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#94a3b8', fontSize: '13px', fontStyle: 'italic', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80px' }}>
-                                      Még nincsenek elért eredmények.
-                                    </div>
+                                    {bookAchievements[book.id] === 'loading' ? (
+                                      <div style={{ padding: '16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#94a3b8', fontSize: '13px', textAlign: 'center', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        ⏳ Steam adatok betöltése...
+                                      </div>
+                                    ) : bookAchievements[book.id] === 'none' || !bookAchievements[book.id] ? (
+                                      <div style={{ padding: '16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#94a3b8', fontSize: '13px', fontStyle: 'italic', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80px' }}>
+                                        Ehhez a játékhoz nincs Steam achievement adat.
+                                      </div>
+                                    ) : (() => {
+                                      const achData = bookAchievements[book.id] as SteamAchievementsResponse;
+                                      const achieved = achData.achievements.filter(a => a.achieved === 1);
+                                      const notAchieved = achData.achievements.filter(a => a.achieved !== 1);
+                                      return (
+                                        <div>
+                                          {/* Megvan */}
+                                          {achieved.length > 0 && (
+                                            <div style={{ marginBottom: '12px' }}>
+                                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#4caf50', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✓ Megvan ({achieved.length})</div>
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+                                                {achieved.map(ach => (
+                                                  <div key={ach.apiName} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px' }}>
+                                                    <img src={ach.icon} alt={ach.name} style={{ width: '36px', height: '36px', borderRadius: '4px', flexShrink: 0 }} referrerPolicy="no-referrer" />
+                                                    <div>
+                                                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>{ach.name}</div>
+                                                      {ach.description && <div style={{ fontSize: '11px', color: '#4ade80' }}>{ach.description}</div>}
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                          {/* Nincs meg */}
+                                          {notAchieved.length > 0 && (
+                                            <div>
+                                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✗ Hiányzik ({notAchieved.length})</div>
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+                                                {notAchieved.map(ach => (
+                                                  <div key={ach.apiName} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', opacity: 0.6 }}>
+                                                    <img src={ach.icon} alt={ach.name} style={{ width: '36px', height: '36px', borderRadius: '4px', flexShrink: 0, filter: 'grayscale(1)' }} referrerPolicy="no-referrer" />
+                                                    <div>
+                                                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>{ach.name}</div>
+                                                      {ach.description && <div style={{ fontSize: '11px', color: '#94a3b8' }}>{ach.description}</div>}
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
                                   </div>
 
                                   {/* Backseat rész feltöltés gombbal */}
