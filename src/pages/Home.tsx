@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Filter, Star, RotateCcw } from 'lucide-react';
 import type { User } from '../services/api';
 import { BooksService, RatingsService } from '../services/api';
 import { BookCard } from '../components/BookCard';
@@ -20,7 +20,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Összes');
   const [selectedMode, setSelectedMode] = useState<string>('Összes');
-  const [isModesOpen, setIsModesOpen] = useState<boolean>(false);
+  const [selectedRating, setSelectedRating] = useState<string>('');
   const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
@@ -113,9 +113,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       .replace(/[\u0300-\u036f]/g, '');
 
   const normalizedQuery = normalizeForSearch(searchQuery.trim());
-  
-  const categories = ['Összes', ...Array.from(new Set(books.map(b => b.genre).filter(Boolean)))];
-  const modes = ['Összes', ...Array.from(new Set(books.map(b => b.literaryForm).filter(Boolean)))];
 
   const filteredBooks = books.filter((book) => {
     const categoryMatch = selectedCategory === 'Összes' || book.genre === selectedCategory;
@@ -123,6 +120,14 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
 
     const modeMatch = selectedMode === 'Összes' || book.literaryForm === selectedMode;
     if (!modeMatch) return false;
+
+    if (selectedRating !== '') {
+      const avg = book.averageRating || 0;
+      if (selectedRating === '4-5' && (avg < 4 || avg > 5)) return false;
+      if (selectedRating === '3-4' && (avg < 3 || avg >= 4)) return false;
+      if (selectedRating === '2-3' && (avg < 2 || avg >= 3)) return false;
+      if (selectedRating === '1-2' && (avg < 1 || avg >= 2)) return false;
+    }
 
     if (!normalizedQuery) return true;
 
@@ -158,88 +163,105 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   return (
     <div className="home-authenticated">
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px', position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #cbd5e1' }}>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: 800, color: 'var(--color-primary)', marginRight: '8px', fontSize: '18px' }}>Játékok:</span>
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  border: selectedCategory === cat ? '1.5px solid transparent' : '1.5px solid #cbd5e1',
-                  background: selectedCategory === cat ? 'var(--color-primary)' : '#fff',
-                  color: selectedCategory === cat ? '#fff' : '#27374D',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <Link to="/devlogs" className="devlogs-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            Dev Logs
-          </Link>
-        </div>
-
-        {/* Coded toggle arrow under the row */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-1px' }}>
-           <button
-             onClick={() => setIsModesOpen(!isModesOpen)}
-             title="Módok szűrése"
-             style={{
-               background: '#fff',
-               border: '1px solid #cbd5e1',
-               borderTop: '1px solid #fff',
-               padding: '2px 14px',
-               borderBottomLeftRadius: '12px',
-               borderBottomRightRadius: '12px',
-               cursor: 'pointer',
-               color: 'var(--color-secondary)',
-               display: 'flex',
-               alignItems: 'center',
-               justifyContent: 'center',
-             }}
-           >
-             {isModesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-           </button>
-        </div>
-        
-        {/* Lenyíló rész */}
-        <div style={{
-           display: 'grid',
-           gridTemplateRows: isModesOpen ? '1fr' : '0fr',
-           transition: 'grid-template-rows 0.3s ease',
+        {/* Szűrők + Reset + DevLogs egy sorban */}
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '16px', 
+          alignItems: 'flex-end', 
+          justifyContent: 'space-between',
+          background: '#f8fafc',
+          padding: '16px',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          marginBottom: '24px'
         }}>
-           <div style={{ overflow: 'hidden' }}>
-             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', paddingTop: '12px', paddingBottom: '8px' }}>
-               <span style={{ fontWeight: 700, color: 'var(--color-secondary)', marginRight: '8px', fontSize: '14px' }}>Mód:</span>
-               {modes.map(mode => (
-                 <button
-                   key={mode}
-                   onClick={() => setSelectedMode(mode)}
-                   style={{
-                     padding: '4px 12px',
-                     borderRadius: '9999px',
-                     border: selectedMode === mode ? '1.5px solid transparent' : '1.5px solid #e2e8f0',
-                     background: selectedMode === mode ? 'var(--color-secondary)' : '#f8fafc',
-                     color: selectedMode === mode ? '#fff' : '#475569',
-                     fontWeight: 600,
-                     fontSize: '12px',
-                     cursor: 'pointer',
-                     transition: 'all 0.2s'
-                   }}
-                 >
-                   {mode}
-                 </button>
-               ))}
-             </div>
-           </div>
+          
+          {/* Bal oldal: Szűrők (Rugalmasan kitöltik a helyet) */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', flex: '1 1 auto' }}>
+            
+            {/* Műfaj Szűrő */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 180px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                <Filter size={14} /> Játékok
+              </label>
+              <select 
+                value={selectedCategory} 
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', color: '#1e293b', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s', width: '100%' }}
+              >
+                <option value="Összes">Összes</option>
+                <option value="ADVENTURE">ADVENTURE</option>
+                <option value="SANDBOX">SANDBOX</option>
+                <option value="PLATFORMER">PLATFORMER</option>
+                <option value="PUZZLE">PUZZLE</option>
+                <option value="ACTION">ACTION</option>
+                <option value="RPG">RPG</option>
+                <option value="HORROR">HORROR</option>
+                <option value="Dev Logs">Dev Logs</option>
+              </select>
+            </div>
+
+            {/* Mód Szűrő */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 180px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                <Filter size={14} /> Mód
+              </label>
+              <select 
+                value={selectedMode} 
+                onChange={(e) => setSelectedMode(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', color: '#1e293b', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s', width: '100%' }}
+              >
+                <option value="Összes">Összes</option>
+                <option value="SINGLE_PLAYER">SINGLE_PLAYER</option>
+                <option value="CO_OP">CO_OP</option>
+                <option value="MULTIPLAYER">MULTIPLAYER</option>
+              </select>
+            </div>
+
+            {/* Értékelés Szűrő */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 180px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                <Star size={14} style={{ color: '#f59e0b' }} /> Csillagok alapján
+              </label>
+              <select 
+                value={selectedRating} 
+                onChange={(e) => setSelectedRating(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', color: '#1e293b', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s', width: '100%' }}
+              >
+                <option value="">Bármilyen értékelés</option>
+                <option value="4-5">4 - 5 csillag</option>
+                <option value="3-4">3 - 4 csillag</option>
+                <option value="2-3">2 - 3 csillag</option>
+                <option value="1-2">1 - 2 csillag</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Jobb oldal: Gombok (Reset + DevLogs) */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0, height: '40px' }}>
+            {/* Reset / Alaphelyzet Gomb */}
+            <button 
+              onClick={() => { setSelectedCategory('Összes'); setSelectedMode('Összes'); setSelectedRating(''); }}
+              style={{ 
+                height: '100%', padding: '0 16px', background: '#e2e8f0', color: '#475569', border: 'none', 
+                borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s',
+                opacity: (selectedCategory !== 'Összes' || selectedMode !== 'Összes' || selectedRating !== '') ? 1 : 0.5,
+                pointerEvents: (selectedCategory !== 'Összes' || selectedMode !== 'Összes' || selectedRating !== '') ? 'auto' : 'none'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#cbd5e1'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#e2e8f0'}
+            >
+              <RotateCcw size={14} /> Alaphelyzet
+            </button>
+
+            {/* Dev Logs Gomb */}
+            <Link to="/devlogs" className="devlogs-btn" style={{ height: '100%', margin: 0, display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+              Dev Logs
+            </Link>
+          </div>
         </div>
       </div>
 

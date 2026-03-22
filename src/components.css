@@ -503,3 +503,32 @@ input[type="radio"] {
     color: var(--color-secondary);
     margin-bottom: 0;
 }
+
+/* ── Játék kártya görgethető cím (Smart Marquee) ── */
+.card-title-container {
+    container-type: inline-size;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    /* Halványodik a széle, hogy látszódjon a hosszú szöveg vége */
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    display: flex;
+}
+
+.card-title-scroller {
+    display: inline-flex;
+    gap: 6px;
+    align-items: baseline;
+    width: max-content;
+    padding-right: 20%; /* biztonsági ráhagyás a görgetés végén */
+    transition: transform 0.3s;
+}
+
+/* A mozgás feltétele JavaScriptből (isHovered) érkezik az inline style-ban */
+
+/* Zseniális trükk helyett szélesebb körben támogatott CSS scroll */
+@keyframes scrollHover {
+    0%, 15% { transform: translateX(0); }
+    85%, 100% { transform: translateX(calc(180px - 100%)); }
+}
