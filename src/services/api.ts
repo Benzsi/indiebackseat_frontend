@@ -22,6 +22,7 @@ export interface User {
   username: string;
   email: string;
   role: 'USER' | 'ADMIN' | 'DEVELOPER';
+  steamId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,6 +91,23 @@ export class AuthService {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Regisztráció sikertelen');
+    }
+
+    return response.json();
+  }
+
+  async unlinkSteam(): Promise<{ message: string; user: User }> {
+    const response = await fetch(`${API_BASE_URL}/auth/steam`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Steam leválasztása sikertelen');
     }
 
     return response.json();
