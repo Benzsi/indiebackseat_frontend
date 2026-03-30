@@ -1408,7 +1408,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(39, 55, 77, 0.4);
   backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
@@ -1418,23 +1418,28 @@ body {
 }
 
 .dev-modal-content {
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: #fff;
+  border: 1px solid #cbd5e1;
   width: 100%;
   max-width: 500px;
   border-radius: 16px;
   padding: 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-  color: #fff;
+  box-shadow: 0 10px 40px rgba(39, 55, 77, 0.15);
+  color: var(--color-primary);
+}
+
+.dev-modal-content .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .dev-modal-content h2 {
-  margin-top: 0;
-  margin-bottom: 24px;
+  margin: 0;
   font-size: 1.5rem;
-  background: linear-gradient(to right, #fff, #999);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-primary);
+  font-weight: 800;
 }
 
 .dev-modal-content .form-group {
@@ -1444,8 +1449,9 @@ body {
 .dev-modal-content label {
   display: block;
   font-size: 13px;
-  color: #888;
+  color: var(--color-secondary);
   margin-bottom: 8px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1453,25 +1459,27 @@ body {
 .dev-modal-content input,
 .dev-modal-content textarea {
   width: 100%;
-  background: #252525;
-  border: 1px solid #333;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 12px;
-  color: #fff;
+  color: var(--color-primary);
   font-family: inherit;
   font-size: 14px;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .dev-modal-content input:focus,
 .dev-modal-content textarea:focus {
   outline: none;
-  border-color: #526D82;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(82, 109, 130, 0.15);
+  background: #fff;
 }
 
 .dev-modal-content .submit-btn {
   width: 100%;
-  background: linear-gradient(135deg, #27374D 0%, #526D82 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   border: none;
   padding: 14px;
@@ -1480,41 +1488,58 @@ body {
   font-size: 15px;
   cursor: pointer;
   margin-top: 10px;
-  transition: opacity 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .dev-modal-content .submit-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(39, 55, 77, 0.2);
 }
 
 .image-upload-placeholder {
-  border: 2px dashed #333;
+  border: 2px dashed #cbd5e1;
   border-radius: 10px;
   padding: 30px;
   text-align: center;
-  background: #202020;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.image-upload-placeholder:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
 }
 
 .upload-btn {
-  background: #333;
-  color: #fff;
-  border: none;
+  background: #fff;
+  color: var(--color-secondary);
+  border: 1.5px solid #cbd5e1;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   font-size: 13px;
+  transition: all 0.2s;
+}
+
+.upload-btn:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-primary);
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #666;
+  color: #94a3b8;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
 }
 
 .close-btn:hover {
-  color: #fff;
+  color: var(--color-primary);
 }
 
 .add-entry-section {

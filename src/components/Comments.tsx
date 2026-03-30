@@ -30,7 +30,7 @@ export function Comments({ bookId }: CommentsProps) {
   };
 
   if (loading) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Kommentek betöltése...</div>;
+    return <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Backseating betöltése...</div>;
   }
 
   if (error) {
@@ -38,7 +38,7 @@ export function Comments({ bookId }: CommentsProps) {
   }
 
   if (comments.length === 0) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Még nincs komment erre a könyvre.</div>;
+    return <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Még nincs backseat erre a játékra.</div>;
   }
 
   return (

@@ -25,7 +25,7 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: input }),
       });
-      
+
       const filters: FilterParams = await response.json();
       onFiltersExtracted(filters); // Átadjuk a szűrőket a főoldalnak
     } catch (err) {
@@ -46,7 +46,7 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
           placeholder="Pl: Keress nekem egy cozy játékot.."
           className="flex-1 p-2 border rounded"
         />
-        <button 
+        <button
           onClick={handleAISubmit}
           disabled={loading}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"

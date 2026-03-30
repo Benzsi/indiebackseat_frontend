@@ -68,15 +68,15 @@ export function BookDetails({ user }: BookDetailsProps) {
 
         // Külön töltjük a Steam adatokat, hogy ne akassza meg a fő adatokat, ha nincs a játékosnak
         if (user) {
-           steamService.getGameAchievements(parsedBookId)
-             .then(data => {
-                if (data.achievements && data.achievements.length > 0) {
-                   setSteamData(data);
-                }
-             })
-             .catch(() => {
-                // Ha besül a steam (nincs a fiókján ez a játék vagy nincs auth-olva, süketül elnyeljük)
-             });
+          steamService.getGameAchievements(parsedBookId)
+            .then(data => {
+              if (data.achievements && data.achievements.length > 0) {
+                setSteamData(data);
+              }
+            })
+            .catch(() => {
+              // Ha besül a steam (nincs a fiókján ez a játék vagy nincs auth-olva, süketül elnyeljük)
+            });
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Játék részleteinek lekérése sikertelen');
@@ -119,7 +119,7 @@ export function BookDetails({ user }: BookDetailsProps) {
       setNewComment('');
       setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Komment mentése sikertelen');
+      setError(err instanceof Error ? err.message : 'Backseat mentése sikertelen');
     } finally {
       setSavingComment(false);
     }
@@ -131,7 +131,7 @@ export function BookDetails({ user }: BookDetailsProps) {
       setComments((prev) => prev.map((c) => (c.id === commentId ? updated : c)));
       setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Komment szerkesztése sikertelen');
+      setError(err instanceof Error ? err.message : 'Backseat szerkesztése sikertelen');
     }
   };
 
@@ -142,12 +142,12 @@ export function BookDetails({ user }: BookDetailsProps) {
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Komment törlése sikertelen');
+      setError(err instanceof Error ? err.message : 'Backseat törlése sikertelen');
     }
   };
 
   const handleReportComment = async (_commentId: number) => {
-    alert('Komment jelentve. Köszönjük a visszajelzést.');
+    alert('Backseat jelentve. Köszönjük a visszajelzést.');
   };
 
   if (!user) {
@@ -197,7 +197,7 @@ export function BookDetails({ user }: BookDetailsProps) {
                 size="medium"
               />
               <div className="book-details-feedback-divider" />
-              <div className="book-details-comment-title">Írj kommentet</div>
+              <div className="book-details-comment-title">Start backseating</div>
               <textarea
                 className="book-details-comment-input"
                 value={newComment}

@@ -77,7 +77,7 @@ export function BookBack({
 
   const deleteComment = async (commentId: number) => {
     if (!onDeleteComment) return;
-    const confirmed = window.confirm('Biztosan torolni szeretned ezt a kommentet?');
+    const confirmed = window.confirm('Biztosan torolni szeretned ezt a backseatet?');
     if (!confirmed) return;
     try {
       setProcessingCommentId(commentId);
@@ -160,9 +160,9 @@ export function BookBack({
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <div style={{ fontWeight: 600, marginBottom: 8, fontSize: '14px' }}>Kommentek ({comments.length})</div>
+        <div style={{ fontWeight: 600, marginBottom: 8, fontSize: '14px' }}>Backseating ({comments.length})</div>
         {comments.length === 0 ? (
-          <div style={{ color: '#888', fontSize: 13 }}>Még nincs komment.</div>
+          <div style={{ color: '#888', fontSize: 13 }}>Még nincs backseating.</div>
         ) : (
           <div style={{
             overflow: 'auto',
