@@ -27,28 +27,18 @@ export function BookCard({ book, isHovered, onMouseEnter, onMouseLeave, onOpenAd
       onMouseLeave={onMouseLeave}
       onClick={() => navigate(`/books/${book.id}`)}
     >
-      {isHovered ? (
-        <div className="book-hover-preview">
-          <div className="book-hover-block">
-            <div className="book-hover-title">Leírás</div>
-            <div className="book-hover-text">
-              {book.lyricNote?.trim() || 'Itt jelenik meg a könyv rövid leírása.'}
-            </div>
-          </div>
-          <div className="book-hover-block">
-            <div className="book-hover-title">Videó</div>
-            <div className="book-hover-text">
-              Fenntartott hely: ide kerülhet előzetes vagy ajánló videó.
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="book-header" style={{ padding: '12px 16px 0', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', flexWrap: 'wrap' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#222' }}>{book.title}</h3>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0, fontStyle: 'italic' }}>-</p>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0, fontStyle: 'italic' }}>{book.author}</p>
+      <div className="book-header" style={{ padding: '12px 16px 0', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+            <div className="card-title-container" style={{ overflow: 'hidden' }}>
+              <div 
+                className="card-title-scroller" 
+                style={{ 
+                  animation: isHovered ? 'scrollHover 6s ease-in-out infinite alternate' : 'none',
+                  transform: 'translateX(0)' 
+                }}
+              >
+                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: '#1e293b' }}>{book.title}</h3>
+                <span style={{ fontSize: '13px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>- {book.author}</span>
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               <span className="badge">{book.literaryForm}</span>
@@ -84,8 +74,6 @@ export function BookCard({ book, isHovered, onMouseEnter, onMouseLeave, onOpenAd
               />
             </div>
           </div>
-        </>
-      )}
       <div className="book-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           className="btn btn-addlist"

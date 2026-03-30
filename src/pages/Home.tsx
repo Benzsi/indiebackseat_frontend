@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { SiDevbox } from "react-icons/si";
+import { ChevronDown, ChevronUp, Filter, Star, RotateCcw } from 'lucide-react';
 import type { User } from '../services/api';
 import { BooksService, RatingsService } from '../services/api';
 import { BookCard } from '../components/BookCard';
@@ -21,11 +20,16 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Összes');
   const [selectedMode, setSelectedMode] = useState<string>('Összes');
-  const [isModesOpen, setIsModesOpen] = useState<boolean>(false);
+  const [selectedRating, setSelectedRating] = useState<string>('');
   const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
   const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
+  const [isModesOpen, setIsModesOpen] = useState(false);
+
+  const categories = ['Összes', 'ADVENTURE', 'SANDBOX', 'PLATFORMER', 'PUZZLE', 'ACTION', 'RPG', 'HORROR'];
+  const modes = ['Összes', 'SINGLE_PLAYER', 'CO_OP', 'MULTIPLAYER'];
+
   const booksService = new BooksService();
   const ratingsService = new RatingsService();
 
@@ -47,7 +51,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     try {
       const data = await booksService.getAllBooks();
 
-      // Lekérjük az átlagos értékeléseket is
       const booksWithRatings = await Promise.all(
         data.map(async (book) => {
           try {
@@ -114,9 +117,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       .replace(/[\u0300-\u036f]/g, '');
 
   const normalizedQuery = normalizeForSearch(searchQuery.trim());
-  
-  const categories = ['Összes', ...Array.from(new Set(books.map(b => b.genre).filter(Boolean)))];
-  const modes = ['Összes', ...Array.from(new Set(books.map(b => b.literaryForm).filter(Boolean)))];
 
   const filteredBooks = books.filter((book) => {
     const categoryMatch = selectedCategory === 'Összes' || book.genre === selectedCategory;
@@ -124,6 +124,14 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
 
     const modeMatch = selectedMode === 'Összes' || book.literaryForm === selectedMode;
     if (!modeMatch) return false;
+
+    if (selectedRating !== '') {
+      const avg = book.averageRating || 0;
+      if (selectedRating === '4-5' && (avg < 4 || avg > 5)) return false;
+      if (selectedRating === '3-4' && (avg < 3 || avg >= 4)) return false;
+      if (selectedRating === '2-3' && (avg < 2 || avg >= 3)) return false;
+      if (selectedRating === '1-2' && (avg < 1 || avg >= 2)) return false;
+    }
 
     if (!normalizedQuery) return true;
 
@@ -134,7 +142,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       });
   });
 
-  // Ha nincs bejelentkezve, mutasd az üdvözlő képernyőt
   if (!user) {
     return (
       <div className="home">
@@ -155,7 +162,6 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
     );
   }
 
-  // Ha bejelentkezve van, mutasd a könyveket
   return (
     <div className="home-authenticated">
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px', position: 'relative' }}>
@@ -183,16 +189,15 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
             ))}
           </div>
           <Link to="/devlogs" className="devlogs-btn">
-            <SiDevbox size={15} />
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
             Dev Logs
           </Link>
         </div>
 
-        {/* Coded toggle arrow under the row */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-1px' }}>
            <button
              onClick={() => setIsModesOpen(!isModesOpen)}
-             title="Módok szűrése"
+             title="További szűrők"
              style={{
                background: '#fff',
                border: '1px solid #cbd5e1',
@@ -205,42 +210,79 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
                display: 'flex',
                alignItems: 'center',
                justifyContent: 'center',
+               zIndex: 10
              }}
            >
              {isModesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
            </button>
         </div>
         
-        {/* Lenyíló rész */}
         <div style={{
            display: 'grid',
            gridTemplateRows: isModesOpen ? '1fr' : '0fr',
            transition: 'grid-template-rows 0.3s ease',
+           overflow: 'hidden'
         }}>
-           <div style={{ overflow: 'hidden' }}>
-             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', paddingTop: '12px', paddingBottom: '8px' }}>
-               <span style={{ fontWeight: 700, color: 'var(--color-secondary)', marginRight: '8px', fontSize: '14px' }}>Mód:</span>
-               {modes.map(mode => (
-                 <button
-                   key={mode}
-                   onClick={() => setSelectedMode(mode)}
-                   style={{
-                     padding: '4px 12px',
-                     borderRadius: '9999px',
-                     border: selectedMode === mode ? '1.5px solid transparent' : '1.5px solid #e2e8f0',
-                     background: selectedMode === mode ? 'var(--color-secondary)' : '#f8fafc',
-                     color: selectedMode === mode ? '#fff' : '#475569',
-                     fontWeight: 600,
-                     fontSize: '12px',
-                     cursor: 'pointer',
-                     transition: 'all 0.2s'
-                   }}
-                 >
-                   {mode}
-                 </button>
-               ))}
-             </div>
-           </div>
+          <div style={{ minHeight: 0 }}>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '16px', 
+              alignItems: 'flex-end', 
+              background: '#f8fafc',
+              padding: '16px',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              marginTop: '12px',
+              marginBottom: '12px'
+            }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 180px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                  <Filter size={14} /> Mód
+                </label>
+                <select 
+                  value={selectedMode} 
+                  onChange={(e) => setSelectedMode(e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', color: '#1e293b', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s', width: '100%' }}
+                >
+                  {modes.map(mode => <option key={mode} value={mode}>{mode}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 180px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                  <Star size={14} style={{ color: '#f59e0b' }} /> Csillagok alapján
+                </label>
+                <select 
+                  value={selectedRating} 
+                  onChange={(e) => setSelectedRating(e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', color: '#1e293b', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s', width: '100%' }}
+                >
+                  <option value="">Bármilyen értékelés</option>
+                  <option value="4-5">4 - 5 csillag</option>
+                  <option value="3-4">3 - 4 csillag</option>
+                  <option value="2-3">2 - 3 csillag</option>
+                  <option value="1-2">1 - 2 csillag</option>
+                </select>
+              </div>
+
+              <button 
+                onClick={() => { setSelectedCategory('Összes'); setSelectedMode('Összes'); setSelectedRating(''); }}
+                style={{ 
+                  height: '42px', padding: '0 16px', background: '#e2e8f0', color: '#475569', border: 'none', 
+                  borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s',
+                  opacity: (selectedCategory !== 'Összes' || selectedMode !== 'Összes' || selectedRating !== '') ? 1 : 0.5,
+                  pointerEvents: (selectedCategory !== 'Összes' || selectedMode !== 'Összes' || selectedRating !== '') ? 'auto' : 'none'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#cbd5e1'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#e2e8f0'}
+              >
+                <RotateCcw size={14} /> Alaphelyzet
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -249,7 +291,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
       {loading ? (
         <div className="loading">Játékok betöltése...</div>
       ) : books.length === 0 ? (
-        <div className="no-books">Jelenleg nincsenek játékok  a katalógusban.</div>
+        <div className="no-books">Jelenleg nincsenek játékok a katalógusban.</div>
       ) : filteredBooks.length === 0 ? (
         <div className="no-books">Nincs találat a megadott keresésre.</div>
       ) : (
