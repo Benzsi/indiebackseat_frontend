@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StarRating } from './StarRating';
+import { BiLike, BiDislike, BiCog } from "react-icons/bi";
 
 
 interface BookBackProps {
@@ -7,10 +8,11 @@ interface BookBackProps {
   author: string;
   averageRating: number;
   totalRatings: number;
-  comments: { id: number; user: string; text: string; isOwn?: boolean; }[];
+  comments: { id: number; user: string; text: string; isOwn?: boolean; likes?: number; dislikes?: number; userVote?: number; }[];
   onEditComment?: (commentId: number, content: string) => Promise<void>;
   onDeleteComment?: (commentId: number) => Promise<void>;
   onReportComment?: (commentId: number) => Promise<void>;
+  onVoteComment?: (commentId: number, isLike: boolean | null) => Promise<void>;
   description?: string;
   videoUrl?: string;
 }
@@ -24,12 +26,18 @@ export function BookBack({
   onEditComment,
   onDeleteComment,
   onReportComment,
+  onVoteComment,
   description,
   videoUrl,
 }: BookBackProps) {
-  const [likes, setLikes] = useState<Record<number, number>>({});
-  const [dislikes, setDislikes] = useState<Record<number, number>>({});
-  const [userVotes, setUserVotes] = useState<Record<number, 'like' | 'dislike' | null>>({});
+  const [userVotes, setUserVotes] = useState<Record<number, 'like' | 'dislike' | null>>(() => {
+    const initial: Record<number, 'like' | 'dislike' | null> = {};
+    comments.forEach(c => {
+      if (c.userVote === 1) initial[c.id] = 'like';
+      else if (c.userVote === -1) initial[c.id] = 'dislike';
+    });
+    return initial;
+  });
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState('');
   const [processingCommentId, setProcessingCommentId] = useState<number | null>(null);
@@ -37,24 +45,22 @@ export function BookBack({
   const [hoveredActionKey, setHoveredActionKey] = useState<string | null>(null);
   const [pressedActionKey, setPressedActionKey] = useState<string | null>(null);
 
-  const handleLike = (index: number) => {
-    const currentVote = userVotes[index];
-    const newLikes = { ...likes, [index]: (likes[index] || 0) + (currentVote === 'like' ? -1 : 1) };
-    const newDislikes = currentVote === 'dislike' ? { ...dislikes, [index]: (dislikes[index] || 1) - 1 } : dislikes;
-
-    setLikes(newLikes);
-    setDislikes(newDislikes);
-    setUserVotes({ ...userVotes, [index]: currentVote === 'like' ? null : 'like' });
+  const handleLike = async (commentId: number) => {
+    const currentVote = userVotes[commentId];
+    const newVote = currentVote === 'like' ? null : 'like';
+    setUserVotes({ ...userVotes, [commentId]: newVote });
+    if (onVoteComment) {
+      await onVoteComment(commentId, newVote === 'like' ? true : null);
+    }
   };
 
-  const handleDislike = (index: number) => {
-    const currentVote = userVotes[index];
-    const newDislikes = { ...dislikes, [index]: (dislikes[index] || 0) + (currentVote === 'dislike' ? -1 : 1) };
-    const newLikes = currentVote === 'like' ? { ...likes, [index]: (likes[index] || 1) - 1 } : likes;
-
-    setDislikes(newDislikes);
-    setLikes(newLikes);
-    setUserVotes({ ...userVotes, [index]: currentVote === 'dislike' ? null : 'dislike' });
+  const handleDislike = async (commentId: number) => {
+    const currentVote = userVotes[commentId];
+    const newVote = currentVote === 'dislike' ? null : 'dislike';
+    setUserVotes({ ...userVotes, [commentId]: newVote });
+    if (onVoteComment) {
+      await onVoteComment(commentId, newVote === 'dislike' ? false : null);
+    }
   };
 
   const startEdit = (commentId: number, currentText: string) => {
@@ -188,18 +194,35 @@ export function BookBack({
                     borderRadius: '6px',
                     borderLeft: '3px solid var(--color-primary)',
                     position: 'relative',
-                    cursor: c.isOwn ? 'pointer' : 'default',
                     overflow: 'hidden',
                     width: '100%',
                     minHeight: 120,
                     flexShrink: 0,
                     boxSizing: 'border-box',
                   }}
-                  onClick={() => {
-                    if (!c.isOwn) return;
-                    setActiveCommentId((prev) => (prev === c.id ? null : c.id));
-                  }}
                 >
+                  {c.isOwn && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveCommentId((prev) => (prev === c.id ? null : c.id));
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--color-primary)',
+                        zIndex: 4,
+                        padding: 4,
+                        display: 'flex',
+                      }}
+                    >
+                      <BiCog size={20} />
+                    </button>
+                  )}
                   {showActions ? (
                     <div
                       style={
@@ -355,34 +378,42 @@ export function BookBack({
                     )}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <button
-                        onClick={() => handleLike(i)}
+                        onClick={() => void handleLike(c.id)}
                         style={{
                           padding: '4px 10px',
-                          fontSize: '12px',
-                          border: `1px solid ${userVotes[i] === 'like' ? 'var(--color-primary)' : '#ddd'}`,
-                          backgroundColor: userVotes[i] === 'like' ? 'var(--color-primary)' : '#fff',
-                          color: userVotes[i] === 'like' ? '#fff' : '#333',
+                          fontSize: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          border: `1px solid ${userVotes[c.id] === 'like' ? 'var(--color-primary)' : '#ddd'}`,
+                          backgroundColor: userVotes[c.id] === 'like' ? 'var(--color-primary)' : '#fff',
+                          color: userVotes[c.id] === 'like' ? '#fff' : '#000',
                           borderRadius: '4px',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
+                          boxShadow: userVotes[c.id] === 'like' ? 'none' : '0 0 2px rgba(0,0,0,0.2)'
                         }}
                       >
-                        👍 {likes[i] || 0}
+                        <BiLike /> <span style={{ fontSize: '12px' }}>{c.likes || 0}</span>
                       </button>
                       <button
-                        onClick={() => handleDislike(i)}
+                        onClick={() => void handleDislike(c.id)}
                         style={{
                           padding: '4px 10px',
-                          fontSize: '12px',
-                          border: `1px solid ${userVotes[i] === 'dislike' ? 'var(--color-primary)' : '#ddd'}`,
-                          backgroundColor: userVotes[i] === 'dislike' ? 'var(--color-primary)' : '#fff',
-                          color: userVotes[i] === 'dislike' ? '#fff' : '#333',
+                          fontSize: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          border: `1px solid ${userVotes[c.id] === 'dislike' ? 'var(--color-primary)' : '#ddd'}`,
+                          backgroundColor: userVotes[c.id] === 'dislike' ? 'var(--color-primary)' : '#fff',
+                          color: userVotes[c.id] === 'dislike' ? '#fff' : '#000',
                           borderRadius: '4px',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
+                          boxShadow: userVotes[c.id] === 'dislike' ? 'none' : '0 0 2px rgba(0,0,0,0.2)'
                         }}
                       >
-                        👎 {dislikes[i] || 0}
+                        <BiDislike /> <span style={{ fontSize: '12px' }}>{c.dislikes || 0}</span>
                       </button>
                     </div>
                   </div>

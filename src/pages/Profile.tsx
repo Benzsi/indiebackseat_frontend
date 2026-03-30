@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { User } from '../services/api';
 import { UsersService, AuthService } from '../services/api';
 import { User as UserIcon, Mail, Shield, Calendar, Edit2, ArrowLeft, LogOut, Check, X } from 'lucide-react';
+import { FaSteam } from "react-icons/fa";
 
 interface ProfileProps {
   user: User | null;
@@ -268,11 +269,9 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
                   onMouseLeave={(e) => { if (!user.steamId) e.currentTarget.style.background = '#171a21'; }}
                 >
                   {user.steamId ? (
-                    <Check size={22} />
+                    <FaSteam size={22} color="#fff" />
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11.979 0C5.353 0 0 5.372 0 12.001c0 2.585.8 4.981 2.164 6.953l6.231-3.642v-.385c0-1.704 1.385-3.086 3.088-3.086 1.702 0 3.088 1.382 3.088 3.086 0 1.702-1.386 3.086-3.088 3.086-.711 0-1.365-.246-1.889-.652L3.109 21.05h.005C5.467 23.23 8.572 24 11.979 24 18.604 24 24 18.627 24 12.001 24 5.372 18.604 0 11.979 0zm-6.19 14.86c0 .852.69 1.542 1.543 1.542.85 0 1.541-.69 1.541-1.542 0-.852-.69-1.542-1.541-1.542-.853 0-1.543.69-1.543 1.542zm6.23-2.023c-1.134 0-2.05.918-2.05 2.054 0 1.137.916 2.055 2.05 2.055 1.134 0 2.049-.918 2.049-2.055 0-1.136-.915-2.054-2.049-2.054zm0 3.23a1.176 1.176 0 110-2.353 1.176 1.176 0 010 2.353z" />
-                    </svg>
+                    <FaSteam size={22} color="#fff" />
                   )}
                   {user.steamId ? 'Steam fiók csatolva' : 'Steam fiók csatolása'}
                 </button>

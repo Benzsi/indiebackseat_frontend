@@ -146,6 +146,16 @@ export function BookDetails({ user }: BookDetailsProps) {
     }
   };
 
+  const handleVoteComment = async (commentId: number, isLike: boolean | null) => {
+    try {
+      const updated = await commentsService.voteComment(commentId, isLike);
+      setComments((prev) => prev.map((c) => (c.id === commentId ? updated : c)));
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Backseat értékelése sikertelen');
+    }
+  };
+
   const handleReportComment = async (_commentId: number) => {
     alert('Backseat jelentve. Köszönjük a visszajelzést.');
   };
@@ -226,10 +236,14 @@ export function BookDetails({ user }: BookDetailsProps) {
                 user: c.user.username,
                 text: c.content,
                 isOwn: user?.id === c.user.id,
+                likes: c.likes,
+                dislikes: c.dislikes,
+                userVote: c.userVote,
               }))}
               onEditComment={handleEditComment}
               onDeleteComment={handleDeleteComment}
               onReportComment={handleReportComment}
+              onVoteComment={handleVoteComment}
               description={book.lyricNote}
             />
           </div>

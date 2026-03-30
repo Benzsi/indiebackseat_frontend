@@ -267,6 +267,9 @@ export interface Comment {
   content: string;
   userId: number;
   bookId: number;
+  likes: number;
+  dislikes: number;
+  userVote: number; // 0: none, 1: like, -1: dislike
   user: {
     id: number;
     username: string;
@@ -358,6 +361,23 @@ export class CommentsService {
 
     if (!response.ok) {
       throw new Error('Felhasználó kommentjeinek lekérése sikertelen');
+    }
+
+    return response.json();
+  }
+
+  async voteComment(commentId: number, isLike: boolean | null): Promise<Comment> {
+    const response = await fetch(`${API_URL}/comments/${commentId}/vote`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ isLike }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Komment szavazás sikertelen');
     }
 
     return response.json();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Code2, Gamepad2, ChevronRight, Plus, X } from 'lucide-react';
+import { ArrowLeft, Gamepad2, ChevronRight, Plus, X } from 'lucide-react';
+import { SiDevbox } from "react-icons/si";
 import type { User } from '../services/api';
 
 export interface DevLog {
@@ -83,7 +84,7 @@ export function DevLogs({ user }: DevLogsProps) {
           </Link>
           <div className="devlogs-title-wrap">
             <div className="devlogs-icon-box">
-              <Code2 size={22} color="#fff" />
+              <SiDevbox size={22} color="#fff" />
             </div>
             <div>
               <h1 className="devlogs-title">Dev Logs</h1>

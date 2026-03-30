@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { SiDevbox } from "react-icons/si";
 import type { User } from '../services/api';
 import { BooksService, RatingsService } from '../services/api';
 import { BookCard } from '../components/BookCard';
@@ -182,7 +183,7 @@ export function Home({ user, searchQuery = '' }: HomeProps) {
             ))}
           </div>
           <Link to="/devlogs" className="devlogs-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <SiDevbox size={15} />
             Dev Logs
           </Link>
         </div>

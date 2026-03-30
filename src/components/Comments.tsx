@@ -29,6 +29,17 @@ export function Comments({ bookId }: CommentsProps) {
     }
   };
 
+  const handleVote = async (commentId: number, isLike: boolean | null) => {
+    try {
+      const updatedComment = await commentsService.voteComment(commentId, isLike);
+      setComments((prev) =>
+        prev.map((c) => (c.id === commentId ? updatedComment : c))
+      );
+    } catch (err) {
+      console.error('Hiba történt a szavazat mentésekor', err);
+    }
+  };
+
   if (loading) {
     return <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Backseating betöltése...</div>;
   }
@@ -65,9 +76,53 @@ export function Comments({ bookId }: CommentsProps) {
                 {new Date(comment.createdAt).toLocaleDateString('hu-HU')}
               </span>
             </div>
-            <p style={{ margin: 0, color: '#333', lineHeight: 1.5, wordWrap: 'break-word' }}>
+            <p style={{ margin: 0, color: '#333', lineHeight: 1.5, wordWrap: 'break-word', marginBottom: 16 }}>
               {comment.content}
             </p>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); handleVote(comment.id, true); }}
+                title="Tetszik"
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  color: comment.userVote === 1 ? 'var(--color-primary)' : '#ffffff', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 6, 
+                  opacity: 1, 
+                  fontSize: 14,
+                  fontWeight: comment.userVote === 1 ? 'bold' : 'normal',
+                  transition: 'all 0.2s',
+                  textShadow: comment.userVote === 1 ? 'none' : '0px 0px 2px rgba(0,0,0,0.5)'
+                }}
+              >
+                👍 {comment.likes || 0}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); handleVote(comment.id, false); }}
+                title="Nem tetszik"
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  color: comment.userVote === -1 ? 'var(--color-primary)' : '#ffffff', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 6, 
+                  opacity: 1, 
+                  fontSize: 14,
+                  fontWeight: comment.userVote === -1 ? 'bold' : 'normal',
+                  transition: 'all 0.2s',
+                  textShadow: comment.userVote === -1 ? 'none' : '0px 0px 2px rgba(0,0,0,0.5)'
+                }}
+              >
+                👎 {comment.dislikes || 0}
+              </button>
+            </div>
           </div>
         ))}
       </div>
