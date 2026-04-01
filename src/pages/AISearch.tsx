@@ -101,9 +101,25 @@ export function AISearch({ user }: AISearchProps) {
         throw new Error(`AI feldolgozás sikertelen (${aiResponse.status}): ${errText}`);
       }
 
-      const rawBooks: Book[] = await aiResponse.json();
-      console.log('AI ajánlott játékok:', rawBooks);
+      const data: any = await aiResponse.json();
+      console.log('AI válasz:', data);
 
+      if (data.error === 'AI_NO_KEY') {
+        setError('NO_API_KEY');
+        return;
+      }
+
+      if (data.error === 'AI_UNAVAILABLE') {
+        setError('Az AI keresés átmenetileg nem elérhető. Próbáld újra később.');
+        return;
+      }
+
+      if (data.error) {
+        setError(data.message || data.error);
+        return;
+      }
+
+      const rawBooks: Book[] = data;
       if (!Array.isArray(rawBooks) || rawBooks.length === 0) {
         setError('Nincs találat a keresésre. Próbálj másik kifejezést!');
         return;
@@ -142,7 +158,6 @@ export function AISearch({ user }: AISearchProps) {
   return (
     <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem', height: 'calc(100vh - 130px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-
       {/* Felső tér (Spacer). Ha még nem kerestünk, felülről nyomja le a keresőt középre. Ha kerestünk, ide kerülnek az eredmények. */}
       <div
         className="ai-scroll-container"
@@ -158,21 +173,11 @@ export function AISearch({ user }: AISearchProps) {
         }}
       >
 
-        {/* Hibaüzenet */}
-        {error && (
-          <div style={{
-            padding: '1rem 1.5rem', backgroundColor: '#fde8e8', borderLeft: '4px solid #f98080',
-            borderRadius: '8px', color: '#9b1c1c', marginBottom: '2rem', width: '100%',
-            fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-            animation: 'fadeIn 0.4s ease-out'
-          }}>
-            {error}
-          </div>
-        )}
+
 
         {/* Eredmény kártyák */}
         {results.length > 0 && (
-          <div className="books-grid" style={{
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" style={{
             width: '100%',
             paddingBottom: '2rem',
             animation: 'fadeIn 0.5s ease-out'
@@ -227,6 +232,32 @@ export function AISearch({ user }: AISearchProps) {
             Írd le egyszerűen milyen hangulathoz keresel valamit.
           </p>
         </div>
+
+        {/* Hibaüzenet (Lent, a kereső felett) */}
+        {error && (
+          <div style={{
+            padding: '1rem 1.5rem', backgroundColor: '#fde8e8', borderLeft: '4px solid #f98080',
+            borderRadius: '8px', color: '#9b1c1c', marginBottom: '1.5rem', width: '100%',
+            fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+            animation: 'fadeIn 0.4s ease-out'
+          }}>
+            {error === 'NO_API_KEY' ? (
+              <span>
+                Nincs megadva Gemini API kulcs! Regisztrálj és szerezz egy ingyenes kulcsot itt: {' '}
+                <a 
+                  href="https://aistudio.google.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ color: '#c81e1e', textDecoration: 'underline' }}
+                >
+                  https://aistudio.google.com/
+                </a>
+              </span>
+            ) : (
+              error
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSearch} style={{ width: '100%' }}>
           <div style={{

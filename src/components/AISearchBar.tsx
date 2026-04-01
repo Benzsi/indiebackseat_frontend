@@ -16,9 +16,13 @@ interface Props {
 export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showKeyLink, setShowKeyLink] = useState(false);
 
   const handleAISubmit = async () => {
     setLoading(true);
+    setError(null);
+    setShowKeyLink(false);
     try {
       const response = await fetch('http://localhost:3000/ai-filter', {
         method: 'POST',
@@ -26,10 +30,24 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
         body: JSON.stringify({ prompt: input }),
       });
 
-      const filters: FilterParams = await response.json();
+      const data: any = await response.json();
+      
+      if (data.error === 'AI_NO_KEY') {
+        setError('Nincs megadva Gemini API kulcs!');
+        setShowKeyLink(true);
+        return;
+      }
+
+      if (data.error) {
+        setError(data.message || data.error);
+        return;
+      }
+
+      const filters: FilterParams = data;
       onFiltersExtracted(filters); // Átadjuk a szűrőket a főoldalnak
     } catch (err) {
       console.error("AI hiba:", err);
+      setError("Hiba történt a keresés során.");
     } finally {
       setLoading(false);
     }
@@ -54,6 +72,24 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
           {loading ? "Gondolkodom..." : "Keresés"}
         </button>
       </div>
+      {error && (
+        <div className="mt-2 p-2 bg-red-100 text-red-700 text-xs rounded border border-red-200">
+          {error}
+          {showKeyLink && (
+            <div className="mt-1">
+              Szerezz egy kulcsot itt: {' '}
+              <a 
+                href="https://aistudio.google.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline font-bold"
+              >
+                https://aistudio.google.com/
+              </a>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
