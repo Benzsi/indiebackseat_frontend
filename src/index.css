@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #27374D;
-  --color-secondary: #526D82;
-  --color-accent: #9DB2BF;
-  --color-bg: #DDE6ED;
+  --color-primary: #473472;
+  --color-secondary: #53629E;
+  --color-accent: #87BAC3;
+  --color-bg: #D6F4ED;
 }
 
 body {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  background: #DDE6ED;
-  color: #27374D;
+  background: var(--color-accent); /* #87BAC3 */
+  color: var(--color-primary);
   margin: 0;
   padding: 0;
   overflow-x: hidden;

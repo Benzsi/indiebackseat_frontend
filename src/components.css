@@ -18,7 +18,7 @@ input[type="radio"] {
 
 /* ── Admin / közös kártya konténer ── */
 .panel-card {
-    background: #fff;
+    background: var(--color-accent);
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(39, 55, 77, 0.08);
     overflow: hidden;
