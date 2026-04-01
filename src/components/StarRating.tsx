@@ -88,7 +88,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
         {renderStars()}
       </div>
       {totalRatings !== undefined && (
-        <span style={{ fontSize: '14px', color: '#666' }}>
+        <span style={{ fontSize: '14px', color: '#D6F4ED' }}>
           ({rating.toFixed(1)} - {totalRatings} értékelés)
         </span>
       )}

@@ -14,11 +14,35 @@ import { BookDetails } from './pages/BookDetails'
 import { DevLogs } from './pages/DevLogs'
 import { DevLogDetail } from './pages/DevLogDetail'
 import type { User } from './services/api'
+import { Filter, Star, RotateCcw } from 'lucide-react'
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'games' | 'devlogs'>('overview');
+  
+  // Filtering states moved to App level for global access and positioning
+  const [selectedCategory, setSelectedCategory] = useState<string>('Összes');
+  const [selectedMode, setSelectedMode] = useState<string>('Összes');
+  const [selectedRating, setSelectedRating] = useState<string>('');
+  
+  // Sorting states
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const categories = [
+    'Összes', 'ACTION', 'PUZZLE', 'RPG', 'PLATFORMER', 'HORROR', 'ADVENTURE', 'SANDBOX',
+    'SIMULATION', 'STRATEGY', 'SPORTS', 'RACING', 'FIGHTING', 'SHOOTER',
+    'SURVIVAL', 'STEALTH', 'ROGUELIKE', 'MOBA', 'MMORPG', 'TOWER_DEFENSE',
+    'PARTY', 'CARD_GAME', 'RHYTHM'
+  ];
+  const modes = [
+    'Összes', 'SINGLE_PLAYER', 'MULTIPLAYER', 'CO_OP', 'BATTLE_ROYALE', 'OPEN_WORLD',
+    'LINEAR', 'METROIDVANIA', 'SOULSLIKE', 'FIRST_PERSON', 'THIRD_PERSON',
+    'VR', 'AUTOSHOOTER', 'TEXT_BASED'
+  ];
 
   // Az oldal betöltésekor helyreállítjuk az előző felhasználót
   useEffect(() => {
@@ -37,11 +61,13 @@ function App() {
   const handleLoginSuccess = (userData: User) => {
     setUser(userData)
     localStorage.setItem('user', JSON.stringify(userData))
+    setActiveTab('overview')
   }
 
   const handleRegisterSuccess = (userData: User) => {
     setUser(userData)
     localStorage.setItem('user', JSON.stringify(userData))
+    setActiveTab('overview')
   }
 
   const handleUserUpdate = (updatedUser: User) => {
@@ -59,10 +85,148 @@ function App() {
         isAuthenticated={user !== null}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        isFilterOpen={isFilterOpen}
+        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+        onResetDashboard={() => setActiveTab('overview')}
       />
-      <main className="main-container">
+      
+      {/* Search & Sort Filter Strip */}
+      <div
+        className="overflow-hidden bg-[#473472] border-b border-[#53629E]/40 z-40 shadow-lg transition-all duration-400"
+        style={{
+          display: 'grid',
+          gridTemplateRows: isFilterOpen ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <div style={{ minHeight: 0 }}>
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-5 flex flex-col gap-6">
+            
+            {/* Row 1: Filters */}
+            <div className="flex flex-wrap gap-4 items-end">
+              <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
+                  <Filter size={13} /> Játék kategória
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer"
+                >
+                  {categories.map(cat => <option key={cat} value={cat} className="bg-[#473472]">{cat}</option>)}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
+                  <Filter size={13} /> Mód
+                </label>
+                <select
+                  value={selectedMode}
+                  onChange={(e) => setSelectedMode(e.target.value)}
+                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer"
+                >
+                  {modes.map(mode => <option key={mode} value={mode} className="bg-[#473472]">{mode}</option>)}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
+                  <Star size={13} className="text-amber-300" /> Értékelés
+                </label>
+                <select
+                  value={selectedRating}
+                  onChange={(e) => setSelectedRating(e.target.value)}
+                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer"
+                >
+                  <option value="" className="bg-[#473472]">Bármilyen értékelés</option>
+                  <option value="4-5" className="bg-[#473472]">4 - 5 csillag</option>
+                  <option value="3-4" className="bg-[#473472]">3 - 4 csillag</option>
+                  <option value="2-3" className="bg-[#473472]">2 - 3 csillag</option>
+                  <option value="1-2" className="bg-[#473472]">1 - 2 csillag</option>
+                </select>
+              </div>
+
+              <button
+                onClick={() => { setSelectedCategory('Összes'); setSelectedMode('Összes'); setSelectedRating(''); }}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  (selectedCategory !== 'Összes' || selectedMode !== 'Összes' || selectedRating !== '')
+                    ? 'bg-[#D6F4ED] text-[#473472] hover:bg-[#87BAC3] cursor-pointer'
+                    : 'bg-[#53629E]/20 text-[#87BAC3]/40 cursor-not-allowed'
+                }`}
+              >
+                <RotateCcw size={15} /> Alaphelyzet
+              </button>
+            </div>
+
+            {/* Row 2: Sorting */}
+            <div className="flex flex-wrap gap-4 items-center pt-4 border-t border-[#53629E]/20">
+               <div className="flex items-center gap-3">
+                  <label className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest whitespace-nowrap">
+                    Rendezés:
+                  </label>
+                  <div className="flex gap-2">
+                    {[
+                      { id: 'name', label: 'ABC sorrend' },
+                      { id: 'date', label: 'Dátum' },
+                      { id: 'upvotes', label: 'Kedvelések' },
+                      { id: 'entries', label: 'Bejegyzések' }
+                    ].map(option => (
+                      <button
+                        key={option.id}
+                        onClick={() => setSortBy(option.id)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                          sortBy === option.id 
+                            ? 'bg-[#87BAC3] text-[#473472]' 
+                            : 'bg-[#53629E]/40 text-[#D6F4ED] hover:bg-[#53629E]/60'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    onClick={() => setSortOrder('asc')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      sortOrder === 'asc' 
+                        ? 'bg-[#D6F4ED] text-[#473472]' 
+                        : 'bg-[#53629E]/40 text-[#D6F4ED] hover:bg-[#53629E]/60'
+                    }`}
+                  >
+                    Növekvő
+                  </button>
+                  <button
+                    onClick={() => setSortOrder('desc')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      sortOrder === 'desc' 
+                        ? 'bg-[#D6F4ED] text-[#473472]' 
+                        : 'bg-[#53629E]/40 text-[#D6F4ED] hover:bg-[#53629E]/60'
+                    }`}
+                  >
+                    Csökkenő
+                  </button>
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main className="flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-6">
         <Routes>
-          <Route path="/" element={<Home user={user} searchQuery={searchQuery} />} />
+          <Route path="/" element={<Home 
+            user={user} 
+            searchQuery={searchQuery} 
+            selectedCategory={selectedCategory}
+            selectedMode={selectedMode}
+            selectedRating={selectedRating}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+          />} />
           <Route path="/books/:bookId" element={<BookDetails user={user} />} />
           <Route path="/mylists" element={<MyLists user={user} />} />
           <Route path="/ai-search" element={<AISearch user={user} />} />
@@ -88,7 +252,15 @@ function App() {
           />
           <Route path="/profile" element={<Profile user={user} onUserUpdate={handleUserUpdate} />} />
           <Route path="/admin" element={<AdminUsers user={user} />} />
-          <Route path="/devlogs" element={<DevLogs user={user} />} />
+          <Route path="/devlogs" element={<DevLogs 
+            user={user} 
+            searchQuery={searchQuery}
+            selectedCategory={selectedCategory}
+            selectedMode={selectedMode}
+            selectedRating={selectedRating}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+          />} />
           <Route path="/devlogs/:id" element={<DevLogDetail user={user} />} />
         </Routes>
       </main>
