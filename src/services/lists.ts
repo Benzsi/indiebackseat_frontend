@@ -1,10 +1,23 @@
 const API_URL = 'http://localhost:3000/api';
 
+export interface GalleryItem {
+  id: number;
+  filePath: string;
+  fileType: 'IMAGE' | 'VIDEO';
+  createdAt: string;
+}
+
 export interface BookList {
   id: number;
   name: string;
   userId: number;
-  items: { bookId: number }[];
+  imagePath?: string;
+  items: { 
+    id: number;
+    bookId: number; 
+    book: any;
+    gallery: GalleryItem[];
+  }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -79,3 +92,40 @@ export async function removeList(listId: string | number) {
     throw err;
   }
 }
+
+export async function uploadListImage(listId: string | number, file: File) {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_URL}/lists/${listId}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Hiba a kép feltöltésekor');
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export const uploadBookItemGallery = async (listId: number, bookId: number, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${API_URL}/lists/${listId}/books/${bookId}/gallery`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error('Hiba a feltöltés során');
+  return res.json();
+};
+
+export const deleteGalleryItem = async (id: number) => {
+  const res = await fetch(`${API_URL}/lists/gallery/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Hiba a törlés során');
+};

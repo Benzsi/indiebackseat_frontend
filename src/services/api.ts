@@ -96,6 +96,22 @@ export class AuthService {
     return response.json();
   }
 
+  async checkSteamKey(): Promise<{ hasKey: boolean }> {
+    const response = await fetch(`${API_BASE_URL}/auth/steam/check-key`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+    });
+
+    if (!response.ok) {
+      return { hasKey: false };
+    }
+
+    return response.json();
+  }
+
   async unlinkSteam(): Promise<{ message: string; user: User }> {
     const response = await fetch(`${API_BASE_URL}/auth/steam`, {
       method: 'DELETE',
