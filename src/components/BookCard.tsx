@@ -21,63 +21,73 @@ export function BookCard({ book, isHovered, onMouseEnter, onMouseLeave, onOpenAd
 
   return (
     <div
-      className="book-card"
-      style={{ position: 'relative' }}
+      className="relative bg-[#473472] border border-[#53629E] rounded-2xl overflow-hidden cursor-pointer flex flex-col shadow-[0_4px_16px_rgba(71,52,114,0.25)] hover:-translate-y-1.5 hover:bg-[#53629E] hover:shadow-[0_12px_28px_rgba(71,52,114,0.4)] transition-all duration-300 min-h-[420px] h-full"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={() => navigate(`/books/${book.id}`)}
     >
-      <div className="book-header" style={{ padding: '12px 16px 0', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-            <div className="card-title-container" style={{ overflow: 'hidden' }}>
-              <div 
-                className="card-title-scroller" 
-                style={{ 
-                  animation: isHovered ? 'scrollHover 6s ease-in-out infinite alternate' : 'none',
-                  transform: 'translateX(0)' 
-                }}
-              >
-                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: '#1e293b' }}>{book.title}</h3>
-                <span style={{ fontSize: '13px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>- {book.author}</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <span className="badge">{book.literaryForm}</span>
-              <span className="badge badge-genre">{book.genre}</span>
-            </div>
+      {/* Top accent bar on hover */}
+      <div className={`absolute top-0 left-0 w-full h-0.5 rounded-t-2xl bg-gradient-to-r from-[#87BAC3] to-[#D6F4ED] transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+
+      {/* Header: title + badges */}
+      <div className="px-4 pt-4 pb-0 flex flex-col gap-2">
+        <div className="overflow-hidden">
+          <div
+            style={{
+              animation: isHovered ? 'scrollHover 6s ease-in-out infinite alternate' : 'none',
+              transform: 'translateX(0)',
+            }}
+          >
+            <h3 className="text-[14px] font-extrabold m-0 text-white leading-tight">{book.title}</h3>
+            <span className="text-[12px] text-white/70 italic font-semibold">- {book.author}</span>
           </div>
-          <div className="book-cover" style={{ marginTop: '8px' }}>
-            {book.coverUrl ? (
-              <img
-                src={book.coverUrl}
-                alt={book.title}
-                className="cover-image"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).parentElement!.querySelector('.cover-placeholder')!.classList.remove('hidden-placeholder');
-                }}
-              />
-            ) : null}
-            <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>📖</div>
-          </div>
-          <div className="book-info">
-            {/* Átlagos értékelés megjelenítése */}
-            <div className="book-rating-section" style={{ marginBottom: '12px' }}>
-              <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>
-                Átlagos értékelés:
-              </div>
-              <StarRating
-                rating={book.averageRating || 0}
-                totalRatings={book.totalRatings || 0}
-                readonly
-                size="small"
-              />
-            </div>
-          </div>
-      <div className="book-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        </div>
+
+        {/* Badges */}
+        <div className="flex gap-1.5 flex-wrap">
+          <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+            {book.literaryForm}
+          </span>
+          <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-400/30">
+            {book.genre}
+          </span>
+        </div>
+      </div>
+
+      {/* Cover image */}
+      <div className="mt-3 mx-4 h-[280px] flex-shrink-0 flex items-center justify-center overflow-hidden relative rounded-xl bg-gradient-to-br from-[#53629E] to-[#473472] shadow-[0_4px_14px_rgba(0,0,0,0.25)] border border-[#D6F4ED]/10">
+        {book.coverUrl ? (
+          <img
+            src={book.coverUrl}
+            alt={book.title}
+            className="w-full h-full object-cover object-center"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).parentElement!.querySelector('.cover-placeholder')!.classList.remove('hidden-placeholder');
+            }}
+          />
+        ) : null}
+        <div className={`cover-placeholder text-[80px] ${book.coverUrl ? 'hidden-placeholder' : ''}`}>📖</div>
+      </div>
+
+      {/* Rating */}
+      <div className="px-4 py-3 flex-1 flex flex-col">
+        <div className="mb-2">
+          <div className="text-[10px] text-white/60 mb-1">Átlagos értékelés:</div>
+          <StarRating
+            rating={book.averageRating || 0}
+            totalRatings={book.totalRatings || 0}
+            readonly
+            size="small"
+          />
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-3 px-4 pb-4 pt-0">
         <button
-          className="btn btn-addlist"
-          style={{ flex: 1, margin: 0 }}
+          className="flex-1 py-2 px-3 rounded-xl bg-white/10 border border-white/20 text-white text-[11px] font-bold hover:bg-white/20 transition-all duration-200"
           onClick={(e) => {
             e.stopPropagation();
             onOpenAddList(book);
@@ -85,10 +95,18 @@ export function BookCard({ book, isHovered, onMouseEnter, onMouseLeave, onOpenAd
         >
           Listához adás
         </button>
-        <button onClick={(e) => e.stopPropagation()} title="Kiemelés" style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+        <button
+          onClick={(e) => e.stopPropagation()}
+          title="Kiemelés"
+          className="p-1.5 rounded-lg bg-transparent border-none cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-200"
+        >
           <Star fill="none" color="#3b82f6" size={24} />
         </button>
-        <button onClick={(e) => e.stopPropagation()} title="Kedvelés" style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+        <button
+          onClick={(e) => e.stopPropagation()}
+          title="Kedvelés"
+          className="p-1.5 rounded-lg bg-transparent border-none cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-200"
+        >
           <Heart fill="none" color="#ef4444" size={24} />
         </button>
       </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { BookBack } from '../components/BookBack';
 import { StarRating } from '../components/StarRating';
-import type { User, Book, Comment, SteamAchievement, SteamAchievementsResponse } from '../services/api';
+import type { User, Book, Comment, SteamAchievementsResponse } from '../services/api';
 import { BooksService, RatingsService, CommentsService, SteamService } from '../services/api';
 
 interface BookDetailsProps {
@@ -75,7 +75,7 @@ export function BookDetails({ user }: BookDetailsProps) {
               }
             })
             .catch(() => {
-              // Ha besül a steam (nincs a fiókján ez a játék vagy nincs auth-olva, süketül elnyeljük)
+              // Silence errors if steam data fetching fails
             });
         }
       } catch (err) {
@@ -165,26 +165,35 @@ export function BookDetails({ user }: BookDetailsProps) {
   }
 
   return (
-    <div className="book-details-page">
-      <div className="book-details-header">
-        <Link to="/" className="btn btn-primary">Vissza a katalógushoz</Link>
+    <div className="w-full max-w-[1200px] mx-auto px-4 py-6">
+      {/* Back button */}
+      <div className="mb-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-[#D6F4ED] border border-[#53629E] bg-[#53629E]/30 hover:bg-[#53629E]/60 transition-all"
+        >
+          ← Vissza a katalógushoz
+        </Link>
       </div>
 
       {loading ? (
-        <div className="loading">Játék betöltése...</div>
+        <div className="flex items-center justify-center py-20 text-[#87BAC3] text-sm font-semibold">Játék betöltése...</div>
       ) : error ? (
-        <div className="error-message">{error}</div>
+        <div className="px-4 py-3 rounded-xl bg-red-500/20 border border-red-400/40 text-red-300 text-sm font-semibold">{error}</div>
       ) : !book ? (
-        <div className="no-books">A játék nem található.</div>
+        <div className="flex items-center justify-center py-20 text-[#87BAC3] text-sm">A játék nem található.</div>
       ) : (
-        <div className="book-details-card">
-          <div className="book-details-cover-wrap">
-            <div className="book-cover book-details-cover">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+
+          {/* Left column: cover + rating + comment form */}
+          <div className="flex flex-col gap-5">
+            {/* Cover */}
+            <div className="w-full h-[380px] sm:h-[460px] flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#473472] to-[#53629E] border border-[#53629E] shadow-xl">
               {book.coverUrl ? (
                 <img
                   src={book.coverUrl}
                   alt={book.title}
-                  className="cover-image"
+                  className="w-full h-full object-cover object-center"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -194,38 +203,44 @@ export function BookDetails({ user }: BookDetailsProps) {
                   }}
                 />
               ) : null}
-              <div className={`cover-placeholder ${book.coverUrl ? 'hidden-placeholder' : ''}`}>🎮</div>
+              <div className={`cover-placeholder text-[80px] ${book.coverUrl ? 'hidden-placeholder' : ''}`}>🎮</div>
             </div>
 
-            <div className="book-details-feedback-box" style={{ marginTop: '1rem' }}>
-              <div style={{ fontSize: '13px', color: '#667085', marginBottom: '6px' }}>
-                {pendingRating ? 'Az értékelésed:' : 'Értékeld a játékot:'}
+            {/* Rating + Comment form */}
+            <div className="bg-[#473472] rounded-2xl border border-[#53629E] shadow-lg p-5 flex flex-col gap-4">
+              {/* User rating */}
+              <div>
+                <div className="text-xs text-[#87BAC3] mb-2 font-semibold uppercase tracking-widest">
+                  {pendingRating ? 'Az értékelésed:' : 'Értékeld a játékot:'}
+                </div>
+                <StarRating rating={pendingRating} onRate={handleRate} size="medium" />
               </div>
-              <StarRating
-                rating={pendingRating}
-                onRate={handleRate}
-                size="medium"
-              />
-              <div className="book-details-feedback-divider" />
-              <div className="book-details-comment-title">Start backseating</div>
-              <textarea
-                className="book-details-comment-input"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Mit gondolsz erről a játékról?"
-                rows={4}
-              />
-              <button
-                className="btn btn-primary"
-                disabled={savingComment || !newComment.trim()}
-                onClick={handleCreateComment}
-              >
-                {savingComment ? 'Mentés...' : 'Komment mentése'}
-              </button>
+
+              <div className="border-t border-[#53629E]/40" />
+
+              {/* Comment input */}
+              <div>
+                <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Start backseating</div>
+                <textarea
+                  className="w-full bg-[#53629E]/30 border border-[#53629E] text-[#D6F4ED] placeholder-[#87BAC3]/60 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#87BAC3] transition-all resize-none"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Mit gondolsz erről a játékról?"
+                  rows={4}
+                />
+                <button
+                  className="mt-3 w-full py-3 rounded-xl bg-[#D6F4ED] text-[#473472] font-black text-sm hover:bg-[#87BAC3] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={savingComment || !newComment.trim()}
+                  onClick={handleCreateComment}
+                >
+                  {savingComment ? 'Mentés...' : 'Komment mentése'}
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="book-details-main">
+          {/* Right column: BookBack */}
+          <div className="min-h-[500px]">
             <BookBack
               title={book.title}
               author={book.author}

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { StarRating } from './StarRating';
 import { BiLike, BiDislike, BiCog } from "react-icons/bi";
 
-
 interface BookBackProps {
   title: string;
   author: string;
@@ -46,21 +45,15 @@ export function BookBack({
   const [pressedActionKey, setPressedActionKey] = useState<string | null>(null);
 
   const handleLike = async (commentId: number) => {
-    const currentVote = userVotes[commentId];
-    const newVote = currentVote === 'like' ? null : 'like';
+    const newVote = userVotes[commentId] === 'like' ? null : 'like';
     setUserVotes({ ...userVotes, [commentId]: newVote });
-    if (onVoteComment) {
-      await onVoteComment(commentId, newVote === 'like' ? true : null);
-    }
+    if (onVoteComment) await onVoteComment(commentId, newVote === 'like' ? true : null);
   };
 
   const handleDislike = async (commentId: number) => {
-    const currentVote = userVotes[commentId];
-    const newVote = currentVote === 'dislike' ? null : 'dislike';
+    const newVote = userVotes[commentId] === 'dislike' ? null : 'dislike';
     setUserVotes({ ...userVotes, [commentId]: newVote });
-    if (onVoteComment) {
-      await onVoteComment(commentId, newVote === 'dislike' ? false : null);
-    }
+    if (onVoteComment) await onVoteComment(commentId, newVote === 'dislike' ? false : null);
   };
 
   const startEdit = (commentId: number, currentText: string) => {
@@ -83,8 +76,7 @@ export function BookBack({
 
   const deleteComment = async (commentId: number) => {
     if (!onDeleteComment) return;
-    const confirmed = window.confirm('Biztosan torolni szeretned ezt a backseatet?');
-    if (!confirmed) return;
+    if (!window.confirm('Biztosan torolni szeretned ezt a backseatet?')) return;
     try {
       setProcessingCommentId(commentId);
       await onDeleteComment(commentId);
@@ -104,316 +96,175 @@ export function BookBack({
     }
   };
 
-  const getActionButtonStyle = (type: 'edit' | 'delete' | 'save' | 'cancel' | 'report', actionKey: string) => {
-    const palette = {
-      edit: { color: '#3b82f6', glow: 'rgba(59,130,246,0.5)', bg: '#eff6ff' },
-      delete: { color: '#ef4444', glow: 'rgba(239,68,68,0.5)', bg: '#fff1f2' },
-      save: { color: '#16a34a', glow: 'rgba(22,163,74,0.5)', bg: '#f0fdf4' },
-      cancel: { color: '#64748b', glow: 'rgba(100,116,139,0.45)', bg: '#f8fafc' },
-      report: { color: '#f59e0b', glow: 'rgba(245,158,11,0.5)', bg: '#fffbeb' },
+  // Action button class helper
+  const actionBtn = (type: 'edit' | 'delete' | 'save' | 'cancel' | 'report', key: string, extra?: string) => {
+    const base = 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all duration-150 cursor-pointer';
+    const hovered = hoveredActionKey === key;
+    const pressed = pressedActionKey === key;
+    const variants = {
+      edit:   `border-[#87BAC3] text-[#87BAC3] ${hovered || pressed ? 'bg-[#87BAC3]/20' : 'bg-transparent'}`,
+      delete: `border-red-400 text-red-400 ${hovered || pressed ? 'bg-red-400/20' : 'bg-transparent'}`,
+      save:   `border-emerald-400 text-emerald-400 ${hovered || pressed ? 'bg-emerald-400/20' : 'bg-transparent'}`,
+      cancel: `border-[#53629E] text-[#87BAC3] ${hovered || pressed ? 'bg-[#53629E]/30' : 'bg-transparent'}`,
+      report: `border-amber-400 text-amber-400 ${hovered || pressed ? 'bg-amber-400/20' : 'bg-transparent'}`,
     };
-    const selected = palette[type];
-    const isHovered = hoveredActionKey === actionKey;
-    const isPressed = pressedActionKey === actionKey;
-
-    return {
-      padding: '6px 12px',
-      fontSize: 12,
-      border: `1px solid ${selected.color}`,
-      color: selected.color,
-      background: isHovered || isPressed ? selected.bg : '#fff',
-      borderRadius: 6,
-      cursor: 'pointer',
-      fontWeight: 700,
-      boxShadow: isPressed
-        ? `0 0 0 2px ${selected.glow}, 0 0 16px ${selected.glow}`
-        : isHovered
-          ? `0 0 12px ${selected.glow}`
-          : 'none',
-      transform: isPressed ? 'scale(0.98)' : 'scale(1)',
-      transition: 'box-shadow 0.2s, background 0.2s, transform 0.08s',
-    };
+    return `${base} ${variants[type]} ${pressed ? 'scale-[0.97]' : 'scale-100'} ${extra ?? ''}`;
   };
 
   return (
-    <div className="book-back" style={{ position: 'relative', height: '100%', opacity: 1, pointerEvents: 'auto', display: 'flex', flexDirection: 'column', padding: '24px 18px 18px 18px' }}>
-      <h3>{title}</h3>
-      <div style={{ fontStyle: 'italic', color: '#666', marginBottom: 12 }}>{author}</div>
+    <div className="relative h-full flex flex-col bg-[#473472] rounded-2xl border border-[#53629E] p-6 shadow-xl overflow-hidden">
+      {/* Title & author */}
+      <h3 className="text-xl font-black text-[#D6F4ED] mb-1 tracking-tight">{title}</h3>
+      <div className="text-sm italic text-[#87BAC3] mb-4">{author}</div>
 
-      <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #eee' }}>
-        <div style={{ fontSize: '12px', color: '#888', marginBottom: 4 }}>Átlagos értékelés:</div>
+      {/* Average rating */}
+      <div className="mb-4 pb-4 border-b border-[#53629E]/40">
+        <div className="text-xs text-[#87BAC3] mb-1">Átlagos értékelés:</div>
         <StarRating rating={averageRating} totalRatings={totalRatings} readonly size="medium" />
       </div>
 
-      <div style={{ marginBottom: 12, padding: 12, border: '1px solid #eee', borderRadius: 8, backgroundColor: '#fafafa' }}>
-        <div style={{ fontWeight: 600, marginBottom: 6, fontSize: '14px' }}>Leírás</div>
-        <div style={{ color: '#444', fontSize: 14, lineHeight: 1.5 }}>
-          {description?.trim() || 'Ide kerulhet a konyv rovid leirasa.'}
+      {/* Description */}
+      <div className="mb-4 p-4 rounded-xl bg-[#53629E]/20 border border-[#53629E]/40">
+        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Leírás</div>
+        <div className="text-[#D6F4ED]/80 text-sm leading-relaxed">
+          {description?.trim() || 'Ide kerülhet a játék rövid leírása.'}
         </div>
       </div>
 
-      <div style={{ marginBottom: 12, padding: 12, border: '1px dashed #c7ced8', borderRadius: 8, backgroundColor: '#f6f9ff' }}>
-        <div style={{ fontWeight: 600, marginBottom: 6, fontSize: '14px' }}>Video</div>
+      {/* Video */}
+      <div className="mb-4 p-4 rounded-xl bg-[#53629E]/10 border border-dashed border-[#53629E]/50">
+        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Video</div>
         {videoUrl ? (
-          <a href={videoUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontSize: 14 }}>
-            Video megnyitasa
+          <a href={videoUrl} target="_blank" rel="noreferrer" className="text-[#87BAC3] text-sm hover:text-[#D6F4ED] transition-colors underline">
+            Video megnyitása
           </a>
         ) : (
-          <div style={{ color: '#667085', fontSize: 14 }}>
-            Fenntartott hely: ide kerulhet elozetes vagy ajanlo video.
-          </div>
+          <div className="text-[#87BAC3]/60 text-sm">Fenntartott hely: ide kerülhet előzetes vagy ajánló videó.</div>
         )}
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <div style={{ fontWeight: 600, marginBottom: 8, fontSize: '14px' }}>Backseating ({comments.length})</div>
+      {/* Comments */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-3">
+          Backseating ({comments.length})
+        </div>
         {comments.length === 0 ? (
-          <div style={{ color: '#888', fontSize: 13 }}>Még nincs backseating.</div>
+          <div className="text-[#87BAC3]/60 text-sm">Még nincs backseating.</div>
         ) : (
-          <div style={{
-            overflow: 'auto',
-            flex: 1,
-            minHeight: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'stretch',
-            gap: 8,
-            paddingRight: 8,
-          }}>
-            {comments.map((c, i) => {
+          <div className="overflow-auto flex-1 min-h-0 flex flex-col gap-3 pr-1">
+            {comments.map((c) => {
               const showActions = c.isOwn && (activeCommentId === c.id || editingCommentId === c.id);
               const isEditingThisComment = editingCommentId === c.id;
 
               return (
                 <div
                   key={c.id}
-                  style={{
-                    fontSize: '14px',
-                    padding: '10px',
-                    backgroundColor: '#f9f9f9',
-                    borderRadius: '6px',
-                    borderLeft: '3px solid var(--color-primary)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    width: '100%',
-                    minHeight: 120,
-                    flexShrink: 0,
-                    boxSizing: 'border-box',
-                  }}
+                  className="relative bg-[#53629E]/20 border-l-2 border-[#87BAC3] rounded-xl p-3 min-h-[100px] flex-shrink-0 overflow-hidden"
                 >
+                  {/* Gear button */}
                   {c.isOwn && (
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveCommentId((prev) => (prev === c.id ? null : c.id));
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: 'var(--color-primary)',
-                        zIndex: 4,
-                        padding: 4,
-                        display: 'flex',
-                      }}
+                      onClick={(e) => { e.stopPropagation(); setActiveCommentId(prev => prev === c.id ? null : c.id); }}
+                      className="absolute top-2 right-2 z-[4] p-1 bg-transparent border-none cursor-pointer text-[#87BAC3] hover:text-[#D6F4ED] transition-colors"
                     >
-                      <BiCog size={20} />
+                      <BiCog size={18} />
                     </button>
                   )}
-                  {showActions ? (
-                    <div
-                      style={
-                        isEditingThisComment
-                          ? {
-                            position: 'absolute',
-                            right: 10,
-                            bottom: 10,
-                            zIndex: 3,
-                            pointerEvents: 'none',
-                          }
-                          : {
-                            position: 'absolute',
-                            inset: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 3,
-                            pointerEvents: 'none',
-                          }
-                      }
-                    >
-                      <div style={{ display: 'flex', gap: 8, pointerEvents: 'auto' }}>
+
+                  {/* Action overlay */}
+                  {showActions && (
+                    <div className={`absolute z-[3] ${isEditingThisComment ? 'right-2 bottom-2' : 'inset-0 flex items-center justify-center'}`}
+                      style={{ pointerEvents: 'none' }}>
+                      <div className="flex gap-2" style={{ pointerEvents: 'auto' }}>
                         {isEditingThisComment ? (
                           <>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void saveEdit();
-                              }}
+                              onClick={(e) => { e.stopPropagation(); void saveEdit(); }}
                               onMouseEnter={() => setHoveredActionKey(`save-${c.id}`)}
-                              onMouseLeave={() => {
-                                setHoveredActionKey(null);
-                                setPressedActionKey(null);
-                              }}
+                              onMouseLeave={() => { setHoveredActionKey(null); setPressedActionKey(null); }}
                               onMouseDown={() => setPressedActionKey(`save-${c.id}`)}
                               onMouseUp={() => setPressedActionKey(null)}
                               disabled={processingCommentId === c.id || !editingText.trim()}
-                              style={getActionButtonStyle('save', `save-${c.id}`)}
-                            >
-                              Save
-                            </button>
+                              className={actionBtn('save', `save-${c.id}`)}
+                            >Save</button>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingCommentId(null);
-                                setEditingText('');
-                              }}
+                              onClick={(e) => { e.stopPropagation(); setEditingCommentId(null); setEditingText(''); }}
                               onMouseEnter={() => setHoveredActionKey(`cancel-${c.id}`)}
-                              onMouseLeave={() => {
-                                setHoveredActionKey(null);
-                                setPressedActionKey(null);
-                              }}
+                              onMouseLeave={() => { setHoveredActionKey(null); setPressedActionKey(null); }}
                               onMouseDown={() => setPressedActionKey(`cancel-${c.id}`)}
                               onMouseUp={() => setPressedActionKey(null)}
-                              style={getActionButtonStyle('cancel', `cancel-${c.id}`)}
-                            >
-                              Cancel
-                            </button>
+                              className={actionBtn('cancel', `cancel-${c.id}`)}
+                            >Cancel</button>
                           </>
                         ) : (
                           <>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEdit(c.id, c.text);
-                              }}
+                              onClick={(e) => { e.stopPropagation(); startEdit(c.id, c.text); }}
                               onMouseEnter={() => setHoveredActionKey(`edit-${c.id}`)}
-                              onMouseLeave={() => {
-                                setHoveredActionKey(null);
-                                setPressedActionKey(null);
-                              }}
+                              onMouseLeave={() => { setHoveredActionKey(null); setPressedActionKey(null); }}
                               onMouseDown={() => setPressedActionKey(`edit-${c.id}`)}
                               onMouseUp={() => setPressedActionKey(null)}
-                              style={getActionButtonStyle('edit', `edit-${c.id}`)}
-                            >
-                              Edit
-                            </button>
+                              className={actionBtn('edit', `edit-${c.id}`)}
+                            >Edit</button>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void deleteComment(c.id);
-                              }}
+                              onClick={(e) => { e.stopPropagation(); void deleteComment(c.id); }}
                               onMouseEnter={() => setHoveredActionKey(`delete-${c.id}`)}
-                              onMouseLeave={() => {
-                                setHoveredActionKey(null);
-                                setPressedActionKey(null);
-                              }}
+                              onMouseLeave={() => { setHoveredActionKey(null); setPressedActionKey(null); }}
                               onMouseDown={() => setPressedActionKey(`delete-${c.id}`)}
                               onMouseUp={() => setPressedActionKey(null)}
                               disabled={processingCommentId === c.id}
-                              style={getActionButtonStyle('delete', `delete-${c.id}`)}
-                            >
-                              Delete
-                            </button>
+                              className={actionBtn('delete', `delete-${c.id}`)}
+                            >Delete</button>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void reportComment(c.id);
-                              }}
+                              onClick={(e) => { e.stopPropagation(); void reportComment(c.id); }}
                               onMouseEnter={() => setHoveredActionKey(`report-${c.id}`)}
-                              onMouseLeave={() => {
-                                setHoveredActionKey(null);
-                                setPressedActionKey(null);
-                              }}
+                              onMouseLeave={() => { setHoveredActionKey(null); setPressedActionKey(null); }}
                               onMouseDown={() => setPressedActionKey(`report-${c.id}`)}
                               onMouseUp={() => setPressedActionKey(null)}
                               disabled={processingCommentId === c.id}
-                              style={getActionButtonStyle('report', `report-${c.id}`)}
-                            >
-                              Report
-                            </button>
+                              className={actionBtn('report', `report-${c.id}`)}
+                            >Report</button>
                           </>
                         )}
                       </div>
                     </div>
-                  ) : null}
+                  )}
+
+                  {/* Comment body */}
                   <div style={{ filter: showActions && !isEditingThisComment ? 'blur(1px)' : 'none', opacity: showActions && !isEditingThisComment ? 0.45 : 1, transition: 'filter 0.2s, opacity 0.2s' }}>
-                    <div style={{
-                      fontWeight: 700,
-                      color: 'var(--color-primary)',
-                      marginBottom: 4,
-                      fontSize: '15px',
-                    }}>
-                      {c.user}
-                    </div>
+                    <div className="font-bold text-[#D6F4ED] text-sm mb-1">{c.user}</div>
                     {editingCommentId === c.id ? (
                       <textarea
                         value={editingText}
                         onChange={(e) => setEditingText(e.target.value)}
                         rows={3}
-                        style={{
-                          width: '100%',
-                          border: '1px solid #cbd5e1',
-                          borderRadius: 6,
-                          padding: 8,
-                          fontSize: 14,
-                          marginBottom: 8,
-                          resize: 'vertical',
-                        }}
+                        className="w-full bg-[#53629E]/30 border border-[#53629E] text-[#D6F4ED] rounded-lg px-3 py-2 text-sm mb-2 resize-vertical outline-none focus:border-[#87BAC3]"
                       />
                     ) : (
-                      <div style={{
-                        color: '#333',
-                        lineHeight: 1.5,
-                        wordWrap: 'break-word',
-                        whiteSpace: 'pre-wrap',
-                        marginBottom: 8,
-                        fontSize: '14px',
-                      }}>
-                        {c.text}
-                      </div>
+                      <div className="text-[#D6F4ED]/80 text-sm leading-relaxed break-words whitespace-pre-wrap mb-2">{c.text}</div>
                     )}
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+
+                    {/* Like / Dislike */}
+                    <div className="flex gap-2 items-center">
                       <button
                         onClick={() => void handleLike(c.id)}
-                        style={{
-                          padding: '4px 10px',
-                          fontSize: '14px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          border: `1px solid ${userVotes[c.id] === 'like' ? 'var(--color-primary)' : '#ddd'}`,
-                          backgroundColor: userVotes[c.id] === 'like' ? 'var(--color-primary)' : '#fff',
-                          color: userVotes[c.id] === 'like' ? '#fff' : '#000',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          boxShadow: userVotes[c.id] === 'like' ? 'none' : '0 0 2px rgba(0,0,0,0.2)'
-                        }}
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${
+                          userVotes[c.id] === 'like'
+                            ? 'bg-[#473472] border-[#D6F4ED] text-[#D6F4ED]'
+                            : 'bg-transparent border-[#53629E] text-[#87BAC3] hover:border-[#87BAC3]'
+                        }`}
                       >
-                        <BiLike /> <span style={{ fontSize: '12px' }}>{c.likes || 0}</span>
+                        <BiLike size={24} /> <span>{c.likes || 0}</span>
                       </button>
                       <button
                         onClick={() => void handleDislike(c.id)}
-                        style={{
-                          padding: '4px 10px',
-                          fontSize: '14px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          border: `1px solid ${userVotes[c.id] === 'dislike' ? 'var(--color-primary)' : '#ddd'}`,
-                          backgroundColor: userVotes[c.id] === 'dislike' ? 'var(--color-primary)' : '#fff',
-                          color: userVotes[c.id] === 'dislike' ? '#fff' : '#000',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          boxShadow: userVotes[c.id] === 'dislike' ? 'none' : '0 0 2px rgba(0,0,0,0.2)'
-                        }}
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${
+                          userVotes[c.id] === 'dislike'
+                            ? 'bg-[#473472] border-red-400 text-red-400'
+                            : 'bg-transparent border-[#53629E] text-[#87BAC3] hover:border-red-400'
+                        }`}
                       >
-                        <BiDislike /> <span style={{ fontSize: '12px' }}>{c.dislikes || 0}</span>
+                        <BiDislike size={24} /> <span>{c.dislikes || 0}</span>
                       </button>
                     </div>
                   </div>
@@ -426,4 +277,3 @@ export function BookBack({
     </div>
   );
 }
-
