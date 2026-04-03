@@ -9,6 +9,147 @@
   --color-bg: #D6F4ED;
 }
 
+@layer components {
+  /* Common style for hanging tabs (used in Header and Page Nav) */
+  .hanging-tab {
+    @apply flex items-center gap-2 px-6 py-2.5 rounded-b-2xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 shadow-xl border-x border-b relative z-30;
+  }
+  
+  .hanging-tab-active {
+    @apply bg-[#D6F4ED] text-[#473472] border-[#D6F4ED] scale-105 translate-y-0.5 shadow-[#D6F4ED]/20;
+  }
+  
+  .hanging-tab-inactive {
+    @apply bg-[#473472] text-[#D6F4ED] border-[#53629E]/30 hover:bg-[#53629E] hover:text-white hover:translate-y-1;
+  }
+
+  /* Variations for larger tabs (Home / DevLogs) */
+  .hanging-tab-lg {
+    @apply gap-3 px-10 py-4 rounded-b-3xl text-sm tracking-[0.15em];
+  }
+
+  /* Project Card & UI Components */
+  .project-card {
+    @apply relative flex flex-col bg-[#473472] border border-[#53629E] rounded-3xl overflow-hidden hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all duration-300 cursor-pointer;
+  }
+
+  .project-card-image-wrapper {
+    @apply h-48 bg-gradient-to-br from-[#53629E] to-[#473472] flex items-center justify-center relative overflow-hidden shrink-0;
+  }
+
+  .glass-badge {
+    @apply text-[10px] font-bold uppercase tracking-widest opacity-90 px-2.5 py-1 self-start rounded-xl border transition-all duration-300;
+  }
+
+  .glass-badge-purple {
+    @apply text-purple-300 bg-purple-500/20 border-purple-400/30;
+  }
+
+  .glass-badge-blue {
+    @apply text-blue-300 bg-blue-500/20 border-blue-400/30;
+  }
+
+  .glass-action-btn {
+    @apply flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all active:scale-95 bg-white/5 border-white/10 text-white/60 hover:border-opacity-50;
+  }
+
+  .glass-action-btn-active-rose {
+    @apply bg-rose-500/20 border-rose-400/40 text-rose-400;
+  }
+
+  .glass-action-btn-active-amber {
+    @apply bg-amber-500/20 border-amber-400/40 text-amber-400;
+  }
+
+  .primary-btn-pill {
+    @apply flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D6F4ED] text-[#473472] text-[10px] font-black uppercase tracking-widest hover:bg-[#87BAC3] hover:scale-105 active:scale-95 transition-all;
+  }
+
+  .developer-pill {
+    @apply flex items-center gap-2.5;
+  }
+
+  .developer-avatar {
+    @apply w-9 h-9 rounded-xl bg-[#53629E] flex items-center justify-center border border-[#87BAC3]/40 shadow-lg shrink-0;
+  }
+
+  .description-box {
+    @apply bg-[#1a1228]/40 rounded-2xl p-3 border border-white/10 min-h-[60px] relative overflow-hidden group-hover:border-white/20 transition-all;
+  }
+
+  /* Modal & Form Components */
+  .glass-modal-overlay {
+    @apply fixed inset-0 bg-[#1a1228]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4;
+  }
+
+  .glass-modal-content {
+    @apply bg-[#473472] border border-[#53629E] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl fade-in;
+  }
+
+  .glass-input {
+    @apply w-full bg-[#1a1228]/40 border border-[#53629E]/30 rounded-xl px-4 py-3 text-[#D6F4ED] placeholder-[#87BAC3]/30 focus:border-[#D6F4ED] focus:ring-1 focus:ring-[#D6F4ED] outline-none transition-all font-medium;
+  }
+
+  .glass-label {
+    @apply block text-xs font-black text-[#87BAC3] uppercase tracking-widest mb-2 ml-1;
+  }
+
+  /* Page Layouts */
+  .page-container {
+    @apply w-full max-w-[1200px] mx-auto px-6 py-8;
+  }
+
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  /* AI Search & Input Groups */
+  .glass-search-group {
+    @apply relative flex items-center bg-white rounded-full border-2 border-transparent transition-all duration-300 shadow-xl overflow-hidden focus-within:border-[#87BAC3];
+  }
+
+  .glass-search-input {
+    @apply flex-1 px-8 py-5 text-lg font-medium bg-transparent outline-none text-[#473472] placeholder-[#87BAC3]/50;
+  }
+
+  .glass-search-btn {
+    @apply px-10 py-4 bg-[#473472] text-white font-black rounded-full flex items-center gap-2 hover:bg-[#53629E] transition-all disabled:opacity-70 disabled:cursor-not-allowed;
+  }
+
+  /* Profile & List Rows */
+  .glass-card-row {
+    @apply bg-[#53629E]/20 border border-[#53629E]/40 rounded-2xl p-5 flex items-center gap-4 hover:border-[#87BAC3]/40 transition-all;
+  }
+
+  .secondary-btn-pill {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-[#D6F4ED] border border-[#53629E] bg-[#53629E]/30 hover:bg-[#53629E]/60 transition-all;
+  }
+
+  /* Auth & Forms */
+  .glass-auth-card {
+    @apply bg-[#473472] rounded-[2.5rem] border border-[#53629E] shadow-2xl overflow-hidden relative;
+  }
+
+  .glass-link {
+    @apply text-[#87BAC3] hover:text-[#D6F4ED] transition-colors duration-200 font-bold;
+  }
+
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 body {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   background: var(--color-accent); /* #87BAC3 */
