@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { User, SteamAchievementsResponse } from '../services/api';
-import { getListsForUser, removeList, removeBookFromList, createListForUser, uploadListImage, uploadBookItemGallery, deleteGalleryItem, type BookList } from '../services/lists';
+import { getListsForUser, removeList, removeBookFromList, createListForUser, uploadListImage, uploadBookItemGallery, deleteGalleryItem } from '../services/lists';
 import { RatingsService, SteamService } from '../services/api';
 import { StarRating } from '../components/StarRating';
-import { Library, Plus, Trash2, ChevronDown, ChevronUp, FolderPlus, Gamepad2, Info, Image as ImageIcon, Camera } from 'lucide-react';
+import { Library, Plus, Trash2, ChevronDown, ChevronUp, FolderPlus, Gamepad2, Info, Image as ImageIcon, Camera, ChevronRight } from 'lucide-react';
+import { BiUpvote } from 'react-icons/bi';
 
 interface MyListsProps {
   user?: User | null;
 }
 
 export function MyLists({ user }: MyListsProps) {
-  const [lists, setLists] = useState<BookList[]>([]);
+  const [lists, setLists] = useState<any[]>([]);
+  const [projectLists, setProjectLists] = useState<any[]>([]);
   const [openListId, setOpenListId] = useState<number | null>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ export function MyLists({ user }: MyListsProps) {
   useEffect(() => {
     if (user) {
       fetchLists();
+      fetchProjectLists();
       fetchUserRatings();
     } else {
       setLoading(false);
@@ -112,6 +115,19 @@ export function MyLists({ user }: MyListsProps) {
       setError(err instanceof Error ? err.message : 'Hiba a listák lekérésekor');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProjectLists = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/user/${user.id}/lists`);
+      if (response.ok) {
+        const data = await response.json();
+        setProjectLists(data);
+      }
+    } catch (err) {
+      console.error('Hiba a projekt listák lekérésekor:', err);
     }
   };
 
@@ -217,8 +233,12 @@ export function MyLists({ user }: MyListsProps) {
     );
   }
 
+  const allLists = [...lists, ...projectLists.filter(l => l.name !== 'Wishlist Dev Logok')];
+  // Filter out wishlist from project lists as requested
+
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
+      {/* ... hidden inputs ... */}
       <input 
         ref={listUploadInputRef}
         type="file" 
@@ -275,7 +295,7 @@ export function MyLists({ user }: MyListsProps) {
 
       {loading ? (
         <div className="py-20 text-center text-[#87BAC3] font-bold animate-pulse">Listák betöltése...</div>
-      ) : lists.length === 0 ? (
+      ) : allLists.length === 0 ? (
         <div className="py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl p-8">
           <Library size={48} className="mx-auto text-[#53629E] mb-4" />
           <p className="text-xl font-bold text-[#D6F4ED] mb-2">Még nem hoztál létre egy listát sem.</p>
@@ -284,7 +304,7 @@ export function MyLists({ user }: MyListsProps) {
         </div>
       ) : (
         <div className="space-y-6">
-          {lists.map(list => (
+          {allLists.map(list => (
             <div key={list.id} className="bg-[#473472] border border-[#53629E] rounded-3xl overflow-hidden shadow-xl transition-all">
               {/* List Header */}
               <div 
@@ -317,32 +337,41 @@ export function MyLists({ user }: MyListsProps) {
                 </div>
                 
                 <div className="flex items-center gap-3 relative z-30" onClick={e => e.stopPropagation()}>
-                  <button 
-                    type="button"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#87BAC3] text-[#473472] hover:bg-[#D6F4ED] transition-all cursor-pointer shadow-lg active:scale-95 font-bold text-xs"
-                    title="Borítókép feltöltése"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      triggerListUpload(list.id);
-                    }}
-                  >
-                    <Camera size={16} />
-                    <span>Feltöltés</span>
-                  </button>
-                  <Link
-                    to="/"
-                    title="Játék hozzáadása"
-                    className="p-2.5 rounded-xl bg-[#53629E]/40 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all"
-                  >
-                    <Plus size={18} />
-                  </Link>
-                  <button
-                    onClick={() => handleDeleteList(list.id)}
-                    className="p-2.5 rounded-xl bg-red-400/10 text-red-400 border border-red-400/20 hover:bg-red-400/20 transition-all"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  {!list.isProjectList && (
+                    <>
+                      <button 
+                        type="button"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#87BAC3] text-[#473472] hover:bg-[#D6F4ED] transition-all cursor-pointer shadow-lg active:scale-95 font-bold text-xs"
+                        title="Borítókép feltöltése"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          triggerListUpload(list.id);
+                        }}
+                      >
+                        <Camera size={16} />
+                        <span>Feltöltés</span>
+                      </button>
+                      <Link
+                        to="/"
+                        title="Játék hozzáadása"
+                        className="p-2.5 rounded-xl bg-[#53629E]/40 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all"
+                      >
+                        <Plus size={18} />
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteList(list.id)}
+                        className="p-2.5 rounded-xl bg-red-400/10 text-red-400 border border-red-400/20 hover:bg-red-400/20 transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+                  {list.isProjectList && (
+                     <div className="px-3 py-1.5 rounded-xl bg-[#53629E]/20 text-[#87BAC3] text-[10px] font-black uppercase tracking-widest border border-[#53629E]/30">
+                        Automatikus Lista
+                     </div>
+                  )}
                   <div className="ml-2 text-[#87BAC3]">
                     {openListId === list.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                   </div>
@@ -352,7 +381,77 @@ export function MyLists({ user }: MyListsProps) {
               {/* List Content */}
               {openListId === list.id && (
                 <div className="p-6 pt-2 bg-[#1a1228]/30">
-                  {list.items && list.items.length > 0 ? (
+                  {list.isProjectList ? (
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {list.items.map((project: any) => (
+                           <div
+                             key={project.id}
+                             onClick={() => navigate(`/devlogs/${project.id}`)}
+                             className="project-card group"
+                           >
+                             <div className="project-card-image-wrapper !h-40">
+                               {project.imagePath ? (
+                                 <img
+                                   src={
+                                     project.imagePath.startsWith('http') 
+                                       ? project.imagePath 
+                                       : project.imagePath.startsWith('dev_covers')
+                                         ? `http://localhost:3000/${project.imagePath}`
+                                         : `http://localhost:3000/uploads/${project.imagePath}`
+                                   }
+                                   alt={project.name}
+                                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                 />
+                               ) : (
+                                 <>
+                                   <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#87BAC3] via-transparent to-transparent"></div>
+                                   <Gamepad2 size={40} className="text-[#D6F4ED]/20 transform -rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-all duration-500" />
+                                 </>
+                               )}
+                             </div>
+
+                             <div className="p-5 flex-1 flex flex-col gap-4">
+                               <div className="flex flex-col gap-2">
+                                 <h2 className="text-lg font-black text-[#D6F4ED] group-hover:text-white transition-colors tracking-tighter uppercase leading-tight">{project.name}</h2>
+                                 <div className="flex flex-wrap gap-1.5">
+                                   <div className="glass-badge glass-badge-purple !px-2 !py-0.5 !text-[9px]">
+                                     {project.genre}
+                                   </div>
+                                   <div className="glass-badge glass-badge-blue !px-2 !py-0.5 !text-[9px]">
+                                     {project.literaryForm}
+                                   </div>
+                                 </div>
+                               </div>
+
+                               <div className="developer-pill">
+                                 <div className="developer-avatar !w-8 !h-8">
+                                   <span className="text-[10px] font-black text-[#D6F4ED] uppercase">{(project.developer?.username || '??').slice(0, 2)}</span>
+                                 </div>
+                                 <div className="flex flex-col">
+                                   <p className="text-[7px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Fejlesztő</p>
+                                   <p className="text-[11px] font-black text-white tracking-tighter uppercase">{project.developer?.username}</p>
+                                 </div>
+                               </div>
+
+                               <div className="mt-auto pt-3 border-t border-[#53629E]/30 flex items-center justify-between">
+                                 <div className="flex items-center gap-2 text-white/70">
+                                    <div className="flex items-center gap-1">
+                                      <BiUpvote size={16} className="text-amber-400" />
+                                      <span className="text-[11px] font-black">{project._count?.upvotes || 0}</span>
+                                    </div>
+                                    <div className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                                      {project._count?.devlogentry || 0} bejegyzés
+                                    </div>
+                                 </div>
+                                 <div className="primary-btn-pill !px-3 !py-1.5 !text-[9px]">
+                                   Mutasd <ChevronRight size={12} strokeWidth={3} />
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                        ))}
+                     </div>
+                  ) : list.items && list.items.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {list.items.map((item: any) => {
                         const book = item.book;

@@ -35,90 +35,84 @@ export function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-[90vh] flex items-center justify-center p-6 sm:p-12">
+      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
         {/* Card */}
-        <div className="bg-[#473472] rounded-3xl border border-[#53629E] shadow-2xl overflow-hidden">
-          {/* Header strip */}
-          <div className="h-1 w-full bg-gradient-to-r from-[#87BAC3] to-[#D6F4ED]" />
+        <div className="glass-auth-card relative">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#87BAC3] via-[#D6F4ED] to-[#87BAC3]" />
 
-          <div className="p-8 sm:p-10">
+          <div className="p-10 sm:p-12">
             {/* Back link */}
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-[#87BAC3] hover:text-[#D6F4ED] text-sm font-semibold mb-8 transition-colors duration-200"
-            >
-              <ArrowLeft size={16} /> Vissza a főoldalra
+            <Link to="/" className="inline-flex items-center gap-2 group mb-10 text-xs font-black uppercase tracking-widest text-[#87BAC3] hover:text-[#D6F4ED] transition-all">
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Vissza a kezdőlapra
             </Link>
 
             {/* Title */}
-            <div className="mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-[#D6F4ED]/10 border border-[#D6F4ED]/20 flex items-center justify-center mb-4">
-                <LogIn size={24} className="text-[#87BAC3]" />
+            <div className="mb-10 text-center sm:text-left">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#473472] to-[#53629E] flex items-center justify-center mb-6 shadow-xl border border-white/5 mx-auto sm:mx-0">
+                <LogIn size={28} className="text-[#D6F4ED]" />
               </div>
-              <h1 className="text-3xl font-black text-[#D6F4ED] tracking-tight">Bejelentkezés</h1>
-              <p className="text-[#87BAC3] mt-1 text-sm">Üdv vissza! Add meg az adataidat.</p>
+              <h1 className="text-4xl font-black text-[#D6F4ED] tracking-tighter uppercase mb-2">Bejelentkezés</h1>
+              <p className="text-sm font-bold text-[#87BAC3] uppercase tracking-widest opacity-60">Üdvözlünk újra a platformon!</p>
             </div>
 
             {/* Error */}
             {error && (
-              <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/20 border border-red-400/40 text-red-300 text-sm font-semibold">
+              <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-xs uppercase tracking-widest text-center animate-shake">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              {/* Username field */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="login-username" className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest flex items-center gap-1.5">
-                  <User size={12} /> Felhasználónév vagy Email
-                </label>
-                <input
-                  id="login-username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  placeholder="Felhasználónév vagy email cím"
-                  disabled={loading}
-                  className="bg-[#53629E]/30 border border-[#53629E] text-[#D6F4ED] placeholder-[#87BAC3]/60 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#87BAC3] focus:bg-[#53629E]/50 transition-all disabled:opacity-50"
-                />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="glass-label ml-1">Felhasználónév</label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#87BAC3] group-focus-within:text-[#D6F4ED] transition-colors" size={18} />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    placeholder="Írd be a neved..."
+                    disabled={loading}
+                    className="glass-input !pl-12 !py-4"
+                  />
+                </div>
               </div>
 
-              {/* Password field */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="login-password" className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest flex items-center gap-1.5">
-                  <Lock size={12} /> Jelszó
-                </label>
-                <input
-                  id="login-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Jelszó"
-                  disabled={loading}
-                  className="bg-[#53629E]/30 border border-[#53629E] text-[#D6F4ED] placeholder-[#87BAC3]/60 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#87BAC3] focus:bg-[#53629E]/50 transition-all disabled:opacity-50"
-                />
+              <div className="space-y-2">
+                <label className="glass-label ml-1">Jelszó</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#87BAC3] group-focus-within:text-[#D6F4ED] transition-colors" size={18} />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    disabled={loading}
+                    className="glass-input !pl-12 !py-4"
+                  />
+                </div>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 w-full py-3 rounded-xl bg-[#D6F4ED] text-[#473472] font-black text-sm hover:bg-[#87BAC3] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#D6F4ED]/10"
+                className="primary-btn-pill w-full !py-4 !text-base group"
               >
-                {loading ? 'Bejelentkezés...' : 'Bejelentkezés →'}
+                {loading ? 'Hitelesítés...' : 'Bejelentkezés'}
+                {!loading && <LogIn size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /> }
               </button>
             </form>
 
             {/* Footer link */}
-            <p className="mt-6 text-center text-sm text-[#87BAC3]">
-              Még nincs fiókod?{' '}
-              <Link to="/register" className="text-[#D6F4ED] font-bold hover:text-[#87BAC3] transition-colors">
-                Regisztrálj itt
+            <div className="mt-10 pt-10 border-t border-white/5 text-center">
+              <p className="text-sm font-bold text-[#87BAC3] uppercase tracking-widest opacity-60 mb-4">Még nincs profilod?</p>
+              <Link to="/register" className="inline-block px-10 py-3 rounded-xl bg-white/5 border border-white/10 text-[#D6F4ED] font-black text-xs uppercase tracking-[0.2em] hover:bg-white/10 transition-all">
+                Fiók létrehozása
               </Link>
-            </p>
+            </div>
           </div>
         </div>
       </div>

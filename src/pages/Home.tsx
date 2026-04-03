@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Gamepad2, ChevronRight } from 'lucide-react';
+import { Gamepad2, ChevronRight, HelpCircle } from 'lucide-react';
 import {
   HiOutlineChatAlt2,
   HiOutlineCollection,
@@ -12,6 +12,7 @@ import {
   HiOutlineGlobeAlt
 } from 'react-icons/hi';
 import { SiDevbox } from "react-icons/si";
+import { BiHeart, BiSolidHeart, BiUpvote, BiSolidUpvote } from "react-icons/bi";
 import type { User } from '../services/api';
 import { BooksService, RatingsService } from '../services/api';
 import { BookCard } from '../components/BookCard';
@@ -63,7 +64,45 @@ export function Home({
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<BookList[]>([]);
   const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
+  const [specialListsBooks, setSpecialListsBooks] = useState<{ favorites: Set<number>, wishlist: Set<number> }>({
+    favorites: new Set(),
+    wishlist: new Set()
+  });
 
+  const [devFavorites, setDevFavorites] = useState<Set<number>>(new Set());
+  const [devUpvoted, setDevUpvoted] = useState<Set<number>>(new Set());
+  const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
+  const navigate = useNavigate();
+
+  // Handle hash scroll
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      setTimeout(() => {
+        const element = document.getElementById(hash.substring(1));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 0);
+    }
+  }, [window.location.hash]);
+
+  // Handle hash scroll and tab switching
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && (hash === '#faq' || hash === '#how-it-works')) {
+      // Ensure we are on overview tab to see these sections
+      setActiveTab('overview');
+      
+      setTimeout(() => {
+        const element = document.getElementById(hash.substring(1));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [window.location.hash, setActiveTab]);
+  
   const booksService = new BooksService();
   const ratingsService = new RatingsService();
 
@@ -82,11 +121,37 @@ export function Home({
     }
   };
 
+  const loadProjectInteractions = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/user/${user.id}/lists`);
+      if (response.ok) {
+        const lists = await response.json();
+        const favs = new Set<number>();
+        const up = new Set<number>();
+        
+        lists.forEach((list: any) => {
+          if (list.name === 'Kedvelt Dev Logok') {
+            list.items.forEach((item: any) => favs.add(item.id));
+          } else if (list.name === 'Wishlist Dev Logok') {
+            list.items.forEach((item: any) => up.add(item.id));
+          }
+        });
+        
+        setDevFavorites(favs);
+        setDevUpvoted(up);
+      }
+    } catch (err) {
+      console.error('Hiba a projekt interakciók lekérésekor:', err);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       void fetchBooks();
       void loadUserLists(String(user.id));
       void fetchProjects();
+      void loadProjectInteractions();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -94,6 +159,98 @@ export function Home({
   const loadUserLists = async (userId: string) => {
     const userLists = await getListsForUser(userId);
     setLists(userLists);
+
+    // Identify books in "Kedveltek" and "Wishlist"
+    const favs = new Set<number>();
+    const wish = new Set<number>();
+
+    userLists.forEach(list => {
+      if (list.name === 'Kedveltek') {
+        list.items?.forEach(item => item.book && favs.add(item.book.id));
+      } else if (list.name === 'Wishlist') {
+        list.items?.forEach(item => item.book && wish.add(item.book.id));
+      }
+    });
+
+    setSpecialListsBooks({ favorites: favs, wishlist: wish });
+  };
+
+  const toggleDevFavorite = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Home: Toggling Dev Favorite:', id);
+    if (!user) {
+      alert('A kedveléshez jelentkezz be!');
+      return;
+    }
+
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('A folytatáshoz jelentkezz be újra!');
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/${id}/favorite`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setDevFavorites(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id); else next.add(id);
+          return next;
+        });
+        // fetchProjects(); <-- Fixed jump
+      } else {
+        const errData = await response.json().catch(() => ({ message: 'Ismeretlen hiba' }));
+        alert(`Hiba: ${errData.message || response.statusText}`);
+      }
+    } catch (err) {
+      console.error('Hiba a kedvelésnél:', err);
+    }
+  };
+
+  const toggleDevUpvote = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Home: Toggling Dev Upvote:', id);
+    if (!user) {
+      alert('A felpontozáshoz jelentkezz be!');
+      return;
+    }
+
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('A folytatáshoz jelentkezz be újra!');
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/${id}/wishlist`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setDevUpvoted(prev => {
+          const next = new Set(prev);
+          const wasUpvoted = next.has(id);
+          if (wasUpvoted) next.delete(id); else next.add(id);
+
+          setProjects(current => current.map(p => 
+            p.id === id 
+              ? { ...p, _count: { ...p._count, upvotes: Math.max(0, (p._count?.upvotes || 0) + (wasUpvoted ? -1 : 1)) } }
+              : p
+          ));
+
+          return next;
+        });
+        // fetchProjects();
+      } else {
+        const errData = await response.json().catch(() => ({ message: 'Ismeretlen hiba' }));
+        alert(`Hiba: ${errData.message || response.statusText}`);
+      }
+    } catch (err) {
+      console.error('Hiba a felpontozásnál:', err);
+    }
   };
 
   const fetchBooks = async () => {
@@ -160,6 +317,22 @@ export function Home({
     }
   };
 
+  const handleToggleSpecialList = async (book: BookWithRating, listName: string) => {
+    if (!user) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/lists/${user.id}/toggle-special`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookId: book.id, listName })
+      });
+      if (response.ok) {
+        await loadUserLists(String(user.id));
+      }
+    } catch (err) {
+      console.error('Hiba a speciális lista váltásakor:', err);
+    }
+  };
+
   const normalizeForSearch = (value: string) =>
     value
       .toLowerCase()
@@ -190,6 +363,64 @@ export function Home({
         const normalized = normalizeForSearch(field ?? '');
         return normalized.split(/\s+/).some(word => word.startsWith(normalizedQuery));
       });
+  }).sort((a, b) => {
+    let comparison = 0;
+    if (sortBy === 'abc') {
+      comparison = (a.title || '').localeCompare(b.title || '');
+    } else if (sortBy === 'kedvelt') {
+      const isAFav = specialListsBooks.favorites.has(a.id);
+      const isBFav = specialListsBooks.favorites.has(b.id);
+      if (isAFav && !isBFav) comparison = -1;
+      else if (!isAFav && isBFav) comparison = 1;
+      else comparison = (a.title || '').localeCompare(b.title || ''); // sub-sort by name
+    } else if (sortBy === 'wishlist') {
+      const isAWish = specialListsBooks.wishlist.has(a.id);
+      const isBWish = specialListsBooks.wishlist.has(b.id);
+      if (isAWish && !isBWish) comparison = -1;
+      else if (!isAWish && isBWish) comparison = 1;
+      else comparison = (a.title || '').localeCompare(b.title || '');
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  const filteredProjects = projects.filter((project) => {
+    const categoryMatch = selectedCategory === 'Összes' || project.genre === selectedCategory;
+    if (!categoryMatch) return false;
+
+    const modeMatch = selectedMode === 'Összes' || project.literaryForm === selectedMode;
+    if (!modeMatch) return false;
+
+    if (activeTab === 'devlogs' && selectedRating !== '') {
+      const upvotes = project._count?.upvotes || 0;
+      if (selectedRating === '0-10' && (upvotes < 0 || upvotes > 10)) return false;
+      if (selectedRating === '10-50' && (upvotes <= 10 || upvotes > 50)) return false;
+      if (selectedRating === '50-100' && (upvotes <= 50 || upvotes > 100)) return false;
+      if (selectedRating === '100+' && upvotes <= 100) return false;
+    }
+
+    if (!normalizedQuery) return true;
+
+    return [project.name, project.genre, project.literaryForm]
+      .some((field) => normalizeForSearch(field ?? '').split(/\s+/).some(word => word.startsWith(normalizedQuery)));
+  }).sort((a, b) => {
+    let comparison = 0;
+    if (sortBy === 'abc') {
+      comparison = (a.name || '').localeCompare(b.name || '');
+    } else if (sortBy === 'kedvelt') {
+      const isAFav = devFavorites.has(a.id);
+      const isBFav = devFavorites.has(b.id);
+      if (isAFav && !isBFav) comparison = -1;
+      else if (!isAFav && isBFav) comparison = 1;
+      else comparison = (a.name || '').localeCompare(b.name || '');
+    } else if (sortBy === 'wishlist') {
+      const countA = a._count?.upvotes || 0;
+      const countB = b._count?.upvotes || 0;
+      comparison = countB - countA;
+      if (comparison === 0) comparison = (a.name || '').localeCompare(b.name || '');
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison;
   });
 
   if (!user) {
@@ -283,6 +514,100 @@ export function Home({
             </ul>
           </div>
         </div>
+        
+        {/* Hogyan működik Section (Unauthenticated) */}
+        <div id="how-it-works" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#D6F4ED]/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+          <div className="relative z-10">
+            <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+              <HiOutlineLightBulb className="text-[#87BAC3]" /> Hogyan működik az indie.backseat?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[
+                { 
+                  title: "1. Fedezd fel a legújabb indie kincseket", 
+                  text: "Merülj el a folyamatosan bővülő játék-katalógusunkban, ahol kézzel válogatott, minőségi független projekteket találsz. Ne csak a kész játékokat nézd: böngéssz a fejlesztői naplók (Dev Logs) között is, hogy lásd a projektek formálódását az ötlettől a megvalósításig." 
+                },
+                { 
+                  title: "2. Kövesd és építsd a gyűjteményed", 
+                  text: "Találtál valamit, ami tetszik? Add hozzá a személyes várólistádhoz vagy jelöld kedvencnek egyetlen kattintással. Hozz létre egyedi listákat a gyűjteményed rendszerezéséhez, így sosem maradsz le a legfontosabb frissítésekről és mérföldkövekről." 
+                },
+                { 
+                  title: "3. Támogasd a fejlesztőket (Backseating)", 
+                  text: "A visszajelzésed aranyat ér! Csatlakozz a párbeszédhez a fejlesztői naplók alatt, tegyél fel kérdéseket, vagy tegyél javaslatokat a játékmenetre vonatkozóan. Ez a közvetlen segítés segít az alkotóknak, hogy a lehető legjobb élményt fejlesszék ki." 
+                },
+                { 
+                  title: "4. Építsd az indie közösséget", 
+                  text: "Oszd meg tapasztalataidat a közösséggel csillag alapú értékelésekkel és véleményekkel. Segíts más játékosoknak megtalálni a következő kedvencüket, és járulj hozzá az indie stúdiók sikeréhez és láthatóságához a platformon." 
+                }
+              ].map((step, idx) => (
+                <div key={idx} className="flex flex-col gap-4 p-6 rounded-2xl bg-[#D6F4ED]/5 border border-[#D6F4ED]/10 backdrop-blur-md hover:bg-[#D6F4ED]/10 transition-all duration-300">
+                  <h4 className="text-lg font-black text-[#87BAC3] uppercase tracking-tighter">{step.title}</h4>
+                  <p className="text-[#D6F4ED]/80 text-sm md:text-[15px] leading-relaxed font-medium">{step.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ Section (Unauthenticated) */}
+        <div id="faq" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-[#87BAC3]/5 rounded-full blur-3xl -ml-32 -mt-32"></div>
+          <div className="relative z-10">
+            <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+              <HelpCircle className="text-[#87BAC3]" /> Gyakori Kérdések
+            </h2>
+            <div className="flex flex-col gap-4">
+              {[
+                { 
+                  q: "Ki láthatja a Dev Logjaimat?", 
+                  a: "A publikált Dev Logokat minden látogató láthatja a platformon, de csak regisztrált felhasználók tudnak felpontozni vagy hozzászólni az egyes bejegyzésekhez." 
+                },
+                { 
+                  q: "Milyen gyakran érdemes frissíteni a naplómat?", 
+                  a: "Nincs kötött szabály, de a legsikeresebb projektek hetente vagy kéthetente tesznek közzé új bejegyzést, hogy fenntartsák a közösség érdeklődését." 
+                },
+                { 
+                  q: "Milyen fájlformátumokat támogattok a képeknél?", 
+                  a: "Jelenleg a JPG, PNG és WebP formátumokat támogatjuk. A maximális fájlméret 10MB, a képek pedig automatikusan optimalizálva jelennek meg." 
+                },
+                { 
+                  q: "Hogyan érhetem el a fejlesztőket?", 
+                  a: "Minden bejegyzés alatt találsz egy hozzászólási szekciót, ahol közvetlenül kérdezhetsz az alkotótól, vagy csatlakozhatsz a Discord szerverünkhöz." 
+                },
+                { 
+                  q: "Van lehetőség a bejegyzések utólagos szerkesztésére?", 
+                  a: "Igen, a készítő bármikor módosíthatja a projekt leírását vagy a bejegyzések tartalmát a saját profilján keresztül, így a napló mindig naprakész marad." 
+                }
+              ].map((item, idx) => (
+                <div 
+                  key={idx} 
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${
+                    activeFaqIndex === idx 
+                      ? 'bg-[#D6F4ED]/10 border-[#87BAC3]/40' 
+                      : 'bg-[#D6F4ED]/5 border-[#D6F4ED]/10 hover:bg-[#D6F4ED]/8'
+                  }`}
+                  onClick={() => setActiveFaqIndex(activeFaqIndex === idx ? null : idx)}
+                >
+                  <div className="p-6 flex items-center justify-between">
+                    <h4 className="text-sm font-black text-[#87BAC3] uppercase tracking-widest">{item.q}</h4>
+                    <ChevronRight 
+                      size={18} 
+                      className={`text-[#87BAC3] transition-transform duration-300 ${activeFaqIndex === idx ? 'rotate-90' : ''}`} 
+                    />
+                  </div>
+                  <div 
+                    className={`transition-all duration-300 ease-in-out ${
+                      activeFaqIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <p className="px-6 pb-6 text-[#D6F4ED]/80 text-[13px] leading-relaxed font-medium">{item.a}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Bottom CTA */}
         <div className="mt-14 text-center flex flex-col items-center gap-4">
@@ -309,14 +634,11 @@ export function Home({
     <div className="home-authenticated">
       <div style={{ marginBottom: '32px' }}>
 
-        {/* Navigation Buttons Row - Centered */}
-        <div className="flex justify-center flex-wrap gap-4 mb-6 mt-0">
+        {/* Navigation Buttons Row - Centered and Separated */}
+        <div className="flex justify-center flex-wrap gap-4 mb-6 -mt-5 relative z-30">
           <button
             onClick={() => setActiveTab('games')}
-            className={`flex items-center gap-2 px-8 py-3 rounded-full font-extrabold text-[15px] border-2 transition-all duration-300 shadow-sm hover:shadow-md ${activeTab === 'games'
-                ? 'bg-[#473472] text-[#D6F4ED] border-[#473472] hover:bg-[#53629E] hover:border-[#53629E] hover:text-white shadow-[#473472]/20'
-                : 'bg-[#D6F4ED] text-[#473472] border-[#473472] hover:opacity-90'
-              }`}
+            className={`hanging-tab hanging-tab-lg ${activeTab === 'games' ? 'hanging-tab-active' : 'hanging-tab-inactive'}`}
           >
             <HiOutlineCollection size={20} />
             Játékok
@@ -324,12 +646,9 @@ export function Home({
 
           <button
             onClick={() => setActiveTab('devlogs')}
-            className={`flex items-center gap-2 px-8 py-3 rounded-full font-extrabold text-[15px] border-2 transition-all duration-300 shadow-sm hover:shadow-md ${activeTab === 'devlogs'
-                ? 'bg-[#473472] text-[#D6F4ED] border-[#473472] hover:bg-[#53629E] hover:border-[#53629E] hover:text-white shadow-[#473472]/20'
-                : 'bg-[#D6F4ED] text-[#473472] border-[#473472] hover:opacity-90'
-              }`}
+            className={`hanging-tab hanging-tab-lg ${activeTab === 'devlogs' ? 'hanging-tab-active' : 'hanging-tab-inactive'}`}
           >
-            <SiDevbox size={18} />
+            <SiDevbox size={20} />
             Dev Logs
           </button>
         </div>
@@ -431,6 +750,99 @@ export function Home({
                 </ul>
               </div>
             </div>
+
+            {/* Global Informational Sections (Back inside overview) */}
+            <div id="how-it-works" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#D6F4ED]/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+              <div className="relative z-10">
+                <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+                  <HiOutlineLightBulb className="text-[#87BAC3]" /> Hogyan működik az indie.backseat?
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {[
+                    { 
+                      title: "1. Fedezd fel a legújabb indie kincseket", 
+                      text: "Merülj el a folyamatosan bővülő játék-katalógusunkban, ahol kézzel válogatott, minőségi független projekteket találsz. Ne csak a kész játékokat nézd: böngéssz a fejlesztői naplók (Dev Logs) között is, hogy lásd a projektek formálódását az ötlettől a megvalósításig." 
+                    },
+                    { 
+                      title: "2. Kövesd és építsd a gyűjteményed", 
+                      text: "Találtál valamit, ami tetszik? Add hozzá a személyes várólistádhoz vagy jelöld kedvencnek egyetlen kattintással. Hozz létre egyedi listákat a gyűjteményed rendszerezéséhez, így sosem maradsz le a legfontosabb frissítésekről és mérföldkövekről." 
+                    },
+                    { 
+                      title: "3. Támogasd a fejlesztőket (Backseating)", 
+                      text: "A visszajelzésed aranyat ér! Csatlakozz a párbeszédhez a fejlesztői naplók alatt, tegyél fel kérdéseket, vagy tegyél javaslatokat a játékmenetre vonatkozóan. Ez a közvetlen segítés segít az alkotóknak, hogy a lehető legjobb élményt fejlesszék ki." 
+                    },
+                    { 
+                      title: "4. Építsd az indie közösséget", 
+                      text: "Oszd meg tapasztalataidat a közösséggel csillag alapú értékelésekkel és véleményekkel. Segíts más játékosoknak megtalálni a következő kedvencüket, és járulj hozzá az indie stúdiók sikeréhez és láthatóságához a platformon." 
+                    }
+                  ].map((step, idx) => (
+                    <div key={idx} className="flex flex-col gap-4 p-6 rounded-2xl bg-[#D6F4ED]/5 border border-[#D6F4ED]/10 backdrop-blur-md hover:bg-[#D6F4ED]/10 transition-all duration-300">
+                      <h4 className="text-lg font-black text-[#87BAC3] uppercase tracking-tighter">{step.title}</h4>
+                      <p className="text-[#D6F4ED]/80 text-sm md:text-[15px] leading-relaxed font-medium">{step.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div id="faq" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-64 h-64 bg-[#87BAC3]/5 rounded-full blur-3xl -ml-32 -mt-32"></div>
+              <div className="relative z-10">
+                <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+                  <HelpCircle className="text-[#87BAC3]" /> Gyakori Kérdések
+                </h2>
+                <div className="flex flex-col gap-4">
+                  {[
+                    { 
+                      q: "Ki láthatja a Dev Logjaimat?", 
+                      a: "A publikált Dev Logokat minden látogató láthatja a platformon, de csak regisztrált felhasználók tudnak felpontozni vagy hozzászólni az egyes bejegyzésekhez." 
+                    },
+                    { 
+                      q: "Milyen gyakran érdemes frissíteni a naplómat?", 
+                      a: "Nincs kötött szabály, de a legsikeresebb projektek hetente vagy kéthetente tesznek közzé új bejegyzést, hogy fenntartsák a közösség érdeklődését." 
+                    },
+                    { 
+                      q: "Milyen fájlformátumokat támogattok a képeknél?", 
+                      a: "Jelenleg a JPG, PNG és WebP formátumokat támogatjuk. A maximális fájlméret 10MB, a képek pedig automatikusan optimalizálva jelennek meg." 
+                    },
+                    { 
+                      q: "Hogyan érhetem el a fejlesztőket?", 
+                      a: "Minden bejegyzés alatt találsz egy hozzászólási szekciót, ahol közvetlenül kérdezhetsz az alkotótól, vagy csatlakozhatsz a Discord szerverünkhöz." 
+                    },
+                    { 
+                      q: "Van lehetőség a bejegyzések utólagos szerkesztésére?", 
+                      a: "Igen, a készítő bármikor módosíthatja a projekt leírását vagy a bejegyzések tartalmát a saját profilján keresztül, így a napló mindig naprakész marad." 
+                    }
+                  ].map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${
+                        activeFaqIndex === idx 
+                          ? 'bg-[#D6F4ED]/10 border-[#87BAC3]/40' 
+                          : 'bg-[#D6F4ED]/5 border-[#D6F4ED]/10 hover:bg-[#D6F4ED]/8'
+                      }`}
+                      onClick={() => setActiveFaqIndex(activeFaqIndex === idx ? null : idx)}
+                    >
+                      <div className="p-6 flex items-center justify-between">
+                        <h4 className="text-sm font-black text-[#87BAC3] uppercase tracking-widest">{item.q}</h4>
+                        <ChevronRight 
+                          size={18} 
+                          className={`text-[#87BAC3] transition-transform duration-300 ${activeFaqIndex === idx ? 'rotate-90' : ''}`} 
+                        />
+                      </div>
+                      <div 
+                        className={`transition-all duration-300 ease-in-out ${
+                          activeFaqIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        <p className="px-6 pb-6 text-[#D6F4ED]/80 text-[13px] leading-relaxed font-medium">{item.a}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -455,6 +867,10 @@ export function Home({
                     onMouseEnter={() => setHoveredBookId(book.id)}
                     onMouseLeave={() => setHoveredBookId(null)}
                     onOpenAddList={handleOpenAddList}
+                    onToggleFavorite={(b) => handleToggleSpecialList(b, 'Kedveltek')}
+                    onToggleWishlist={(b) => handleToggleSpecialList(b, 'Wishlist')}
+                    isFavorited={specialListsBooks.favorites.has(book.id)}
+                    isWishlisted={specialListsBooks.wishlist.has(book.id)}
                   />
                 ))}
               </div>
@@ -466,65 +882,97 @@ export function Home({
         {activeTab === 'devlogs' && (
           <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-1">
-              {projectsLoading ? (
-                <div className="col-span-full py-20 text-center text-[#87BAC3] font-bold">Betöltés...</div>
-              ) : projects.length === 0 ? (
-                <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
-                  <p className="text-[#87BAC3] text-lg">Még nincsenek projektek. Legyél te az első!</p>
-                </div>
-              ) : (
-                projects.map((log) => (
-                  <Link
-                    to={`/devlogs/${log.id}`}
+            {projectsLoading ? (
+              <div className="col-span-full py-20 text-center text-[#87BAC3] font-bold">Betöltés...</div>
+            ) : projects.length === 0 ? (
+              <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
+                <p className="text-[#87BAC3] text-lg">Még nincsenek projektek.</p>
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
+                <p className="text-[#87BAC3] text-lg">Nincs a szűrésnek megfelelő projekt.</p>
+              </div>
+            ) : (
+              filteredProjects.map((log) => (
+                  <div
                     key={log.id}
-                    className="group relative flex flex-col bg-[#473472] border border-[#53629E] rounded-3xl overflow-hidden hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all duration-300"
+                    onClick={() => navigate(`/devlogs/${log.id}`)}
+                    className="project-card group"
                   >
-                    {/* Decorative Image area at the TOP */}
-                    <div className="h-48 bg-gradient-to-br from-[#53629E] to-[#473472] flex items-center justify-center relative overflow-hidden shrink-0">
+                    <div className="project-card-image-wrapper">
                       {log.imagePath ? (
                         <img
-                          src={`http://localhost:3000/uploads/${log.imagePath}`}
+                          src={
+                            log.imagePath.startsWith('http') 
+                              ? log.imagePath 
+                              : log.imagePath.startsWith('dev_covers')
+                                ? `http://localhost:3000/${log.imagePath}`
+                                : `http://localhost:3000/uploads/${log.imagePath}`
+                          }
                           alt={log.name}
-                          className="absolute inset-0 w-full h-full object-cover"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
                         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#87BAC3] via-transparent to-transparent"></div>
                       )}
                       <Gamepad2 size={48} className="text-[#D6F4ED]/20 transform -rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-all duration-500" />
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-[10px] font-black uppercase tracking-widest backdrop-blur-md">
-                          {log.genre}
-                        </span>
-                      </div>
                     </div>
 
-                    <div className="p-6 flex-1 flex flex-col">
-                      <h2 className="text-2xl font-black text-[#D6F4ED] mb-3 group-hover:text-[#87BAC3] transition-colors tracking-tighter uppercase">{log.name}</h2>
-
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-[#53629E]/50 flex items-center justify-center border border-[#87BAC3]/20">
-                          <span className="text-[10px] font-black text-[#87BAC3] uppercase">{log.user?.username?.slice(0, 2) || '??'}</span>
-                        </div>
-                        <div className="flex flex-col -gap-0.5">
-                          <p className="text-[9px] font-black text-[#87BAC3] uppercase tracking-widest leading-none">Fejlesztő</p>
-                          <p className="text-xs font-bold text-[#D6F4ED]">{log.user?.username}</p>
+                    <div className="p-5 flex-1 flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <h2 className="text-xl font-black text-[#D6F4ED] group-hover:text-white transition-colors tracking-tighter uppercase leading-tight">{log.name}</h2>
+                        <div className="flex flex-wrap gap-1.5">
+                          <div className="glass-badge glass-badge-purple">
+                            {log.genre}
+                          </div>
+                          <div className="glass-badge glass-badge-blue">
+                            {log.literaryForm}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-[#1a1228]/40 rounded-2xl p-4 mb-6 border border-[#53629E]/20 min-h-[80px] relative overflow-hidden">
-                        <p className="text-[#D6F4ED]/70 text-xs leading-relaxed line-clamp-3 italic relative z-10">"{log.description}"</p>
+                      <div className="developer-pill">
+                        <div className="developer-avatar">
+                          <span className="text-xs font-black text-[#D6F4ED] uppercase">{(log.user?.username || '??').slice(0, 2)}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Fejlesztő</p>
+                          <p className="text-xs font-black text-white tracking-tighter uppercase">{log.user?.username}</p>
+                        </div>
                       </div>
 
-                      <div className="mt-auto pt-4 border-t border-[#53629E]/30 flex items-center justify-between">
-                        <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-[0.2em]">
-                          {log._count.devlogentry} bejegyzés
-                        </span>
-                        <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#D6F4ED] text-[#473472] text-[10px] font-black uppercase tracking-widest group-hover:bg-[#87BAC3] group-hover:scale-105 active:scale-95 transition-all">
-                          Mutasd <ChevronRight size={12} strokeWidth={3} />
+                      <div className="flex flex-col gap-1">
+                        <div className="text-[8px] font-black text-white/50 uppercase tracking-[0.3em]">Projekt leírása</div>
+                        <div className="description-box">
+                          <p className="text-white/80 text-[11px] leading-relaxed line-clamp-3 italic relative z-10">"{log.description}"</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto pt-3 border-t border-[#53629E]/30 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={(e) => toggleDevFavorite(e, log.id)}
+                            className={`glass-action-btn ${devFavorites.has(log.id) ? 'glass-action-btn-active-rose' : ''}`}
+                          >
+                            {devFavorites.has(log.id) ? <BiSolidHeart size={20} /> : <BiHeart size={20} />}
+                          </button>
+                          <button
+                            onClick={(e) => toggleDevUpvote(e, log.id)}
+                            className={`glass-action-btn ${devUpvoted.has(log.id) ? 'glass-action-btn-active-amber' : ''}`}
+                          >
+                            {devUpvoted.has(log.id) ? <BiSolidUpvote size={20} /> : <BiUpvote size={20} />}
+                            <span className="text-xs font-black">{log._count?.upvotes || 0}</span>
+                          </button>
+                          <span className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                            {log._count?.devlogentry || 0} bejegyzés
+                          </span>
+                        </div>
+                        <div className="primary-btn-pill">
+                          Mutasd <ChevronRight size={14} strokeWidth={3} />
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))
               )}
             </div>

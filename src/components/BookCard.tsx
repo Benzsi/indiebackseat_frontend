@@ -14,9 +14,23 @@ interface BookCardProps {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onOpenAddList: (book: BookWithRating) => void;
+  onToggleFavorite?: (book: BookWithRating) => void;
+  onToggleWishlist?: (book: BookWithRating) => void;
+  isFavorited?: boolean;
+  isWishlisted?: boolean;
 }
 
-export function BookCard({ book, isHovered, onMouseEnter, onMouseLeave, onOpenAddList }: BookCardProps) {
+export function BookCard({ 
+  book, 
+  isHovered, 
+  onMouseEnter, 
+  onMouseLeave, 
+  onOpenAddList,
+  onToggleFavorite,
+  onToggleWishlist,
+  isFavorited = false,
+  isWishlisted = false
+}: BookCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -96,18 +110,24 @@ export function BookCard({ book, isHovered, onMouseEnter, onMouseLeave, onOpenAd
           Listához adás
         </button>
         <button
-          onClick={(e) => e.stopPropagation()}
-          title="Kiemelés"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWishlist?.(book);
+          }}
+          title="Kívánságlistához adás"
           className="p-1.5 rounded-lg bg-transparent border-none cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-200"
         >
-          <Star fill="none" color="#3b82f6" size={24} />
+          <Star fill={isWishlisted ? "#3b82f6" : "none"} color="#3b82f6" size={24} />
         </button>
         <button
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite?.(book);
+          }}
           title="Kedvelés"
           className="p-1.5 rounded-lg bg-transparent border-none cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-200"
         >
-          <Heart fill="none" color="#ef4444" size={24} />
+          <Heart fill={isFavorited ? "#ef4444" : "none"} color="#ef4444" size={24} />
         </button>
       </div>
     </div>

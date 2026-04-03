@@ -108,9 +108,6 @@ export function AdminUsers({ user }: AdminProps) {
     );
   };
 
-  const inputClass = "bg-[#53629E]/30 border border-[#53629E] text-[#D6F4ED] placeholder-[#87BAC3]/60 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#87BAC3] transition-all w-full";
-  const selectClass = "bg-[#473472] border border-[#53629E] text-[#D6F4ED] rounded-lg px-3 py-2 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer w-full";
-
   if (user?.role !== 'ADMIN') {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
@@ -127,141 +124,152 @@ export function AdminUsers({ user }: AdminProps) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-
+    <div className="page-container max-w-5xl py-12">
       {/* Header row */}
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <Link to="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-[#D6F4ED] border border-[#53629E] bg-[#53629E]/30 hover:bg-[#53629E]/60 transition-all">
+      <div className="flex items-center justify-between mb-10 flex-wrap gap-6">
+        <Link to="/" className="secondary-btn-pill">
           <ArrowLeft size={16} /> Vissza
         </Link>
-        <h1 className="flex items-center gap-3 text-xl sm:text-2xl font-black text-[#473472]">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#473472] to-[#53629E] flex items-center justify-center">
-            <UserIcon size={20} className="text-[#D6F4ED]" />
+        
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#473472] to-[#53629E] flex items-center justify-center shadow-xl">
+            <UserIcon size={24} className="text-[#D6F4ED]" />
           </div>
-          Felhasználók kezelése
-        </h1>
-        <Link to="/profile" className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-[#D6F4ED] bg-[#473472] hover:bg-[#53629E] transition-all">
+          <h1 className="text-2xl font-black text-[#473472] tracking-tighter uppercase">
+            Felhasználók <span className="text-[#53629E]/60">kezelése</span>
+          </h1>
+        </div>
+
+        <Link to="/profile" className="secondary-btn-pill !bg-[#473472] !text-white !border-transparent hover:!bg-[#53629E]">
           <UserCog size={16} /> Profilom
         </Link>
       </div>
 
       {/* Main card */}
-      <div className="bg-[#473472] rounded-3xl border border-[#53629E] shadow-2xl overflow-hidden">
+      <div className="bg-[#473472] rounded-[2rem] border border-[#53629E] shadow-2xl overflow-hidden relative">
         <div className="h-1.5 w-full bg-gradient-to-r from-[#87BAC3] to-[#D6F4ED]" />
 
         {/* Control bar */}
-        <div className="flex items-center justify-between gap-4 flex-wrap px-6 py-5 border-b border-[#53629E]/40 bg-[#53629E]/10">
+        <div className="flex items-center justify-between gap-4 flex-wrap px-8 py-6 border-b border-[#53629E]/30 bg-[#1a1228]/20">
           <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
                 showCreateForm
-                  ? 'bg-red-500/20 text-red-400 border border-red-400/40 hover:bg-red-500/30'
-                  : 'bg-[#D6F4ED] text-[#473472] hover:bg-[#87BAC3]'
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
+                  : 'bg-[#D6F4ED] text-[#473472] hover:bg-[#87BAC3] shadow-lg shadow-[#D6F4ED]/10'
               }`}
             >
-              {showCreateForm ? <><X size={16} /> Mégse</> : <><UserPlus size={16} /> Új felhasználó</>}
+              {showCreateForm ? <><X size={16} strokeWidth={3} /> Mégse</> : <><UserPlus size={16} strokeWidth={3} /> Új felhasználó</>}
             </button>
             <button
               onClick={fetchUsers}
               disabled={loading}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-[#87BAC3] border border-[#53629E] bg-[#53629E]/20 hover:bg-[#53629E]/40 transition-all disabled:opacity-60"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest text-[#87BAC3] border border-[#53629E]/40 hover:bg-white/5 transition-all disabled:opacity-50"
             >
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Frissítés
+              <span>Frissítés</span>
             </button>
           </div>
-          <span className="text-[#87BAC3] text-xs font-black uppercase tracking-widest bg-[#53629E]/20 px-3 py-1 rounded-full">{users.length} Fő</span>
+          <div className="px-4 py-1.5 rounded-full bg-[#D6F4ED]/5 border border-[#D6F4ED]/10 text-[#D6F4ED] text-[10px] font-black uppercase tracking-widest">
+            {users.length} Felhasználó
+          </div>
         </div>
 
-        <div className="p-4 sm:p-8">
+        <div className="p-6 md:p-10">
           {/* Alerts */}
           {error && (
-            <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/20 border border-red-400/40 text-red-300 text-sm font-semibold animate-in fade-in slide-in-from-top-2">
+            <div className="mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-sm fade-in">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-6 px-4 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-sm font-semibold animate-in fade-in slide-in-from-top-2">
-              {success}
+            <div className="mb-8 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm fade-in">
+              <Check size={18} className="inline mr-2" /> {success}
             </div>
           )}
 
           {/* Create form */}
           {showCreateForm && (
-            <div className="mb-8 bg-[#53629E]/20 border border-[#53629E]/40 rounded-3xl p-6 md:p-8 animate-in zoom-in-95 duration-300">
-              <h2 className="text-xl font-black text-[#D6F4ED] mb-6 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[#D6F4ED] text-[#473472]">
-                  <UserPlus size={20} />
+            <div className="mb-10 bg-[#1a1228]/30 border border-[#53629E]/40 rounded-3xl p-8 animate-in zoom-in-95 duration-300">
+              <h2 className="text-xl font-black text-[#D6F4ED] mb-8 flex items-center gap-4">
+                <div className="p-2.5 rounded-xl bg-[#D6F4ED] text-[#473472]">
+                  <UserPlus size={22} strokeWidth={3} />
                 </div>
-                Új felhasználó <span className="text-[#87BAC3]">regisztrálása</span>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-[#87BAC3] mb-1">Rendszer</div>
+                  <span>Felhasználó regisztrálása</span>
+                </div>
               </h2>
-              <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black text-[#87BAC3] uppercase tracking-[0.2em] ml-1">Felhasználónév</label>
-                  <input type="text" value={createUsername} onChange={(e) => setCreateUsername(e.target.value)} placeholder="Pl. AdminElek" className={inputClass} />
+              <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                  <label className="glass-label">Felhasználónév</label>
+                  <input type="text" value={createUsername} onChange={(e) => setCreateUsername(e.target.value)} placeholder="Pl. AdminElek" className="glass-input" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black text-[#87BAC3] uppercase tracking-[0.2em] ml-1">Email cím</label>
-                  <input type="email" value={createEmail} onChange={(e) => setCreateEmail(e.target.value)} placeholder="pelda@email.com" className={inputClass} />
+                <div>
+                  <label className="glass-label">Email cím</label>
+                  <input type="email" value={createEmail} onChange={(e) => setCreateEmail(e.target.value)} placeholder="pelda@email.com" className="glass-input" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black text-[#87BAC3] uppercase tracking-[0.2em] ml-1 flex items-center gap-1">Jelszó</label>
-                  <input type="password" value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} placeholder="••••••••" className={inputClass} />
+                <div>
+                  <label className="glass-label">Jelszó</label>
+                  <input type="password" value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} placeholder="••••••••" className="glass-input" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black text-[#87BAC3] uppercase tracking-[0.2em] ml-1">Szerepkör</label>
-                  <select value={createRole} onChange={(e) => setCreateRole(e.target.value as any)} className={selectClass}>
-                    <option value="USER" className="bg-[#473472]">Felhasználó</option>
-                    <option value="ADMIN" className="bg-[#473472]">Adminisztrátor</option>
-                    <option value="DEVELOPER" className="bg-[#473472]">Fejlesztő</option>
+                <div>
+                  <label className="glass-label">Szerepkör</label>
+                  <select value={createRole} onChange={(e) => setCreateRole(e.target.value as any)} className="glass-input cursor-pointer appearance-none bg-[#1a1228]">
+                    <option value="USER">Felhasználó</option>
+                    <option value="ADMIN">Adminisztrátor</option>
+                    <option value="DEVELOPER">Fejlesztő</option>
                   </select>
                 </div>
-                <button type="submit" className="md:col-span-full lg:col-span-full py-4 rounded-2xl bg-[#D6F4ED] text-[#473472] font-black text-base hover:bg-[#87BAC3] transition-all shadow-lg shadow-[#D6F4ED]/10 mt-2">
-                  Fiók létrehozása
+                <button type="submit" className="md:col-span-full py-4 rounded-xl bg-[#D6F4ED] text-[#473472] font-black uppercase tracking-widest text-sm hover:bg-[#87BAC3] transition-all shadow-xl shadow-[#D6F4ED]/10 mt-2">
+                  Regisztráció végrehajtása
                 </button>
               </form>
             </div>
           )}
 
-          {/* User List - Mobile Cards / Desktop Table */}
+          {/* User List */}
           <div className="space-y-4">
-            {/* Desktop Header (hidden on mobile) */}
-            <div className="hidden md:grid grid-cols-[80px_1fr_180px_140px_120px] gap-4 px-6 py-4 bg-[#53629E]/30 rounded-2xl mb-4 border border-[#53629E]/20">
-              <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-widest">ID</span>
-              <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-widest">Adatok</span>
-              <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-widest">Szerepkör</span>
-              <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-widest">Dátum</span>
-              <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-widest text-right">Művelet</span>
+            {/* Desktop Header */}
+            <div className="hidden md:grid grid-cols-[80px_1fr_180px_140px_120px] gap-4 px-8 py-4 bg-[#1a1228]/30 rounded-2xl mb-4 border border-white/5">
+              <span className="text-[10px] font-black text-[#87BAC3]/60 uppercase tracking-[0.2em]">ID</span>
+              <span className="text-[10px] font-black text-[#87BAC3]/60 uppercase tracking-[0.2em]">Felhasználói adatok</span>
+              <span className="text-[10px] font-black text-[#87BAC3]/60 uppercase tracking-[0.2em]">Szerepkör</span>
+              <span className="text-[10px] font-black text-[#87BAC3]/60 uppercase tracking-[0.2em]">Csatlakozva</span>
+              <span className="text-[10px] font-black text-[#87BAC3]/60 uppercase tracking-[0.2em] text-right">Műveletek</span>
             </div>
 
             {loading ? (
-              <div className="py-20 text-center text-[#87BAC3] font-bold animate-pulse uppercase tracking-[0.2em]">Adatok szinkronizálása...</div>
+              <div className="py-24 text-center">
+                <RefreshCw size={40} className="text-[#87BAC3] mx-auto animate-spin mb-4 opacity-20" />
+                <div className="text-[#87BAC3] font-black uppercase tracking-[0.3em] text-xs">Adatok lekérése...</div>
+              </div>
             ) : users.length === 0 ? (
-              <div className="py-12 text-center text-[#87BAC3] text-sm italic">Nincs megjeleníthető felhasználó.</div>
+              <div className="py-20 text-center text-[#87BAC3] italic font-medium opacity-50">Nincs megjeleníthető felhasználó.</div>
             ) : (
               users.map((u) => (
                 <div 
                   key={u.id}
-                  className={`relative flex flex-col md:grid md:grid-cols-[80px_1fr_180px_140px_120px] md:items-center gap-4 p-5 md:px-6 md:py-4 bg-[#53629E]/10 border border-[#53629E]/20 rounded-2xl hover:bg-[#53629E]/20 transition-all ${editingId === u.id ? 'ring-2 ring-[#87BAC3] bg-[#53629E]/30' : ''}`}
+                  className={`relative flex flex-col md:grid md:grid-cols-[80px_1fr_180px_140px_120px] md:items-center gap-4 p-6 md:px-8 md:py-5 bg-[#53629E]/5 border border-[#53629E]/10 rounded-2xl hover:bg-[#53629E]/15 transition-all ${editingId === u.id ? 'ring-2 ring-[#87BAC3] bg-[#53629E]/20' : ''}`}
                 >
-                  {/* ID - Mobile only as badge */}
-                  <div className="md:text-sm font-black text-[#87BAC3]/60">
-                    <span className="md:hidden text-[10px] uppercase font-bold mr-2">ID:</span>
+                  {/* ID */}
+                  <div className="text-sm font-black text-[#87BAC3]/40">
+                    <span className="md:hidden text-[10px] uppercase font-bold mr-2 text-[#87BAC3]/30">ID:</span>
                     #{u.id}
                   </div>
 
                   {/* Info */}
                   <div className="flex flex-col min-w-0">
                     {editingId === u.id ? (
-                      <div className="flex flex-col gap-2 w-full pr-2">
-                        <input type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Név" className={inputClass} />
-                        <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email" className={inputClass} />
+                      <div className="flex flex-col gap-3 w-full pr-4">
+                        <input type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Név" className="glass-input !py-2" />
+                        <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email" className="glass-input !py-2" />
                       </div>
                     ) : (
                       <>
-                        <span className="text-base font-black text-[#D6F4ED] truncate uppercase tracking-tight">{u.username}</span>
-                        <span className="text-xs text-[#87BAC3] truncate font-medium">{u.email || 'Nincs megadva'}</span>
+                        <span className="text-lg font-black text-[#D6F4ED] truncate uppercase tracking-tighter">{u.username}</span>
+                        <span className="text-xs text-[#87BAC3] truncate font-bold uppercase tracking-widest opacity-60">{u.email || 'Nincs email'}</span>
                       </>
                     )}
                   </div>
@@ -269,41 +277,41 @@ export function AdminUsers({ user }: AdminProps) {
                   {/* Role */}
                   <div className="flex items-center">
                     {editingId === u.id ? (
-                      <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className={selectClass}>
-                        <option value="USER" className="bg-[#473472]">Felhasználó</option>
-                        <option value="ADMIN" className="bg-[#473472]">Admin</option>
-                        <option value="DEVELOPER" className="bg-[#473472]">Fejlesztő</option>
+                      <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="glass-input !py-2 cursor-pointer bg-[#1a1228] appearance-none">
+                        <option value="USER">Tag</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="DEVELOPER">Fejlesztő</option>
                       </select>
                     ) : roleBadge(u.role)}
                   </div>
 
                   {/* Date */}
-                  <div className="text-xs font-bold text-[#87BAC3] md:block">
-                    <span className="md:hidden uppercase text-[9px] mr-2 block mb-1">Regisztrálva:</span>
+                  <div className="text-xs font-bold text-[#D6F4ED]/60">
+                    <span className="md:hidden uppercase text-[9px] mr-2 block mb-1 opacity-40">Regisztráció:</span>
                     {new Date(u.createdAt).toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 justify-end pt-4 md:pt-0 border-t md:border-none border-[#53629E]/20">
+                  <div className="flex items-center gap-2 justify-end pt-5 md:pt-0 border-t md:border-none border-white/5">
                     {editingId === u.id ? (
                       <>
-                        <button onClick={() => handleUpdateUser(u.id)} className="flex-1 md:flex-none p-3 rounded-xl bg-[#D6F4ED] text-[#473472] hover:bg-[#87BAC3] transition-all flex justify-center">
-                          <Check size={18} strokeWidth={3} />
+                        <button onClick={() => handleUpdateUser(u.id)} className="flex-1 md:flex-none p-3.5 rounded-xl bg-[#D6F4ED] text-[#473472] hover:bg-[#87BAC3] transition-all flex justify-center shadow-lg shadow-[#D6F4ED]/5">
+                          <Check size={20} strokeWidth={3} />
                         </button>
-                        <button onClick={() => setEditingId(null)} className="flex-1 md:flex-none p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all flex justify-center">
-                          <X size={18} strokeWidth={3} />
+                        <button onClick={() => setEditingId(null)} className="flex-1 md:flex-none p-3.5 rounded-xl bg-white/5 text-red-400 hover:bg-red-500/20 transition-all flex justify-center border border-red-500/10">
+                          <X size={20} strokeWidth={3} />
                         </button>
                       </>
                     ) : (
                       <>
                         <button
                           onClick={() => { setEditingId(u.id); setNewUsername(u.username); setNewEmail(u.email || ''); setNewRole(u.role); }}
-                          className="flex-1 md:flex-none p-3 rounded-xl bg-[#53629E]/40 text-[#87BAC3] hover:text-[#D6F4ED] hover:bg-[#53629E] transition-all flex justify-center"
+                          className="flex-1 md:flex-none p-3.5 rounded-xl bg-white/5 text-[#87BAC3] hover:text-[#D6F4ED] hover:bg-white/10 transition-all flex justify-center border border-white/5"
                         >
-                          <Edit2 size={16} />
+                          <Edit2 size={18} />
                         </button>
-                        <button onClick={() => handleDeleteUser(u.id)} className="flex-1 md:flex-none p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all flex justify-center">
-                          <Trash2 size={16} />
+                        <button onClick={() => handleDeleteUser(u.id)} className="flex-1 md:flex-none p-3.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex justify-center border border-red-500/10">
+                          <Trash2 size={18} />
                         </button>
                       </>
                     )}

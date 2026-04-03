@@ -156,32 +156,16 @@ export function AISearch({ user }: AISearchProps) {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem', height: 'calc(100vh - 130px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-      {/* Felső tér (Spacer). Ha még nem kerestünk, felülről nyomja le a keresőt középre. Ha kerestünk, ide kerülnek az eredmények. */}
+    <div className="page-container flex flex-col h-[calc(100vh-130px)] overflow-hidden">
+      {/* Scrollable Results Area */}
       <div
-        className="ai-scroll-container"
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
-          overflowY: hasSearched ? 'auto' : 'hidden',
-          opacity: hasSearched ? 1 : 0,
-          padding: hasSearched ? '0 10px 2rem 10px' : '0',
-          marginBottom: hasSearched ? '1rem' : '0'
-        }}
+        className={`flex-1 flex flex-col transition-all duration-700 ease-in-out ${
+          hasSearched ? 'overflow-y-auto pt-0 pb-8 px-2 opacity-100' : 'overflow-hidden opacity-0 h-0'
+        }`}
       >
-
-
-
-        {/* Eredmény kártyák */}
+        {/* Results Grid */}
         {results.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" style={{
-            width: '100%',
-            paddingBottom: '2rem',
-            animation: 'fadeIn 0.5s ease-out'
-          }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 fade-in">
             {results.map((book) => (
               <BookCard
                 key={book.id}
@@ -196,150 +180,75 @@ export function AISearch({ user }: AISearchProps) {
         )}
       </div>
 
-      {/* Keresőmező konténer */}
-      <div style={{
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 10,
-        width: '100%',
-        maxWidth: hasSearched ? '100%' : '900px',
-        margin: '0 auto',
-        transform: hasSearched ? 'translateY(0)' : 'translateY(-20px)',
-        transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)'
-      }}>
+      {/* Search Input Section */}
+      <div className={`flex-shrink-0 transition-all duration-700 ease-in-out ${
+        hasSearched ? 'mt-4' : 'flex-1 flex flex-col justify-center'
+      }`}>
+        <div className={`max-w-4xl mx-auto w-full transition-all duration-700 ${hasSearched ? 'opacity-100 translate-y-0' : 'opacity-100 -translate-y-12'}`}>
+          
+          {/* Header text - hide when searched */}
+          {!hasSearched && (
+            <div className="text-center mb-12 fade-in">
+              <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-[#473472] to-[#53629E] bg-clip-text text-transparent tracking-tighter">
+                Válaszd ki a következő játékod!
+              </h1>
+              <p className="text-xl text-[#53629E] font-bold opacity-80">
+                Írd le egyszerűen milyen hangulathoz keresel valamit.
+              </p>
+            </div>
+          )}
 
-        {/* Egy hatalmas szép címsor középre, ami eltűnik, amikor a kereső lecsúszik! */}
-        <div style={{
-          textAlign: 'center',
-          transition: 'all 0.5s ease',
-          opacity: hasSearched ? 0 : 1,
-          height: hasSearched ? '0px' : 'auto',
-          marginBottom: hasSearched ? '0px' : '3rem',
-          overflow: 'hidden'
-        }}>
-          <h1 style={{
-            margin: 0,
-            fontSize: '3.5rem',
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-1px'
-          }}>
-            Válaszd ki a következő játékod!
-          </h1>
-          <p style={{ fontSize: '1.2rem', color: 'var(--color-secondary)', marginTop: '1rem', fontWeight: 500 }}>
-            Írd le egyszerűen milyen hangulathoz keresel valamit.
-          </p>
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border-l-4 border-red-500 rounded-r-xl text-red-500 font-bold fade-in">
+              {error === 'NO_API_KEY' ? (
+                <span>
+                  Nincs megadva Gemini API kulcs! Regisztrálj és szerezz egy ingyenes kulcsot itt: {' '}
+                  <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-600 transition-colors">
+                    aistudio.google.com
+                  </a>
+                </span>
+              ) : error}
+            </div>
+          )}
+
+          <form onSubmit={handleSearch} className="w-full">
+            <div className={`glass-search-group ${hasSearched ? 'shadow-md ring-1 ring-[#53629E]/10' : 'shadow-2xl'}`}>
+              <Sparkles className="ml-6 text-[#87BAC3]" size={24} />
+              
+              <input
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Pl: Adj egy jó sandbox játékot haveroknak..."
+                className="glass-search-input"
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="glass-search-btn m-2"
+              >
+                {loading ? (
+                  <>
+                    <Search size={22} className="animate-spin" />
+                    <span>AI Keresés...</span>
+                  </>
+                ) : (
+                  <>
+                    <Search size={22} />
+                    <span>Keresés</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-
-        {/* Hibaüzenet (Lent, a kereső felett) */}
-        {error && (
-          <div style={{
-            padding: '1rem 1.5rem', backgroundColor: '#fde8e8', borderLeft: '4px solid #f98080',
-            borderRadius: '8px', color: '#9b1c1c', marginBottom: '1.5rem', width: '100%',
-            fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-            animation: 'fadeIn 0.4s ease-out'
-          }}>
-            {error === 'NO_API_KEY' ? (
-              <span>
-                Nincs megadva Gemini API kulcs! Regisztrálj és szerezz egy ingyenes kulcsot itt: {' '}
-                <a 
-                  href="https://aistudio.google.com/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ color: '#c81e1e', textDecoration: 'underline' }}
-                >
-                  https://aistudio.google.com/
-                </a>
-              </span>
-            ) : (
-              error
-            )}
-          </div>
-        )}
-
-        <form onSubmit={handleSearch} style={{ width: '100%' }}>
-          <div style={{
-            position: 'relative', display: 'flex', alignItems: 'center',
-            boxShadow: hasSearched
-              ? '0 -4px 20px rgba(39, 55, 77, 0.06), 0 8px 16px rgba(39, 55, 77, 0.08)'
-              : '0 20px 40px rgba(39, 55, 77, 0.1), 0 8px 16px rgba(39, 55, 77, 0.05)',
-            borderRadius: '999px', background: '#fff',
-            border: '2px solid transparent', transition: 'all 0.4s ease'
-          }}
-            onFocus={(e) => e.currentTarget.style.borderColor = 'var(--color-accent)'}
-            onBlur={(e) => e.currentTarget.style.borderColor = 'transparent'}
-          >
-            <Sparkles style={{ position: 'absolute', left: '24px', color: 'var(--color-accent)' }} size={24} />
-
-            <input
-              type="text"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Pl: Adj egy jó sandbox játékot haveroknak..."
-              style={{
-                flex: 1,
-                padding: '1.8rem 1.8rem 1.8rem 60px',
-                fontSize: '1.25rem',
-                border: 'none',
-                borderRadius: '999px',
-                outline: 'none',
-                background: 'transparent',
-                color: 'var(--color-primary)',
-              }}
-            />
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                position: 'absolute',
-                right: '10px',
-                padding: '1.2rem 2.4rem',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                backgroundColor: 'var(--color-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '999px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = 'var(--color-secondary)')}
-              onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
-              onMouseDown={(e) => !loading && (e.currentTarget.style.transform = 'scale(0.96)')}
-              onMouseUp={(e) => !loading && (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              {loading ? (
-                <>
-                  <Search size={22} className="spinner" style={{ animation: 'neon-spin 2s linear infinite' }} />
-                  Keresés...
-                </>
-              ) : (
-                <>
-                  <Search size={22} />
-                  Keresés
-                </>
-              )}
-            </button>
-          </div>
-        </form>
       </div>
 
-      {/* Alsó tér (Spacer). Ha még nem kerestünk, alulról is nyomja a keresőt középre. Keresés után eltűnik. */}
-      <div
-        style={{
-          flex: hasSearched ? 0 : 1.5,
-          transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)'
-        }}
-      />
+      {/* Conditional Bottom Spacer */}
+      {!hasSearched && <div className="flex-[1.5]" />}
 
-      {/* Modális ablak a listához adáshoz */}
       <AddToListModal
         isOpen={addListModalOpen}
         onClose={handleCloseAddList}

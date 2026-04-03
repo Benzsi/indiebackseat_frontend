@@ -13,6 +13,9 @@ import { AISearch } from './pages/AISearch'
 import { BookDetails } from './pages/BookDetails'
 import { DevLogs } from './pages/DevLogs'
 import { DevLogDetail } from './pages/DevLogDetail'
+import { PrivacyPolicy } from './pages/PrivacyPolicy'
+import { Contact } from './pages/Contact'
+import { Footer } from './components/Footer'
 import type { User } from './services/api'
 import { Filter, Star, RotateCcw } from 'lucide-react'
 
@@ -29,20 +32,34 @@ function App() {
   const [selectedRating, setSelectedRating] = useState<string>('');
   
   // Sorting states
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useState<string>('abc');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const categories = [
+  const bookCategories = ['Összes', 'REGÉNY', 'NOVELLA', 'FORGATÓKÖNYV', 'EGYÉB'];
+  const bookModes = ['Összes', 'KEMÉNYFÉNYES', 'PUHAFÉNYES', 'E-BOOK', 'HANGOSKÖNYV'];
+
+  const devCategories = [
     'Összes', 'ACTION', 'PUZZLE', 'RPG', 'PLATFORMER', 'HORROR', 'ADVENTURE', 'SANDBOX',
     'SIMULATION', 'STRATEGY', 'SPORTS', 'RACING', 'FIGHTING', 'SHOOTER',
     'SURVIVAL', 'STEALTH', 'ROGUELIKE', 'MOBA', 'MMORPG', 'TOWER_DEFENSE',
     'PARTY', 'CARD_GAME', 'RHYTHM'
   ];
-  const modes = [
+  const devModes = [
     'Összes', 'SINGLE_PLAYER', 'MULTIPLAYER', 'CO_OP', 'BATTLE_ROYALE', 'OPEN_WORLD',
     'LINEAR', 'METROIDVANIA', 'SOULSLIKE', 'FIRST_PERSON', 'THIRD_PERSON',
     'VR', 'AUTOSHOOTER', 'TEXT_BASED'
   ];
+
+  // Helper to determine active context (Games catalog or Dev Logs)
+  const isProjectContext = activeTab === 'devlogs' || activeTab === 'games' || window.location.pathname.startsWith('/devlogs');
+  const currentCategories = isProjectContext ? devCategories : bookCategories;
+  const currentModes = isProjectContext ? devModes : bookModes;
+
+  useEffect(() => {
+    setSelectedCategory('Összes');
+    setSelectedMode('Összes');
+    setSelectedRating('');
+  }, [isProjectContext, activeTab]);
 
   // Az oldal betöltésekor helyreállítjuk az előző felhasználót
   useEffect(() => {
@@ -81,16 +98,17 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Header
-        isAuthenticated={user !== null}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        isFilterOpen={isFilterOpen}
-        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-        onResetDashboard={() => setActiveTab('overview')}
-      />
-      
-      {/* Search & Sort Filter Strip */}
+      <div className="min-h-screen flex flex-col">
+        <Header
+          isAuthenticated={user !== null}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          isFilterOpen={isFilterOpen}
+          onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+          onResetDashboard={() => setActiveTab('overview')}
+        />
+        
+        {/* ... (rest of the header strip) ... */}
       <div
         className="overflow-hidden bg-[#473472] border-b border-[#53629E]/40 z-40 shadow-lg transition-all duration-400"
         style={{
@@ -103,47 +121,59 @@ function App() {
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-5 flex flex-col gap-6">
             
             {/* Row 1: Filters */}
-            <div className="flex flex-wrap gap-4 items-end">
+             <div className="flex flex-wrap gap-4 items-end">
               <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
-                  <Filter size={13} /> Játék kategória
+                  <Filter size={13} /> {isProjectContext ? 'Projekt kategória' : 'Könyv kategória'}
                 </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer"
+                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all duration-200 cursor-pointer"
                 >
-                  {categories.map(cat => <option key={cat} value={cat} className="bg-[#473472]">{cat}</option>)}
+                  {currentCategories.map(cat => <option key={cat} value={cat} className="bg-[#473472]">{cat}</option>)}
                 </select>
               </div>
 
               <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
-                  <Filter size={13} /> Mód
+                  <Filter size={13} /> {isProjectContext ? 'Játékmód' : 'Kiadás'}
                 </label>
                 <select
                   value={selectedMode}
                   onChange={(e) => setSelectedMode(e.target.value)}
                   className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer"
                 >
-                  {modes.map(mode => <option key={mode} value={mode} className="bg-[#473472]">{mode}</option>)}
+                  {currentModes.map(mode => <option key={mode} value={mode} className="bg-[#473472]">{mode}</option>)}
                 </select>
               </div>
 
-              <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+               <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
-                  <Star size={13} className="text-amber-300" /> Értékelés
+                  <Star size={13} className="text-amber-300" /> {isProjectContext ? 'Upvotes' : 'Értékelés'}
                 </label>
                 <select
                   value={selectedRating}
                   onChange={(e) => setSelectedRating(e.target.value)}
-                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all cursor-pointer"
+                  className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all duration-200 cursor-pointer"
                 >
-                  <option value="" className="bg-[#473472]">Bármilyen értékelés</option>
-                  <option value="4-5" className="bg-[#473472]">4 - 5 csillag</option>
-                  <option value="3-4" className="bg-[#473472]">3 - 4 csillag</option>
-                  <option value="2-3" className="bg-[#473472]">2 - 3 csillag</option>
-                  <option value="1-2" className="bg-[#473472]">1 - 2 csillag</option>
+                  {isProjectContext ? (
+                    <>
+                      <option value="" className="bg-[#473472]">Bármennyi upvote</option>
+                      <option value="0-10" className="bg-[#473472]">0 - 10 upvote</option>
+                      <option value="10-50" className="bg-[#473472]">10 - 50 upvote</option>
+                      <option value="50-100" className="bg-[#473472]">50 - 100 upvote</option>
+                      <option value="100+" className="bg-[#473472]">100+ upvote</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="" className="bg-[#473472]">Bármilyen értékelés</option>
+                      <option value="4-5" className="bg-[#473472]">4 - 5 csillag</option>
+                      <option value="3-4" className="bg-[#473472]">3 - 4 csillag</option>
+                      <option value="2-3" className="bg-[#473472]">2 - 3 csillag</option>
+                      <option value="1-2" className="bg-[#473472]">1 - 2 csillag</option>
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -167,10 +197,9 @@ function App() {
                   </label>
                   <div className="flex gap-2">
                     {[
-                      { id: 'name', label: 'ABC sorrend' },
-                      { id: 'date', label: 'Dátum' },
-                      { id: 'upvotes', label: 'Kedvelések' },
-                      { id: 'entries', label: 'Bejegyzések' }
+                      { id: 'abc', label: 'ABC sorrend' },
+                      { id: 'kedvelt', label: 'Kedveltek' },
+                      { id: 'wishlist', label: isProjectContext ? 'Upvotes' : 'Wishlist' }
                     ].map(option => (
                       <button
                         key={option.id}
@@ -262,8 +291,12 @@ function App() {
             sortOrder={sortOrder}
           />} />
           <Route path="/devlogs/:id" element={<DevLogDetail user={user} />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
       </main>
+      <Footer />
+      </div>
     </BrowserRouter>
   )
 }

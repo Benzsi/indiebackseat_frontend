@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Tag, Clock, Code2, Image as ImageIcon, Send, Layout, Camera, X } from 'lucide-react';
+import { BiHeart, BiSolidHeart, BiUpvote, BiSolidUpvote } from "react-icons/bi";
 import type { User } from '../services/api';
 
 interface DevLogEntry {
@@ -14,12 +15,14 @@ interface DevLogEntry {
 interface DevProject {
   id: number;
   name: string;
-  category: string;
+  genre: string;
+  literaryForm: string;
   description: string;
   imagePath?: string;
   developerId: number;
   developer: { username: string };
-  entries: DevLogEntry[];
+  devlogentry: DevLogEntry[];
+  _count: { devlogentry: number; favorites: number; upvotes: number };
 }
 
 interface DevLogDetailProps {
@@ -38,6 +41,9 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
   const projectInputRef = useRef<HTMLInputElement>(null);
   const entryInputRef = useRef<HTMLInputElement>(null);
   const [activeEntryId, setActiveEntryId] = useState<number | null>(null);
+  
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isUpvoted, setIsUpvoted] = useState(false);
 
   const fetchProject = async () => {
     try {
@@ -53,9 +59,38 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
     }
   };
 
+  const loadUserInteractions = async () => {
+    if (!user || !id) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/user/${user.id}/lists`);
+      if (response.ok) {
+        const lists = await response.json();
+        const projectId = parseInt(id);
+        
+        let hasFav = false;
+        let hasUp = false;
+        
+        lists.forEach((list: any) => {
+          if (list.name === 'Kedvelt Dev Logok') {
+            if (list.items.some((item: any) => item.id === projectId)) hasFav = true;
+          } else if (list.name === 'Wishlist Dev Logok') {
+            if (list.items.some((item: any) => item.id === projectId)) hasUp = true;
+          }
+        });
+        
+        setIsFavorited(hasFav);
+        setIsUpvoted(hasUp);
+      }
+    } catch (err) {
+      console.error('Hiba az interakciók betöltésekor:', err);
+    }
+  };
+
   useEffect(() => {
     fetchProject();
-  }, [id]);
+    if (user) loadUserInteractions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user]);
 
   if (loading) return <div className="py-20 text-center text-[#87BAC3] font-bold animate-pulse">Betöltés...</div>;
   if (!project) return <Navigate to="/devlogs" replace />;
@@ -158,6 +193,48 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
     entryInputRef.current?.click();
   };
 
+  const toggleFavorite = async () => {
+    if (!user || !id) return;
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('A folytatáshoz jelentkezz be újra!');
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/${id}/favorite`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setIsFavorited(!isFavorited);
+        fetchProject();
+      }
+    } catch (err) {
+      console.error('Hiba a kedvelésnél:', err);
+    }
+  };
+
+  const toggleUpvote = async () => {
+    if (!user || !id) return;
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('A folytatáshoz jelentkezz be újra!');
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/devlogs/${id}/wishlist`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setIsUpvoted(!isUpvoted);
+        fetchProject();
+      }
+    } catch (err) {
+      console.error('Hiba a felpontozásnál:', err);
+    }
+  };
+
   const isOwner = user?.id === project.developerId && user?.role === 'DEVELOPER';
 
   return (
@@ -182,7 +259,7 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
       <div className="mb-8">
         <Link
           to="/devlogs"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#53629E] text-[#87BAC3] hover:bg-[#53629E]/30 transition-all text-sm font-semibold"
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-extrabold text-[15px] border-2 bg-[#473472] text-[#D6F4ED] border-[#473472] hover:bg-[#53629E] hover:border-[#53629E] hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
         >
           <ArrowLeft size={16} />
           Összes Dev Log
@@ -198,7 +275,17 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
           <div className="relative group/hero">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-[#53629E] flex items-center justify-center shadow-2xl flex-shrink-0 border border-[#87BAC3]/20 overflow-hidden">
               {project.imagePath ? (
-                <img src={`http://localhost:3000/uploads/${project.imagePath}`} alt={project.name} className="w-full h-full object-cover" />
+                <img 
+                  src={
+                    project.imagePath.startsWith('http') 
+                      ? project.imagePath 
+                      : project.imagePath.startsWith('dev_covers')
+                        ? `http://localhost:3000/${project.imagePath}`
+                        : `http://localhost:3000/uploads/${project.imagePath}`
+                  } 
+                  alt={project.name} 
+                  className="w-full h-full object-cover" 
+                />
               ) : (
                 <Code2 size={48} className="text-[#D6F4ED]" strokeWidth={1.5} />
               )}
@@ -219,9 +306,14 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
           </div>
 
           <div className="flex-1">
-            <span className="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/20 text-[10px] font-black uppercase tracking-widest mb-4">
-              {project.category}
-            </span>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/20 text-[10px] font-black uppercase tracking-widest">
+                {project.genre}
+              </span>
+              <span className="inline-block px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/20 text-[10px] font-black uppercase tracking-widest">
+                {project.literaryForm}
+              </span>
+            </div>
             <h1 className="text-4xl md:text-5xl font-black text-[#D6F4ED] leading-tight tracking-tight mb-4">{project.name}</h1>
             <div className="flex items-center gap-2 mb-6 text-[#87BAC3] font-bold">
               <div className="w-6 h-6 rounded-full bg-[#87BAC3] text-[#473472] flex items-center justify-center text-[10px]">
@@ -229,9 +321,33 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
               </div>
               <span>{project.developer?.username || 'Ismeretlen'} fejlesztői naplója</span>
             </div>
-            <p className="text-[#D6F4ED]/80 text-lg leading-relaxed italic border-l-4 border-[#87BAC3] pl-6 py-2 bg-[#53629E]/10 rounded-r-xl max-w-2xl">
+            <p className="text-[#D6F4ED]/80 text-lg leading-relaxed italic border-l-4 border-[#87BAC3] pl-6 py-2 bg-[#53629E]/10 rounded-r-xl max-w-2xl mb-8">
               "{project.description}"
             </p>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={toggleFavorite}
+                className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl border transition-all active:scale-95 ${isFavorited
+                    ? 'bg-rose-500/20 border-rose-400/40 text-rose-400'
+                    : 'bg-white/5 border-white/10 text-white/60 hover:border-rose-400/40 hover:text-rose-400'
+                  }`}
+              >
+                {isFavorited ? <BiSolidHeart size={24} /> : <BiHeart size={24} />}
+                <span className="text-sm font-black">Kedvelés</span>
+              </button>
+
+              <button
+                onClick={toggleUpvote}
+                className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl border transition-all active:scale-95 ${isUpvoted
+                    ? 'bg-amber-500/20 border-amber-400/40 text-amber-400'
+                    : 'bg-white/5 border-white/10 text-white/60 hover:border-amber-400/40 hover:text-amber-400'
+                  }`}
+              >
+                {isUpvoted ? <BiSolidUpvote size={24} /> : <BiUpvote size={24} />}
+                <span className="text-sm font-black">{project._count?.upvotes || 0} Felpontozás</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -322,12 +438,12 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
           {/* Vertical line connector */}
           <div className="absolute left-0 sm:left-1/2 top-4 bottom-4 w-px bg-[#53629E]/30 -translate-x-1/2 hidden sm:block" />
 
-          {(!project.entries || project.entries.length === 0) ? (
+          {(!project.devlogentry || project.devlogentry.length === 0) ? (
             <div className="py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
               <p className="text-[#87BAC3] font-bold">Még nincsenek bejegyzések.</p>
             </div>
           ) : (
-            project.entries.map((entry, idx) => (
+            project.devlogentry.map((entry, idx) => (
               <article
                 key={entry.id}
                 className={`relative flex flex-col sm:flex-row gap-8 sm:gap-12 animate-in slide-in-from-bottom-5 duration-500`}
@@ -360,7 +476,13 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
                     {entry.imagePath ? (
                       <div className="relative w-full min-h-[200px]">
                         <img
-                          src={`http://localhost:3000/uploads/${entry.imagePath}`}
+                          src={
+                            entry.imagePath.startsWith('http') 
+                              ? entry.imagePath 
+                              : entry.imagePath.startsWith('dev_covers')
+                                ? `http://localhost:3000/${entry.imagePath}`
+                                : `http://localhost:3000/uploads/${entry.imagePath}`
+                          }
                           alt={entry.title}
                           className="w-full h-auto object-contain max-h-[500px]"
                         />
