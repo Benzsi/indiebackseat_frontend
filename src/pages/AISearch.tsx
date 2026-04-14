@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import type { User, Book } from '../services/api';
+import type { User, Game } from '../services/api';
 import { RatingsService } from '../services/api';
 import { Sparkles, Search } from 'lucide-react';
-import { BookCard } from '../components/BookCard';
-import type { BookWithRating } from '../components/BookCard';
+import { GameCard } from '../components/GameCard';
+import type { GameWithRating } from '../components/GameCard';
 import { AddToListModal } from '../components/AddToListModal';
-import { getListsForUser, createListForUser, addBookToList } from '../services/lists';
-import type { BookList } from '../services/lists';
+import { getListsForUser, createListForUser, addGameToList } from '../services/lists';
+import type { GameList } from '../services/lists';
 
 interface AISearchProps {
   user?: User | null;
@@ -14,15 +14,15 @@ interface AISearchProps {
 
 export function AISearch({ user }: AISearchProps) {
   const [prompt, setPrompt] = useState('');
-  const [results, setResults] = useState<BookWithRating[]>([]);
+  const [results, setResults] = useState<GameWithRating[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
+  const [hoveredGameId, setHoveredGameId] = useState<number | null>(null);
 
   // Lista funkciókhoz állapottér (mint a Home-ban)
   const [addListModalOpen, setAddListModalOpen] = useState(false);
-  const [lists, setLists] = useState<BookList[]>([]);
-  const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
+  const [lists, setLists] = useState<GameList[]>([]);
+  const [selectedGameForList, setSelectedGameForList] = useState<GameWithRating | null>(null);
 
   const ratingsService = new RatingsService();
 
@@ -37,25 +37,25 @@ export function AISearch({ user }: AISearchProps) {
     setLists(userLists);
   };
 
-  const handleOpenAddList = (book: BookWithRating) => {
-    setSelectedBookForList(book);
+  const handleOpenAddList = (game: GameWithRating) => {
+    setSelectedGameForList(game);
     setAddListModalOpen(true);
   };
 
   const handleCloseAddList = () => {
     setAddListModalOpen(false);
-    setSelectedBookForList(null);
+    setSelectedGameForList(null);
   };
 
-  const handleAddBookToList = async (listId: number) => {
-    if (user && selectedBookForList) {
+  const handleAddGameToList = async (listId: number) => {
+    if (user && selectedGameForList) {
       try {
-        await addBookToList(listId, selectedBookForList.id);
+        await addGameToList(listId, selectedGameForList.id);
         await loadUserLists(String(user.id));
         setAddListModalOpen(false);
-        setSelectedBookForList(null);
+        setSelectedGameForList(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'A könyv listához adása sikertelen');
+        setError(err instanceof Error ? err.message : 'A játék listához adása sikertelen');
       }
     }
   };
@@ -119,25 +119,25 @@ export function AISearch({ user }: AISearchProps) {
         return;
       }
 
-      const rawBooks: Book[] = data;
-      if (!Array.isArray(rawBooks) || rawBooks.length === 0) {
+      const rawGames: Game[] = data;
+      if (!Array.isArray(rawGames) || rawGames.length === 0) {
         setError('Nincs találat a keresésre. Próbálj másik kifejezést!');
         return;
       }
 
       // Ratings lekérése ugyanúgy, mint a Home.tsx esetén
-      const booksWithRatings = await Promise.all(
-        rawBooks.map(async (book) => {
+      const gamesWithRatings = await Promise.all(
+        rawGames.map(async (game) => {
           try {
-            const bookRating = await ratingsService.getBookRating(book.id);
+            const gameRating = await ratingsService.getGameRating(game.id);
             return {
-              ...book,
-              averageRating: bookRating.averageRating || 0,
-              totalRatings: bookRating.totalRatings || 0,
+              ...game,
+              averageRating: gameRating.averageRating || 0,
+              totalRatings: gameRating.totalRatings || 0,
             };
           } catch {
             return {
-              ...book,
+              ...game,
               averageRating: 0,
               totalRatings: 0,
             };
@@ -145,7 +145,7 @@ export function AISearch({ user }: AISearchProps) {
         })
       );
 
-      setResults(booksWithRatings);
+      setResults(gamesWithRatings);
     } catch (err: any) {
       console.error('Keresési hiba:', err);
       const errorMessage = err?.response?.error?.details || err?.message || 'Hiba történt a keresés során. Kérjük, próbáld újra!';
@@ -166,13 +166,13 @@ export function AISearch({ user }: AISearchProps) {
         {/* Results Grid */}
         {results.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 fade-in">
-            {results.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                isHovered={hoveredBookId === book.id}
-                onMouseEnter={() => setHoveredBookId(book.id)}
-                onMouseLeave={() => setHoveredBookId(null)}
+            {results.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                isHovered={hoveredGameId === game.id}
+                onMouseEnter={() => setHoveredGameId(game.id)}
+                onMouseLeave={() => setHoveredGameId(null)}
                 onOpenAddList={handleOpenAddList}
               />
             ))}
@@ -252,11 +252,15 @@ export function AISearch({ user }: AISearchProps) {
       <AddToListModal
         isOpen={addListModalOpen}
         onClose={handleCloseAddList}
-        onAdd={handleAddBookToList}
+        onAdd={handleAddGameToList}
         lists={lists}
-        bookTitle={selectedBookForList?.title || ''}
+        GameTitle={selectedGameForList?.title || ''}
         onCreateList={handleCreateList}
       />
     </div>
   );
 }
+
+
+
+

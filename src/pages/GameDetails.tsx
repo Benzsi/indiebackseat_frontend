@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { BookBack } from '../components/BookBack';
+import { GameBack } from '../components/GameBack';
 import { StarRating } from '../components/StarRating';
-import type { User, Book, Comment } from '../services/api';
-import { BooksService, RatingsService, CommentsService } from '../services/api';
+import type { User, Game, Comment } from '../services/api';
+import { GamesService, RatingsService, CommentsService } from '../services/api';
 import { RefreshCw } from 'lucide-react';
 
-interface BookDetailsProps {
+interface GameDetailsProps {
   user?: User | null;
 }
 
-interface BookWithRating extends Book {
+interface GameWithRating extends Game {
   averageRating: number;
   totalRatings: number;
 }
 
-export function BookDetails({ user }: BookDetailsProps) {
-  const { bookId } = useParams();
-  const [book, setBook] = useState<BookWithRating | null>(null);
+export function GameDetails({ user }: GameDetailsProps) {
+  const { gameId } = useParams();
+  const [game, setGame] = useState<GameWithRating | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [savingComment, setSavingComment] = useState(false);
@@ -25,21 +25,21 @@ export function BookDetails({ user }: BookDetailsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const booksService = new BooksService();
+  const gamesService = new GamesService();
   const ratingsService = new RatingsService();
   const commentsService = new CommentsService();
 
   useEffect(() => {
-    const loadBookDetails = async () => {
-      if (!bookId) {
-        setError('Hiányzó könyv/játék azonosító');
+    const loadGameDetails = async () => {
+      if (!gameId) {
+        setError('Hiányzó játék/játék azonosító');
         setLoading(false);
         return;
       }
 
-      const parsedBookId = Number(bookId);
-      if (Number.isNaN(parsedBookId)) {
-        setError('Érvénytelen könyv/játék azonosító');
+      const parsedGameId = Number(gameId);
+      if (Number.isNaN(parsedGameId)) {
+        setError('Érvénytelen játék/játék azonosító');
         setLoading(false);
         return;
       }
@@ -47,20 +47,20 @@ export function BookDetails({ user }: BookDetailsProps) {
       try {
         setLoading(true);
         // Párhuzamosan betöltjük az alapadatokat
-        const [bookData, ratingData, commentsData, userRatings] = await Promise.all([
-          booksService.getBook(parsedBookId),
-          ratingsService.getBookRating(parsedBookId),
-          commentsService.getBookComments(parsedBookId),
+        const [gameData, ratingData, commentsData, userRatings] = await Promise.all([
+          gamesService.getGame(parsedGameId),
+          ratingsService.getGameRating(parsedGameId),
+          commentsService.getGameComments(parsedGameId),
           user ? ratingsService.getUserRatings(user.id) : Promise.resolve([]),
         ]);
 
-        setBook({
-          ...bookData,
+        setGame({
+          ...gameData,
           averageRating: ratingData.averageRating || 0,
           totalRatings: ratingData.totalRatings || 0,
         });
 
-        const ownRating = userRatings.find((rating) => rating.bookId === parsedBookId)?.rating || 0;
+        const ownRating = userRatings.find((rating) => rating.gameId === parsedGameId)?.rating || 0;
         setPendingRating(ownRating);
         setComments(commentsData);
         setError('');
@@ -72,16 +72,16 @@ export function BookDetails({ user }: BookDetailsProps) {
       }
     };
 
-    void loadBookDetails();
-  }, [bookId, user]);
+    void loadGameDetails();
+  }, [gameId, user]);
 
   const handleRate = async (rating: number) => {
-    if (!user || !book) return;
+    if (!user || !game) return;
     try {
-      await ratingsService.rateBook(user.id, book.id, rating);
+      await ratingsService.rateGame(user.id, game.id, rating);
       setPendingRating(rating);
-      const freshRating = await ratingsService.getBookRating(book.id);
-      setBook((prev) => prev ? {
+      const freshRating = await ratingsService.getGameRating(game.id);
+      setGame((prev) => prev ? {
         ...prev,
         averageRating: freshRating.averageRating || 0,
         totalRatings: freshRating.totalRatings || 0,
@@ -93,7 +93,7 @@ export function BookDetails({ user }: BookDetailsProps) {
   };
 
   const handleCreateComment = async () => {
-    if (!user || !book) return;
+    if (!user || !game) return;
     if (!newComment.trim()) {
       setError('Adj meg kommentet.');
       return;
@@ -101,7 +101,7 @@ export function BookDetails({ user }: BookDetailsProps) {
 
     try {
       setSavingComment(true);
-      const created = await commentsService.createComment(book.id, newComment.trim());
+      const created = await commentsService.createComment(game.id, newComment.trim());
       setComments((prev) => [...prev, created]);
       setNewComment('');
       setError('');
@@ -169,7 +169,7 @@ export function BookDetails({ user }: BookDetailsProps) {
         <div className="p-6 rounded-3xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-center">
           {error}
         </div>
-      ) : !book ? (
+      ) : !game ? (
         <div className="py-32 text-center text-[#87BAC3] font-black uppercase tracking-widest opacity-40">A keresett játék nem található.</div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-10">
@@ -178,10 +178,10 @@ export function BookDetails({ user }: BookDetailsProps) {
           <div className="flex flex-col gap-8">
             {/* Cover */}
             <div className="w-full aspect-[3/4] flex items-center justify-center overflow-hidden rounded-[2.5rem] bg-[#1a1228] border border-[#53629E]/40 shadow-2xl relative group">
-              {book.coverUrl ? (
+              {game.coverUrl ? (
                 <img
-                  src={book.coverUrl}
-                  alt={book.title}
+                  src={game.coverUrl}
+                  alt={game.title}
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
@@ -192,7 +192,7 @@ export function BookDetails({ user }: BookDetailsProps) {
                   }}
                 />
               ) : null}
-              <div className={`cover-placeholder text-[80px] ${book.coverUrl ? 'hidden-placeholder' : ''}`}>🎮</div>
+              <div className={`cover-placeholder text-[80px] ${game.coverUrl ? 'hidden-placeholder' : ''}`}>🎮</div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#473472]/60 to-transparent pointer-events-none" />
             </div>
 
@@ -230,13 +230,13 @@ export function BookDetails({ user }: BookDetailsProps) {
             </div>
           </div>
 
-          {/* Right column: BookBack */}
+          {/* Right column: GameBack */}
           <div className="min-h-[600px] bg-[#473472] rounded-[2.5rem] border border-[#53629E] shadow-2xl overflow-hidden">
-            <BookBack
-              title={book.title}
-              author={book.author}
-              averageRating={book.averageRating}
-              totalRatings={book.totalRatings}
+            <GameBack
+              title={game.title}
+              author={game.author}
+              averageRating={game.averageRating}
+              totalRatings={game.totalRatings}
               comments={comments.map((c) => ({
                 id: c.id,
                 user: c.user.username,
@@ -250,7 +250,7 @@ export function BookDetails({ user }: BookDetailsProps) {
               onDeleteComment={handleDeleteComment}
               onReportComment={handleReportComment}
               onVoteComment={handleVoteComment}
-              description={book.lyricNote}
+              description={game.lyricNote}
             />
           </div>
         </div>
@@ -258,3 +258,7 @@ export function BookDetails({ user }: BookDetailsProps) {
     </div>
   );
 }
+
+
+
+

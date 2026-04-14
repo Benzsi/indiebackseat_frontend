@@ -7,22 +7,22 @@ export interface GalleryItem {
   createdAt: string;
 }
 
-export interface BookList {
+export interface GameList {
   id: number;
   name: string;
   userId: number;
   imagePath?: string;
   items: { 
     id: number;
-    bookId: number; 
-    book: any;
+    gameId: number; 
+    game: any;
     gallery: GalleryItem[];
   }[];
   createdAt: string;
   updatedAt: string;
 }
 
-export async function getListsForUser(userId: string | number): Promise<BookList[]> {
+export async function getListsForUser(userId: string | number): Promise<GameList[]> {
   try {
     const res = await fetch(`${API_URL}/lists/${userId}`);
     if (!res.ok) throw new Error('Hiba a listák lekérésekor');
@@ -33,7 +33,7 @@ export async function getListsForUser(userId: string | number): Promise<BookList
   }
 }
 
-export async function createListForUser(userId: string | number, name: string): Promise<BookList | null> {
+export async function createListForUser(userId: string | number, name: string): Promise<GameList | null> {
   try {
     const res = await fetch(`${API_URL}/lists/${userId}`, {
       method: 'POST',
@@ -50,16 +50,16 @@ export async function createListForUser(userId: string | number, name: string): 
   }
 }
 
-export async function addBookToList(listId: string | number, bookId: number) {
+export async function addGameToList(listId: string | number, gameId: number) {
   try {
-    const res = await fetch(`${API_URL}/lists/${listId}/books`, {
+    const res = await fetch(`${API_URL}/lists/${listId}/games`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ bookId }),
+      body: JSON.stringify({ gameId }),
     });
-    if (!res.ok) throw new Error('Hiba a könyv hozzáadásakor');
+    if (!res.ok) throw new Error('Hiba a játék hozzáadásakor');
     return await res.json();
   } catch (err) {
     console.error(err);
@@ -67,12 +67,12 @@ export async function addBookToList(listId: string | number, bookId: number) {
   }
 }
 
-export async function removeBookFromList(listId: string | number, bookId: number) {
+export async function removeGameFromList(listId: string | number, gameId: number) {
   try {
-    const res = await fetch(`${API_URL}/lists/${listId}/books/${bookId}`, {
+    const res = await fetch(`${API_URL}/lists/${listId}/games/${gameId}`, {
       method: 'DELETE',
     });
-    if (!res.ok) throw new Error('Hiba a könyv eltávolításakor');
+    if (!res.ok) throw new Error('Hiba a játék eltávolításakor');
     return await res.json();
   } catch (err) {
     console.error(err);
@@ -110,11 +110,11 @@ export async function uploadListImage(listId: string | number, file: File) {
   }
 }
 
-export const uploadBookItemGallery = async (listId: number, bookId: number, file: File) => {
+export const uploadGameItemGallery = async (listId: number, gameId: number, file: File) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch(`${API_URL}/lists/${listId}/books/${bookId}/gallery`, {
+  const res = await fetch(`${API_URL}/lists/${listId}/games/${gameId}/gallery`, {
     method: 'POST',
     body: formData,
   });
@@ -129,3 +129,7 @@ export const deleteGalleryItem = async (id: number) => {
   });
   if (!res.ok) throw new Error('Hiba a törlés során');
 };
+
+
+
+

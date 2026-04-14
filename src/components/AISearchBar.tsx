@@ -93,3 +93,6 @@ export const AISearchBar: React.FC<Props> = ({ onFiltersExtracted }) => {
     </div>
   );
 };
+
+
+

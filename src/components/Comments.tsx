@@ -3,10 +3,10 @@ import type { Comment } from '../services/api';
 import { CommentsService } from '../services/api';
 
 interface CommentsProps {
-  bookId: number;
+  GameId: number;
 }
 
-export function Comments({ bookId }: CommentsProps) {
+export function Comments({ GameId }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,12 +14,12 @@ export function Comments({ bookId }: CommentsProps) {
 
   useEffect(() => {
     loadComments();
-  }, [bookId]);
+  }, [GameId]);
 
   const loadComments = async () => {
     setLoading(true);
     try {
-      const data = await commentsService.getBookComments(bookId);
+      const data = await commentsService.getGameComments(GameId);
       setComments(data);
       setError('');
     } catch (err) {
@@ -129,3 +129,7 @@ export function Comments({ bookId }: CommentsProps) {
     </div>
   );
 }
+
+
+
+

@@ -527,3 +527,7 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
     </div>
   );
 }
+
+
+
+

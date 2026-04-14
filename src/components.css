@@ -532,3 +532,6 @@ input[type="radio"] {
     0%, 15% { transform: translateX(0); }
     85%, 100% { transform: translateX(calc(180px - 100%)); }
 }
+
+
+

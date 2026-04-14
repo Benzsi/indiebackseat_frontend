@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StarRating } from './StarRating';
 import { BiLike, BiDislike, BiCog } from "react-icons/bi";
 
-interface BookBackProps {
+interface GameBackProps {
   title: string;
   author: string;
   averageRating: number;
@@ -16,7 +16,7 @@ interface BookBackProps {
   videoUrl?: string;
 }
 
-export function BookBack({
+export function GameBack({
   title,
   author,
   averageRating,
@@ -28,7 +28,7 @@ export function BookBack({
   onVoteComment,
   description,
   videoUrl,
-}: BookBackProps) {
+}: GameBackProps) {
   const [userVotes, setUserVotes] = useState<Record<number, 'like' | 'dislike' | null>>(() => {
     const initial: Record<number, 'like' | 'dislike' | null> = {};
     comments.forEach(c => {
@@ -277,3 +277,7 @@ export function BookBack({
     </div>
   );
 }
+
+
+
+

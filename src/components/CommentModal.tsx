@@ -5,10 +5,10 @@ interface CommentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (comment: string) => void;
-  bookTitle: string;
+  GameTitle: string;
 }
 
-export function CommentModal({ isOpen, onClose, onSave, bookTitle }: CommentModalProps) {
+export function CommentModal({ isOpen, onClose, onSave, GameTitle }: CommentModalProps) {
   const [comment, setComment] = React.useState('');
 
   React.useEffect(() => {
@@ -23,7 +23,7 @@ export function CommentModal({ isOpen, onClose, onSave, bookTitle }: CommentModa
         
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-xl md:text-2xl font-black text-[#D6F4ED] tracking-tight">
-            Backseat a(z) <span className="text-[#87BAC3] italic">"{bookTitle}"</span> játékhoz
+            Backseat a(z) <span className="text-[#87BAC3] italic">"{GameTitle}"</span> játékhoz
           </h3>
           <button 
             onClick={onClose}
@@ -66,3 +66,7 @@ export function CommentModal({ isOpen, onClose, onSave, bookTitle }: CommentModa
     </div>
   );
 }
+
+
+
+

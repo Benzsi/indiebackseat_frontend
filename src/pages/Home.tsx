@@ -14,12 +14,12 @@ import {
 import { SiDevbox } from "react-icons/si";
 import { BiHeart, BiSolidHeart, BiUpvote, BiSolidUpvote } from "react-icons/bi";
 import type { User } from '../services/api';
-import { BooksService, RatingsService } from '../services/api';
-import { BookCard } from '../components/BookCard';
-import type { BookWithRating } from '../components/BookCard';
+import { GamesService, RatingsService } from '../services/api';
+import { GameCard } from '../components/GameCard';
+import type { GameWithRating } from '../components/GameCard';
 import { AddToListModal } from '../components/AddToListModal';
-import { getListsForUser, createListForUser, addBookToList } from '../services/lists';
-import type { BookList } from '../services/lists';
+import { getListsForUser, createListForUser, addGameToList } from '../services/lists';
+import type { GameList } from '../services/lists';
 
 export interface DevLog {
   id: number;
@@ -55,16 +55,16 @@ export function Home({
   sortBy,
   sortOrder
 }: HomeProps) {
-  const [books, setBooks] = useState<BookWithRating[]>([]);
+  const [games, setGames] = useState<GameWithRating[]>([]);
   const [projects, setProjects] = useState<DevLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [hoveredBookId, setHoveredBookId] = useState<number | null>(null);
+  const [hoveredGameId, setHoveredGameId] = useState<number | null>(null);
   const [addListModalOpen, setAddListModalOpen] = useState(false);
-  const [lists, setLists] = useState<BookList[]>([]);
-  const [selectedBookForList, setSelectedBookForList] = useState<BookWithRating | null>(null);
-  const [specialListsBooks, setSpecialListsBooks] = useState<{ favorites: Set<number>, wishlist: Set<number> }>({
+  const [lists, setLists] = useState<GameList[]>([]);
+  const [selectedGameForList, setSelectedGameForList] = useState<GameWithRating | null>(null);
+  const [specialListsGames, setSpecialListsGames] = useState<{ favorites: Set<number>, wishlist: Set<number> }>({
     favorites: new Set(),
     wishlist: new Set()
   });
@@ -103,7 +103,7 @@ export function Home({
     }
   }, [window.location.hash, setActiveTab]);
   
-  const booksService = new BooksService();
+  const gamesService = new GamesService();
   const ratingsService = new RatingsService();
 
   const fetchProjects = async () => {
@@ -148,7 +148,7 @@ export function Home({
 
   useEffect(() => {
     if (user) {
-      void fetchBooks();
+      void fetchGames();
       void loadUserLists(String(user.id));
       void fetchProjects();
       void loadProjectInteractions();
@@ -160,19 +160,19 @@ export function Home({
     const userLists = await getListsForUser(userId);
     setLists(userLists);
 
-    // Identify books in "Kedveltek" and "Wishlist"
+    // Identify Games in "Kedveltek" and "Wishlist"
     const favs = new Set<number>();
     const wish = new Set<number>();
 
     userLists.forEach(list => {
       if (list.name === 'Kedveltek') {
-        list.items?.forEach(item => item.book && favs.add(item.book.id));
+        list.items?.forEach(item => item.game && favs.add(item.game.id));
       } else if (list.name === 'Wishlist') {
-        list.items?.forEach(item => item.book && wish.add(item.book.id));
+        list.items?.forEach(item => item.game && wish.add(item.game.id));
       }
     });
 
-    setSpecialListsBooks({ favorites: favs, wishlist: wish });
+    setSpecialListsGames({ favorites: favs, wishlist: wish });
   };
 
   const toggleDevFavorite = async (e: React.MouseEvent, id: number) => {
@@ -253,23 +253,23 @@ export function Home({
     }
   };
 
-  const fetchBooks = async () => {
+  const fetchGames = async () => {
     setLoading(true);
     try {
-      const data = await booksService.getAllBooks();
+      const data = await gamesService.getAllGames();
 
-      const booksWithRatings = await Promise.all(
-        data.map(async (book) => {
+      const gamesWithRatings = await Promise.all(
+        data.map(async (game) => {
           try {
-            const bookRating = await ratingsService.getBookRating(book.id);
+            const gameRating = await ratingsService.getGameRating(game.id);
             return {
-              ...book,
-              averageRating: bookRating.averageRating || 0,
-              totalRatings: bookRating.totalRatings || 0,
+              ...game,
+              averageRating: gameRating.averageRating || 0,
+              totalRatings: gameRating.totalRatings || 0,
             };
           } catch {
             return {
-              ...book,
+              ...game,
               averageRating: 0,
               totalRatings: 0,
             };
@@ -277,32 +277,32 @@ export function Home({
         })
       );
 
-      setBooks(booksWithRatings);
+      setGames(gamesWithRatings);
       setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Könyvek lekérése sikertelen');
+      setError(err instanceof Error ? err.message : 'Játékok lekérése sikertelen');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenAddList = (book: BookWithRating) => {
-    setSelectedBookForList(book);
+  const handleOpenAddList = (game: GameWithRating) => {
+    setSelectedGameForList(game);
     setAddListModalOpen(true);
   };
   const handleCloseAddList = () => {
     setAddListModalOpen(false);
-    setSelectedBookForList(null);
+    setSelectedGameForList(null);
   };
-  const handleAddBookToList = async (listId: number) => {
-    if (user && selectedBookForList) {
+  const handleAddGameToList = async (listId: number) => {
+    if (user && selectedGameForList) {
       try {
-        await addBookToList(listId, selectedBookForList.id);
+        await addGameToList(listId, selectedGameForList.id);
         await loadUserLists(String(user.id));
         setAddListModalOpen(false);
-        setSelectedBookForList(null);
+        setSelectedGameForList(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'A könyv listához adása sikertelen');
+        setError(err instanceof Error ? err.message : 'A játék listához adása sikertelen');
       }
     }
   };
@@ -317,13 +317,13 @@ export function Home({
     }
   };
 
-  const handleToggleSpecialList = async (book: BookWithRating, listName: string) => {
+  const handleToggleSpecialList = async (game: GameWithRating, listName: string) => {
     if (!user) return;
     try {
       const response = await fetch(`http://localhost:3000/api/lists/${user.id}/toggle-special`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookId: book.id, listName })
+        body: JSON.stringify({ gameId: game.id, listName })
       });
       if (response.ok) {
         await loadUserLists(String(user.id));
@@ -341,15 +341,15 @@ export function Home({
 
   const normalizedQuery = normalizeForSearch(searchQuery.trim());
 
-  const filteredBooks = books.filter((book) => {
-    const categoryMatch = selectedCategory === 'Összes' || book.genre === selectedCategory;
+  const filteredGames = games.filter((game) => {
+    const categoryMatch = selectedCategory === 'Összes' || game.genre === selectedCategory;
     if (!categoryMatch) return false;
 
-    const modeMatch = selectedMode === 'Összes' || book.literaryForm === selectedMode;
+    const modeMatch = selectedMode === 'Összes' || game.literaryForm === selectedMode;
     if (!modeMatch) return false;
 
     if (selectedRating !== '') {
-      const avg = book.averageRating || 0;
+      const avg = game.averageRating || 0;
       if (selectedRating === '4-5' && (avg < 4 || avg > 5)) return false;
       if (selectedRating === '3-4' && (avg < 3 || avg >= 4)) return false;
       if (selectedRating === '2-3' && (avg < 2 || avg >= 3)) return false;
@@ -358,7 +358,7 @@ export function Home({
 
     if (!normalizedQuery) return true;
 
-    return [book.title, book.author, book.genre, book.literaryForm]
+    return [game.title, game.author, game.genre, game.literaryForm]
       .some((field) => {
         const normalized = normalizeForSearch(field ?? '');
         return normalized.split(/\s+/).some(word => word.startsWith(normalizedQuery));
@@ -368,14 +368,14 @@ export function Home({
     if (sortBy === 'abc') {
       comparison = (a.title || '').localeCompare(b.title || '');
     } else if (sortBy === 'kedvelt') {
-      const isAFav = specialListsBooks.favorites.has(a.id);
-      const isBFav = specialListsBooks.favorites.has(b.id);
+      const isAFav = specialListsGames.favorites.has(a.id);
+      const isBFav = specialListsGames.favorites.has(b.id);
       if (isAFav && !isBFav) comparison = -1;
       else if (!isAFav && isBFav) comparison = 1;
       else comparison = (a.title || '').localeCompare(b.title || ''); // sub-sort by name
     } else if (sortBy === 'wishlist') {
-      const isAWish = specialListsBooks.wishlist.has(a.id);
-      const isBWish = specialListsBooks.wishlist.has(b.id);
+      const isAWish = specialListsGames.wishlist.has(a.id);
+      const isBWish = specialListsGames.wishlist.has(b.id);
       if (isAWish && !isBWish) comparison = -1;
       else if (!isAWish && isBWish) comparison = 1;
       else comparison = (a.title || '').localeCompare(b.title || '');
@@ -856,24 +856,24 @@ export function Home({
 
             {loading ? (
               <div className="loading">Játékok betöltése...</div>
-            ) : books.length === 0 ? (
-              <div className="no-books">Jelenleg nincsenek játékok a katalógusban.</div>
-            ) : filteredBooks.length === 0 ? (
-              <div className="no-books">Nincs találat a megadott keresésre.</div>
+            ) : games.length === 0 ? (
+              <div className="no-games">Jelenleg nincsenek játékok a katalógusban.</div>
+            ) : filteredGames.length === 0 ? (
+              <div className="no-games">Nincs találat a megadott keresésre.</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {filteredBooks.map((book) => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    isHovered={hoveredBookId === book.id}
-                    onMouseEnter={() => setHoveredBookId(book.id)}
-                    onMouseLeave={() => setHoveredBookId(null)}
+                {filteredGames.map((game) => (
+                  <GameCard
+                    key={game.id}
+                    game={game}
+                    isHovered={hoveredGameId === game.id}
+                    onMouseEnter={() => setHoveredGameId(game.id)}
+                    onMouseLeave={() => setHoveredGameId(null)}
                     onOpenAddList={handleOpenAddList}
                     onToggleFavorite={(b) => handleToggleSpecialList(b, 'Kedveltek')}
                     onToggleWishlist={(b) => handleToggleSpecialList(b, 'Wishlist')}
-                    isFavorited={specialListsBooks.favorites.has(book.id)}
-                    isWishlisted={specialListsBooks.wishlist.has(book.id)}
+                    isFavorited={specialListsGames.favorites.has(game.id)}
+                    isWishlisted={specialListsGames.wishlist.has(game.id)}
                   />
                 ))}
               </div>
@@ -986,9 +986,9 @@ export function Home({
       <AddToListModal
         isOpen={addListModalOpen}
         onClose={handleCloseAddList}
-        onAdd={handleAddBookToList}
+        onAdd={handleAddGameToList}
         lists={lists}
-        bookTitle={selectedBookForList?.title || ''}
+        GameTitle={selectedGameForList?.title || ''}
         onCreateList={handleCreateList}
       />
 
@@ -1001,3 +1001,7 @@ export function Home({
     </div>
   );
 }
+
+
+
+

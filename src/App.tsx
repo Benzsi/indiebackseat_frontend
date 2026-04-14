@@ -10,7 +10,7 @@ import { Profile } from './pages/Profile'
 import { AdminUsers } from './pages/AdminUsers'
 import { MyLists } from './pages/MyLists'
 import { AISearch } from './pages/AISearch'
-import { BookDetails } from './pages/BookDetails'
+import { GameDetails } from './pages/GameDetails'
 import { DevLogs } from './pages/DevLogs'
 import { DevLogDetail } from './pages/DevLogDetail'
 import { PrivacyPolicy } from './pages/PrivacyPolicy'
@@ -36,8 +36,8 @@ function App() {
   const [sortBy, setSortBy] = useState<string>('abc');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const bookCategories = ['Összes', 'REGÉNY', 'NOVELLA', 'FORGATÓKÖNYV', 'EGYÉB'];
-  const bookModes = ['Összes', 'KEMÉNYFÉNYES', 'PUHAFÉNYES', 'E-BOOK', 'HANGOSKÖNYV'];
+  const GameCategories = ['Összes', 'REGÉNY', 'NOVELLA', 'FORGATÓJáték', 'EGYÉB'];
+  const GameModes = ['Összes', 'KEMÉNYFÉNYES', 'PUHAFÉNYES', 'E-Game', 'HANGOSJáték'];
 
   const devCategories = [
     'Összes', 'ACTION', 'PUZZLE', 'RPG', 'PLATFORMER', 'HORROR', 'ADVENTURE', 'SANDBOX',
@@ -56,8 +56,8 @@ function App() {
   const isGameContext = activeTab === 'games';
   const isProjectContext = isDevLogContext || isGameContext;
   
-  const currentCategories = isProjectContext ? devCategories : bookCategories;
-  const currentModes = isProjectContext ? devModes : bookModes;
+  const currentCategories = isProjectContext ? devCategories : GameCategories;
+  const currentModes = isProjectContext ? devModes : GameModes;
 
   useEffect(() => {
     setSelectedCategory('Összes');
@@ -128,7 +128,7 @@ function App() {
              <div className="flex flex-wrap gap-4 items-end">
               <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
-                  <Filter size={13} /> {isProjectContext ? 'Projekt kategória' : 'Könyv kategória'}
+                  <Filter size={13} /> {isProjectContext ? 'Projekt kategória' : 'Játék kategória'}
                 </label>
                 <select
                   value={selectedCategory}
@@ -265,7 +265,7 @@ function App() {
             sortBy={sortBy}
             sortOrder={sortOrder}
           />} />
-          <Route path="/books/:bookId" element={<BookDetails user={user} />} />
+          <Route path="/games/:gameId" element={<GameDetails user={user} />} />
           <Route path="/mylists" element={<MyLists user={user} />} />
           <Route path="/ai-search" element={<AISearch user={user} />} />
           <Route
@@ -311,3 +311,8 @@ function App() {
 }
 
 export default App
+
+
+
+
+

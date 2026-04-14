@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { User, SteamAchievementsResponse } from '../services/api';
-import { getListsForUser, removeList, removeBookFromList, createListForUser, uploadListImage, uploadBookItemGallery, deleteGalleryItem } from '../services/lists';
+import { getListsForUser, removeList, removeGameFromList, createListForUser, uploadListImage, uploadGameItemGallery, deleteGalleryItem } from '../services/lists';
 import { RatingsService, SteamService } from '../services/api';
 import { StarRating } from '../components/StarRating';
 import { Library, Plus, Trash2, ChevronDown, ChevronUp, FolderPlus, Gamepad2, Info, Image as ImageIcon, Camera, ChevronRight } from 'lucide-react';
@@ -20,10 +20,10 @@ export function MyLists({ user }: MyListsProps) {
   const [error, setError] = useState('');
   const [newListName, setNewListName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [expandedBooks, setExpandedBooks] = useState<Record<number, boolean>>({});
+  const [expandedGames, setExpandedGames] = useState<Record<number, boolean>>({});
   const [expandedAchievements, setExpandedAchievements] = useState<Record<number, boolean>>({});
   const [userRatings, setUserRatings] = useState<Record<number, number>>({});
-  const [bookAchievements, setBookAchievements] = useState<Record<number, SteamAchievementsResponse | 'loading' | 'none'>>(() => {
+  const [gameAchievements, setgameAchievements] = useState<Record<number, SteamAchievementsResponse | 'loading' | 'none'>>(() => {
     if (!user) return {};
     const cached = localStorage.getItem(`steam_ach_${user.id}`);
     if (cached) {
@@ -33,10 +33,10 @@ export function MyLists({ user }: MyListsProps) {
   });
 
   useEffect(() => {
-    if (user && Object.keys(bookAchievements).length > 0) {
-      localStorage.setItem(`steam_ach_${user.id}`, JSON.stringify(bookAchievements));
+    if (user && Object.keys(gameAchievements).length > 0) {
+      localStorage.setItem(`steam_ach_${user.id}`, JSON.stringify(gameAchievements));
     }
-  }, [bookAchievements, user]);
+  }, [gameAchievements, user]);
 
   useEffect(() => {
     if (user) {
@@ -57,21 +57,21 @@ export function MyLists({ user }: MyListsProps) {
 
     const steamSvc = new SteamService();
     activeList.items.forEach((item: any) => {
-      const book = item.book;
-      if (!book) return;
+      const game = item.game;
+      if (!game) return;
 
-      if (!bookAchievements[book.id]) {
-        setBookAchievements(prev => ({ ...prev, [book.id]: 'loading' }));
+      if (!gameAchievements[game.id]) {
+        setgameAchievements(prev => ({ ...prev, [game.id]: 'loading' }));
         
-        steamSvc.getGameAchievements(book.id)
+        steamSvc.getgameAchievements(game.id)
           .then(data => {
             if (data.achievements && data.achievements.length > 0) {
-              setBookAchievements(prev => ({ ...prev, [book.id]: data }));
+              setgameAchievements(prev => ({ ...prev, [game.id]: data }));
             } else {
-              setBookAchievements(prev => ({ ...prev, [book.id]: 'none' }));
+              setgameAchievements(prev => ({ ...prev, [game.id]: 'none' }));
             }
           })
-          .catch(() => setBookAchievements(prev => ({ ...prev, [book.id]: 'none' })));
+          .catch(() => setgameAchievements(prev => ({ ...prev, [game.id]: 'none' })));
       }
     });
 
@@ -83,7 +83,7 @@ export function MyLists({ user }: MyListsProps) {
       const ratingsService = new RatingsService();
       const ratings = await ratingsService.getUserRatings(user.id);
       const ratingsMap = ratings.reduce((acc, r) => {
-        acc[r.bookId] = r.rating;
+        acc[r.gameId] = r.rating;
         return acc;
       }, {} as Record<number, number>);
       setUserRatings(ratingsMap);
@@ -92,12 +92,12 @@ export function MyLists({ user }: MyListsProps) {
     }
   };
 
-  const handleRateBook = async (bookId: number, rating: number) => {
+  const handleRateGame = async (gameId: number, rating: number) => {
     if (!user) return;
     try {
       const ratingsService = new RatingsService();
-      await ratingsService.rateBook(user.id, bookId, rating);
-      setUserRatings(prev => ({ ...prev, [bookId]: rating }));
+      await ratingsService.rateGame(user.id, gameId, rating);
+      setUserRatings(prev => ({ ...prev, [gameId]: rating }));
     } catch (err) {
       console.error('Hiba az értékelés mentésekor', err);
       setError('Nem sikerült elmenteni az értékelést.');
@@ -171,20 +171,20 @@ export function MyLists({ user }: MyListsProps) {
     }
   };
 
-  const handleRemoveBook = async (listId: number, bookId: number) => {
+  const handleRemoveGame = async (listId: number, gameId: number) => {
     if (!user) return;
     try {
-      await removeBookFromList(listId, bookId);
+      await removeGameFromList(listId, gameId);
       await fetchLists();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Hiba a könyv eltávolításakor');
+      setError(err instanceof Error ? err.message : 'Hiba a játék eltávolításakor');
     }
   };
 
   const listUploadInputRef = React.useRef<HTMLInputElement>(null);
-  const bookItemUploadInputRef = React.useRef<HTMLInputElement>(null);
+  const GameItemUploadInputRef = React.useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<number | null>(null);
-  const [activeBookId, setActiveBookId] = useState<number | null>(null);
+  const [activeGameId, setActiveGameId] = useState<number | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<{ url: string; type: 'IMAGE' | 'VIDEO' } | null>(null);
 
   const triggerListUpload = (listId: number) => {
@@ -192,10 +192,10 @@ export function MyLists({ user }: MyListsProps) {
     listUploadInputRef.current?.click();
   };
 
-  const triggerBookItemGalleryUpload = (listId: number, bookId: number) => {
+  const triggerGameItemGalleryUpload = (listId: number, gameId: number) => {
     setActiveUploadId(listId);
-    setActiveBookId(bookId);
-    bookItemUploadInputRef.current?.click();
+    setActiveGameId(gameId);
+    GameItemUploadInputRef.current?.click();
   };
 
   const handleUploadImage = async (listId: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,12 +210,12 @@ export function MyLists({ user }: MyListsProps) {
     }
   };
 
-  const handleUploadBookGallery = async (listId: number, bookId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadGameGallery = async (listId: number, gameId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
     
     try {
-      await uploadBookItemGallery(listId, bookId, file);
+      await uploadGameItemGallery(listId, gameId, file);
       await fetchLists();
     } catch (err) {
       setError('Hiba a galéria feltöltésekor');
@@ -247,11 +247,11 @@ export function MyLists({ user }: MyListsProps) {
         onChange={(e) => activeUploadId && handleUploadImage(activeUploadId, e)}
       />
       <input 
-        ref={bookItemUploadInputRef}
+        ref={GameItemUploadInputRef}
         type="file" 
         className="hidden" 
         accept="image/*,video/*"
-        onChange={(e) => activeUploadId && activeBookId && handleUploadBookGallery(activeUploadId, activeBookId, e)}
+        onChange={(e) => activeUploadId && activeGameId && handleUploadGameGallery(activeUploadId, activeGameId, e)}
       />
 
       {/* Header section */}
@@ -454,39 +454,39 @@ export function MyLists({ user }: MyListsProps) {
                   ) : list.items && list.items.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {list.items.map((item: any) => {
-                        const book = item.book;
-                        if (!book) return null;
-                        const isExpanded = !!expandedBooks[book.id];
-                        const ach = bookAchievements[book.id];
+                        const game = item.game;
+                        if (!game) return null;
+                        const isExpanded = !!expandedGames[game.id];
+                        const ach = gameAchievements[game.id];
                         const achData = (ach && ach !== 'loading' && ach !== 'none') ? ach as SteamAchievementsResponse : null;
 
                         return (
                           <div
-                            key={book.id}
+                            key={game.id}
                             className={`relative bg-[#473472] border border-[#53629E] rounded-2xl overflow-hidden transition-all duration-500 shadow-lg ${
                               isExpanded ? 'col-span-full ring-2 ring-[#87BAC3]/50' : 'hover:scale-[1.02]'
                             }`}
                             onClick={(e) => {
                               if (e.target instanceof HTMLElement && (e.target.closest('button') || e.target.closest('label') || e.target.closest('a'))) return;
-                              setExpandedBooks(prev => ({ ...prev, [book.id]: !isExpanded }));
+                              setExpandedGames(prev => ({ ...prev, [game.id]: !isExpanded }));
                             }}
                           >
                             <div className={`flex flex-col md:flex-row h-full ${isExpanded ? '' : 'cursor-pointer'}`}>
                               
-                              {/* Book Main Section (Left) */}
+                              {/* game Main Section (Left) */}
                               <div className={`${isExpanded ? 'w-full md:w-[320px]' : 'w-full'} flex flex-col border-r border-[#53629E]/30`}>
                                 {/* Header */}
                                 <div className="p-4 flex flex-col gap-2">
                                   <div className="flex items-start justify-between gap-2">
-                                    <h3 className="text-base font-black text-[#D6F4ED] line-clamp-1">{book.title}</h3>
+                                    <h3 className="text-base font-black text-[#D6F4ED] line-clamp-1">{game.title}</h3>
                                     {isExpanded && <Info size={16} className="text-[#87BAC3] flex-shrink-0" />}
                                   </div>
                                   <div className="flex gap-1.5 flex-wrap">
                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-400/20 uppercase tracking-tighter">
-                                      {book.literaryForm}
+                                      {game.literaryForm}
                                     </span>
                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-400/20 uppercase tracking-tighter">
-                                      {book.genre}
+                                      {game.genre}
                                     </span>
                                   </div>
                                 </div>
@@ -496,10 +496,10 @@ export function MyLists({ user }: MyListsProps) {
                                     {/* Expanded Cover/Image */}
                                     <div className="px-4 mb-6">
                                       <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden border-2 border-[#53629E]/30 flex-shrink-0 bg-gradient-to-br from-[#473472] to-[#53629E] flex items-center justify-center shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
-                                        {book.coverUrl ? (
+                                        {game.coverUrl ? (
                                           <img 
-                                            src={book.coverUrl} 
-                                            alt={book.title} 
+                                            src={game.coverUrl} 
+                                            alt={game.title} 
                                             className="w-full h-full object-cover"
                                             referrerPolicy="no-referrer"
                                           />
@@ -515,8 +515,8 @@ export function MyLists({ user }: MyListsProps) {
                                         <div className="text-[10px] font-black text-[#87BAC3] uppercase tracking-widest mb-1">Saját értékelés</div>
                                         <div onClick={e => e.stopPropagation()}>
                                           <StarRating
-                                            rating={userRatings[book.id] || 0}
-                                            onRate={(rating) => handleRateBook(book.id, rating)}
+                                            rating={userRatings[game.id] || 0}
+                                            onRate={(rating) => handleRateGame(game.id, rating)}
                                             size="small"
                                           />
                                         </div>
@@ -526,13 +526,13 @@ export function MyLists({ user }: MyListsProps) {
                                     {/* Actions */}
                                     <div className="mt-auto p-4 flex gap-2 border-t border-[#53629E]/20">
                                       <button
-                                        onClick={e => { e.stopPropagation(); navigate(`/books/${book.id}`); }}
+                                        onClick={e => { e.stopPropagation(); navigate(`/games/${game.id}`); }}
                                         className="flex-1 py-2 rounded-xl bg-[#53629E]/30 text-[#D6F4ED] text-[10px] font-black hover:bg-[#53629E]/50 transition-all uppercase tracking-widest"
                                       >
                                         Adatlap
                                       </button>
                                       <button
-                                        onClick={e => { e.stopPropagation(); handleRemoveBook(list.id, book.id); }}
+                                        onClick={e => { e.stopPropagation(); handleRemoveGame(list.id, game.id); }}
                                         className="flex-1 py-2 rounded-xl bg-red-400/10 text-red-400 text-[10px] font-black hover:bg-red-400/20 border border-red-400/20 transition-all uppercase tracking-widest"
                                       >
                                         Törlés
@@ -588,7 +588,7 @@ export function MyLists({ user }: MyListsProps) {
                                       <button 
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          triggerBookItemGalleryUpload(list.id, book.id);
+                                          triggerGameItemGalleryUpload(list.id, game.id);
                                         }}
                                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#D6F4ED] text-[#473472] font-black text-xs hover:bg-[#87BAC3] transition-all"
                                       >
@@ -650,15 +650,15 @@ export function MyLists({ user }: MyListsProps) {
                                     <button 
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setExpandedAchievements(prev => ({ ...prev, [book.id]: !prev[book.id] }));
+                                        setExpandedAchievements(prev => ({ ...prev, [game.id]: !prev[game.id] }));
                                       }}
                                       className="w-full flex items-center justify-between text-xs font-black text-[#87BAC3] uppercase tracking-[0.2em] border-b border-[#53629E]/40 pb-2 hover:text-[#D6F4ED] transition-colors"
                                     >
                                       <span>Eredmények (Steam)</span>
-                                      {expandedAchievements[book.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                      {expandedAchievements[game.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                     </button>
                                     
-                                    {expandedAchievements[book.id] && (
+                                    {expandedAchievements[game.id] && (
                                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                         {ach === 'loading' ? (
                                           <div className="flex items-center justify-center py-10 text-[#87BAC3] text-sm animate-pulse">Szkennelés...</div>
@@ -747,3 +747,7 @@ export function MyLists({ user }: MyListsProps) {
     </div>
   );
 }
+
+
+
+

@@ -170,3 +170,7 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange, isFilterO
     </header>
   );
 }
+
+
+
+

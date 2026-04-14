@@ -23,11 +23,11 @@ export function Footer() {
               A tökéletes platform backend kedvelőinek és játékfejlesztőknek. Kezeld projektjeid, oszd meg haladásod és fedezz fel új világokat.
             </p>
             <div className="flex flex-wrap gap-3 mt-2">
-              <a href="https://github.com/Benzsi/bookink_frontend" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#53629E]/30 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all duration-300 group" title="Frontend GitHub">
+              <a href="https://github.com/Benzsi/Gameink_frontend" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#53629E]/30 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all duration-300 group" title="Frontend GitHub">
                 <Github size={16} />
                 <span className="text-[9px] font-black uppercase tracking-widest opacity-60 group-hover:opacity-100">Frontend</span>
               </a>
-              <a href="https://github.com/Benzsi/bookink_backend" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#53629E]/30 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all duration-300 group" title="Backend GitHub">
+              <a href="https://github.com/Benzsi/Gameink_backend" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#53629E]/30 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all duration-300 group" title="Backend GitHub">
                 <Github size={16} />
                 <span className="text-[9px] font-black uppercase tracking-widest opacity-60 group-hover:opacity-100">Backend</span>
               </a>
@@ -123,3 +123,7 @@ export function Footer() {
     </footer>
   );
 }
+
+
+
+

@@ -33,7 +33,7 @@ interface AuthResponse {
   token: string;
 }
 
-export interface Book {
+export interface Game {
   id: number;
   sequenceNumber: number;
   title: string;
@@ -49,14 +49,14 @@ export interface Book {
 export interface Rating {
   id: number;
   userId: number;
-  bookId: number;
+  gameId: number;
   rating: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface BookRating {
-  bookId: number;
+export interface GameRating {
+  gameId: number;
   averageRating: number;
   totalRatings: number;
 }
@@ -194,9 +194,9 @@ export class UsersService {
   }
 }
 
-export class BooksService {
-  async getAllBooks(): Promise<Book[]> {
-    const response = await fetch(`${API_BASE_URL}/books`, {
+export class GamesService {
+  async getAllGames(): Promise<Game[]> {
+    const response = await fetch(`${API_BASE_URL}/games`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -205,14 +205,14 @@ export class BooksService {
     });
 
     if (!response.ok) {
-      throw new Error('Könyvek lekérése sikertelen');
+      throw new Error('Játékok lekérése sikertelen');
     }
 
     return response.json();
   }
 
-  async getBook(id: number): Promise<Book> {
-    const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+  async getGame(id: number): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/games/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -221,14 +221,14 @@ export class BooksService {
     });
 
     if (!response.ok) {
-      throw new Error('Könyv lekérése sikertelen');
+      throw new Error('Játék lekérése sikertelen');
     }
 
     return response.json();
   }
 
-  async createBook(data: Partial<Book> & { title: string; author: string }): Promise<Book> {
-    const response = await fetch(`${API_BASE_URL}/books`, {
+  async createGame(data: Partial<Game> & { title: string; author: string }): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/games`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -239,14 +239,14 @@ export class BooksService {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Könyv létrehozása sikertelen');
+      throw new Error(error.message || 'Játék létrehozása sikertelen');
     }
 
     return response.json();
   }
 
-  async updateBook(id: number, data: Partial<Book>): Promise<Book> {
-    const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+  async updateGame(id: number, data: Partial<Game>): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/games/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -257,14 +257,14 @@ export class BooksService {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Könyv frissítése sikertelen');
+      throw new Error(error.message || 'Játék frissítése sikertelen');
     }
 
     return response.json();
   }
 
-  async deleteBook(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+  async deleteGame(id: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/games/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -273,7 +273,7 @@ export class BooksService {
     });
 
     if (!response.ok) {
-      throw new Error('Könyv törlése sikertelen');
+      throw new Error('Játék törlése sikertelen');
     }
   }
 }
@@ -282,7 +282,7 @@ export interface Comment {
   id: number;
   content: string;
   userId: number;
-  bookId: number;
+  GameId: number;
   likes: number;
   dislikes: number;
   userVote: number; // 0: none, 1: like, -1: dislike
@@ -296,12 +296,12 @@ export interface Comment {
 
 export interface CreateCommentRequest {
   content: string;
-  bookId: number;
+  GameId: number;
 }
 
 export class CommentsService {
-  async getBookComments(bookId: number): Promise<Comment[]> {
-    const response = await fetch(`${API_URL}/comments/book/${bookId}`, {
+  async getGameComments(GameId: number): Promise<Comment[]> {
+    const response = await fetch(`${API_URL}/comments/Game/${GameId}`, {
       headers: getAuthHeader(),
     });
 
@@ -312,14 +312,14 @@ export class CommentsService {
     return response.json();
   }
 
-  async createComment(bookId: number, content: string): Promise<Comment> {
+  async createComment(GameId: number, content: string): Promise<Comment> {
     const response = await fetch(`${API_URL}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeader(),
       },
-      body: JSON.stringify({ bookId, content }),
+      body: JSON.stringify({ GameId, content }),
     });
 
     if (!response.ok) {
@@ -401,14 +401,14 @@ export class CommentsService {
 }
 
 export class RatingsService {
-  async rateBook(userId: number, bookId: number, rating: number): Promise<Rating> {
+  async rateGame(userId: number, GameId: number, rating: number): Promise<Rating> {
     const response = await fetch(`${API_URL}/ratings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeader(),
       },
-      body: JSON.stringify({ userId, bookId, rating }),
+      body: JSON.stringify({ userId, GameId, rating }),
     });
 
     if (!response.ok) {
@@ -419,8 +419,8 @@ export class RatingsService {
     return response.json();
   }
 
-  async getUserRating(userId: number, bookId: number): Promise<Rating | null> {
-    const response = await fetch(`${API_URL}/ratings/user/${userId}/book/${bookId}`, {
+  async getUserRating(userId: number, GameId: number): Promise<Rating | null> {
+    const response = await fetch(`${API_URL}/ratings/user/${userId}/Game/${GameId}`, {
       headers: getAuthHeader(),
     });
 
@@ -435,13 +435,13 @@ export class RatingsService {
     return response.json();
   }
 
-  async getBookRating(bookId: number): Promise<BookRating> {
-    const response = await fetch(`${API_URL}/ratings/book/${bookId}`, {
+  async getGameRating(GameId: number): Promise<GameRating> {
+    const response = await fetch(`${API_URL}/ratings/Game/${GameId}`, {
       headers: getAuthHeader(),
     });
 
     if (!response.ok) {
-      throw new Error('Könyv értékelésének lekérése sikertelen');
+      throw new Error('Játék értékelésének lekérése sikertelen');
     }
 
     return response.json();
@@ -475,8 +475,8 @@ export interface SteamAchievementsResponse {
 }
 
 export class SteamService {
-  async getGameAchievements(bookId: number): Promise<SteamAchievementsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/steam/achievementsByBook/${bookId}`, {
+  async getGameAchievements(GameId: number): Promise<SteamAchievementsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/steam/achievementsByGame/${GameId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -491,3 +491,7 @@ export class SteamService {
     return response.json();
   }
 }
+
+
+
+

@@ -5,11 +5,11 @@ interface AddToListModalProps {
   onClose: () => void;
   onAdd: (listId: number) => void;
   lists: { id: number; name: string }[];
-  bookTitle: string;
+  GameTitle: string;
   onCreateList?: (name: string) => Promise<void>;
 }
 
-export function AddToListModal({ isOpen, onClose, onAdd, lists, bookTitle, onCreateList }: AddToListModalProps) {
+export function AddToListModal({ isOpen, onClose, onAdd, lists, GameTitle, onCreateList }: AddToListModalProps) {
   const [selectedList, setSelectedList] = React.useState<number | ''>('');
   const [newListName, setNewListName] = React.useState('');
   const [showNewList, setShowNewList] = React.useState(false);
@@ -33,7 +33,7 @@ export function AddToListModal({ isOpen, onClose, onAdd, lists, bookTitle, onCre
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#87BAC3]/20 to-transparent rounded-tr-3xl pointer-events-none" />
 
         <h3 className="text-xl md:text-2xl font-black text-[#D6F4ED] text-center mb-8 leading-tight tracking-tight">
-          "{bookTitle}"<br /><span className="text-[#87BAC3]">listához adása</span>
+          "{GameTitle}"<br /><span className="text-[#87BAC3]">listához adása</span>
         </h3>
 
         {!showNewList ? (
@@ -130,3 +130,7 @@ export function AddToListModal({ isOpen, onClose, onAdd, lists, bookTitle, onCre
     </div>
   );
 }
+
+
+
+
