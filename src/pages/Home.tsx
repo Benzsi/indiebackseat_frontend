@@ -379,6 +379,9 @@ export function Home({
       if (isAWish && !isBWish) comparison = -1;
       else if (!isAWish && isBWish) comparison = 1;
       else comparison = (a.title || '').localeCompare(b.title || '');
+    } else if (sortBy === 'rating') {
+      comparison = (b.averageRating || 0) - (a.averageRating || 0);
+      if (comparison === 0) comparison = (a.title || '').localeCompare(b.title || '');
     }
 
     return sortOrder === 'asc' ? comparison : -comparison;

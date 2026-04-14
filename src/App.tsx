@@ -18,6 +18,7 @@ import { Contact } from './pages/Contact'
 import { Footer } from './components/Footer'
 import type { User } from './services/api'
 import { Filter, Star, RotateCcw } from 'lucide-react'
+import { BiUpvote } from 'react-icons/bi'
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -50,8 +51,11 @@ function App() {
     'VR', 'AUTOSHOOTER', 'TEXT_BASED'
   ];
 
-  // Helper to determine active context (Games catalog or Dev Logs)
-  const isProjectContext = activeTab === 'devlogs' || activeTab === 'games' || window.location.pathname.startsWith('/devlogs');
+  // Helper to determine active context
+  const isDevLogContext = activeTab === 'devlogs' || window.location.pathname.startsWith('/devlogs');
+  const isGameContext = activeTab === 'games';
+  const isProjectContext = isDevLogContext || isGameContext;
+  
   const currentCategories = isProjectContext ? devCategories : bookCategories;
   const currentModes = isProjectContext ? devModes : bookModes;
 
@@ -150,14 +154,18 @@ function App() {
 
                <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-[#87BAC3] uppercase tracking-widest">
-                  <Star size={13} className="text-amber-300" /> {isProjectContext ? 'Upvotes' : 'Értékelés'}
+                  {isDevLogContext ? (
+                    <><BiUpvote size={13} className="text-amber-300" /> Upvotes</>
+                  ) : (
+                    <><Star size={13} className="text-amber-300" /> Értékelés</>
+                  )}
                 </label>
                 <select
                   value={selectedRating}
                   onChange={(e) => setSelectedRating(e.target.value)}
                   className="bg-[#53629E]/40 border border-[#53629E] text-[#D6F4ED] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#87BAC3] transition-all duration-200 cursor-pointer"
                 >
-                  {isProjectContext ? (
+                  {isDevLogContext ? (
                     <>
                       <option value="" className="bg-[#473472]">Bármennyi upvote</option>
                       <option value="0-10" className="bg-[#473472]">0 - 10 upvote</option>
@@ -197,9 +205,10 @@ function App() {
                   </label>
                   <div className="flex gap-2">
                     {[
-                      { id: 'abc', label: 'ABC sorrend' },
+                      { id: 'abc', label: 'ABC' },
                       { id: 'kedvelt', label: 'Kedveltek' },
-                      { id: 'wishlist', label: isProjectContext ? 'Upvotes' : 'Wishlist' }
+                      ...(isGameContext ? [{ id: 'rating', label: 'Értékelés' }] : []),
+                      { id: 'wishlist', label: isDevLogContext ? 'Upvotes' : 'Wishlist' }
                     ].map(option => (
                       <button
                         key={option.id}

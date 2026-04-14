@@ -314,6 +314,13 @@ export function DevLogs({
       const countB = b._count?.upvotes || 0;
       result = countB - countA;
       if (result === 0) result = a.name.localeCompare(b.name);
+    } else if (sortBy === 'rating') {
+      // DevLogs don't have ratings, but if someone clicks it (shouldn't happen on this page), 
+      // we fallback to upvotes or something sensible.
+      const countA = a._count?.upvotes || 0;
+      const countB = b._count?.upvotes || 0;
+      result = countB - countA;
+      if (result === 0) result = a.name.localeCompare(b.name);
     }
 
     return sortOrder === 'asc' ? result : -result;
