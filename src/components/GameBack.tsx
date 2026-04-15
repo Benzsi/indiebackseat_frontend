@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StarRating } from './StarRating';
 import { BiLike, BiDislike, BiCog } from "react-icons/bi";
+import { Showcase } from './MediaShowcase';
 
 interface GameBackProps {
   title: string;
@@ -113,6 +114,8 @@ export function GameBack({
 
   return (
     <div className="relative h-full flex flex-col bg-[#473472] rounded-2xl border border-[#53629E] p-6 shadow-xl overflow-hidden">
+
+
       {/* Title & author */}
       <h3 className="text-xl font-black text-[#D6F4ED] mb-1 tracking-tight">{title}</h3>
       <div className="text-sm italic text-[#87BAC3] mb-4">{author}</div>
@@ -131,9 +134,10 @@ export function GameBack({
         </div>
       </div>
 
-      {/* Video */}
+      {/* Media */}
       <div className="mb-4 p-4 rounded-xl bg-[#53629E]/10 border border-dashed border-[#53629E]/50">
-        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Video</div>
+        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-3">Media</div>
+        <Showcase />
         {videoUrl ? (
           <a href={videoUrl} target="_blank" rel="noreferrer" className="text-[#87BAC3] text-sm hover:text-[#D6F4ED] transition-colors underline">
             Video megnyitása
