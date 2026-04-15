@@ -1,46 +1,70 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
  
 interface MediaFile {
   path: string;
   type: 'image' | 'video';
-  thumbnail?: string;
 }
+
+interface ShowcaseProps {
+  gameTitle: string;
+}
+
+const mediaModules = import.meta.glob('../../MediaFiles/**/*.{png,jpg,jpeg,webp,gif,mp4,webm,mov,ogg}', {
+  eager: true,
+  import: 'default',
+});
 
 const navButtonClass =
   'absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#87BAC3]/70 bg-transparent text-2xl font-black text-[#D6F4ED] transition hover:scale-105 hover:border-[#D6F4ED] hover:text-[#87BAC3]';
+
+const videoExtensions = new Set(['mp4', 'webm', 'mov', 'ogg']);
+
+function normalizeGameKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function extractFolderName(modulePath: string): string {
+  const segments = modulePath.split('/');
+  return segments[3] ?? '';
+}
+
+function extractExtension(modulePath: string): string {
+  const fileName = modulePath.split('/').pop() ?? '';
+  const extension = fileName.split('.').pop() ?? '';
+  return extension.toLowerCase();
+}
+
+function buildMediaFiles(gameTitle: string): MediaFile[] {
+  const normalizedTitle = normalizeGameKey(gameTitle);
+
+  return Object.entries(mediaModules)
+    .filter(([modulePath]) => normalizeGameKey(extractFolderName(modulePath)) === normalizedTitle)
+    .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath, undefined, { sensitivity: 'base' }))
+    .map(([modulePath, assetPath]) => ({
+      path: String(assetPath),
+      type: videoExtensions.has(extractExtension(modulePath)) ? 'video' : 'image',
+    }));
+}
  
-export function Showcase() {
+export function Showcase({ gameTitle }: ShowcaseProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
- 
-  const screenshotImage = new URL('../../MediaFiles/dead-cells6.jpg', import.meta.url).href;
-  const trailerVideo = new URL('../../MediaFiles/Dead Cells - Launch Trailer _ PS4.mp4', import.meta.url).href;
-  const reviewImage = new URL('../../MediaFiles/dead-cells-review-3.jpg', import.meta.url).href;
-  const coverImage = new URL('../../MediaFiles/dead-cells-yiml8.png', import.meta.url).href;
- 
-  // Media files from MediaFiles folder
-  const mediaFiles: MediaFile[] = [
-    {
-      path: trailerVideo,
-      type: 'video',
-      thumbnail: reviewImage,
-    },
-    {
-      path: screenshotImage,
-      type: 'image',
-      thumbnail: screenshotImage,
-    },
-    {
-      path: reviewImage,
-      type: 'image',
-      thumbnail: reviewImage,
-    },
-    {
-      path: coverImage,
-      type: 'image',
-      thumbnail: coverImage,
-    },
-  ];
+
+  const mediaFiles = useMemo(() => buildMediaFiles(gameTitle), [gameTitle]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [gameTitle]);
+
+  if (mediaFiles.length === 0) {
+    return (
+      <section className="mb-6">
+        <div className="flex aspect-video w-full items-center justify-center rounded-2xl border border-dashed border-[#53629E]/60 bg-[#2A1F45] px-6 text-center text-sm text-[#87BAC3]/75">
+          Ehhez a játékhoz még nincs média a MediaFiles mappában.
+        </div>
+      </section>
+    );
+  }
  
   const currentFile = mediaFiles[currentIndex];
 

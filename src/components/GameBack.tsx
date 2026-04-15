@@ -126,6 +126,10 @@ export function GameBack({
         <StarRating rating={averageRating} totalRatings={totalRatings} readonly size="medium" />
       </div>
 
+      <div>
+        <Showcase gameTitle={title} />
+      </div>
+
       {/* Description */}
       <div className="mb-4 p-4 rounded-xl bg-[#53629E]/20 border border-[#53629E]/40">
         <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Leírás</div>
@@ -134,10 +138,9 @@ export function GameBack({
         </div>
       </div>
 
-      {/* Media */}
+      {/* Video */}
       <div className="mb-4 p-4 rounded-xl bg-[#53629E]/10 border border-dashed border-[#53629E]/50">
-        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-3">Media</div>
-        <Showcase />
+        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Video</div>
         {videoUrl ? (
           <a href={videoUrl} target="_blank" rel="noreferrer" className="text-[#87BAC3] text-sm hover:text-[#D6F4ED] transition-colors underline">
             Video megnyitása
