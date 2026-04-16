@@ -14,7 +14,6 @@ interface GameBackProps {
   onReportComment?: (commentId: number) => Promise<void>;
   onVoteComment?: (commentId: number, isLike: boolean | null) => Promise<void>;
   description?: string;
-  videoUrl?: string;
 }
 
 export function GameBack({
@@ -28,7 +27,6 @@ export function GameBack({
   onReportComment,
   onVoteComment,
   description,
-  videoUrl,
 }: GameBackProps) {
   const [userVotes, setUserVotes] = useState<Record<number, 'like' | 'dislike' | null>>(() => {
     const initial: Record<number, 'like' | 'dislike' | null> = {};
@@ -97,15 +95,14 @@ export function GameBack({
     }
   };
 
-  // Action button class helper
   const actionBtn = (type: 'edit' | 'delete' | 'save' | 'cancel' | 'report', key: string, extra?: string) => {
     const base = 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all duration-150 cursor-pointer';
     const hovered = hoveredActionKey === key;
     const pressed = pressedActionKey === key;
     const variants = {
-      edit:   `border-[#87BAC3] text-[#87BAC3] ${hovered || pressed ? 'bg-[#87BAC3]/20' : 'bg-transparent'}`,
+      edit: `border-[#87BAC3] text-[#87BAC3] ${hovered || pressed ? 'bg-[#87BAC3]/20' : 'bg-transparent'}`,
       delete: `border-red-400 text-red-400 ${hovered || pressed ? 'bg-red-400/20' : 'bg-transparent'}`,
-      save:   `border-emerald-400 text-emerald-400 ${hovered || pressed ? 'bg-emerald-400/20' : 'bg-transparent'}`,
+      save: `border-emerald-400 text-emerald-400 ${hovered || pressed ? 'bg-emerald-400/20' : 'bg-transparent'}`,
       cancel: `border-[#53629E] text-[#87BAC3] ${hovered || pressed ? 'bg-[#53629E]/30' : 'bg-transparent'}`,
       report: `border-amber-400 text-amber-400 ${hovered || pressed ? 'bg-amber-400/20' : 'bg-transparent'}`,
     };
@@ -114,8 +111,6 @@ export function GameBack({
 
   return (
     <div className="relative h-full flex flex-col bg-[#473472] rounded-2xl border border-[#53629E] p-6 shadow-xl overflow-hidden">
-
-
       {/* Title & author */}
       <h3 className="text-xl font-black text-[#D6F4ED] mb-1 tracking-tight">{title}</h3>
       <div className="text-sm italic text-[#87BAC3] mb-4">{author}</div>
@@ -136,18 +131,6 @@ export function GameBack({
         <div className="text-[#D6F4ED]/80 text-sm leading-relaxed">
           {description?.trim() || 'Ide kerülhet a játék rövid leírása.'}
         </div>
-      </div>
-
-      {/* Video */}
-      <div className="mb-4 p-4 rounded-xl bg-[#53629E]/10 border border-dashed border-[#53629E]/50">
-        <div className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest mb-2">Video</div>
-        {videoUrl ? (
-          <a href={videoUrl} target="_blank" rel="noreferrer" className="text-[#87BAC3] text-sm hover:text-[#D6F4ED] transition-colors underline">
-            Video megnyitása
-          </a>
-        ) : (
-          <div className="text-[#87BAC3]/60 text-sm">Fenntartott hely: ide kerülhet előzetes vagy ajánló videó.</div>
-        )}
       </div>
 
       {/* Comments */}
@@ -255,21 +238,19 @@ export function GameBack({
                     <div className="flex gap-2 items-center">
                       <button
                         onClick={() => void handleLike(c.id)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${
-                          userVotes[c.id] === 'like'
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${userVotes[c.id] === 'like'
                             ? 'bg-[#473472] border-[#D6F4ED] text-[#D6F4ED]'
                             : 'bg-transparent border-[#53629E] text-[#87BAC3] hover:border-[#87BAC3]'
-                        }`}
+                          }`}
                       >
                         <BiLike size={24} /> <span>{c.likes || 0}</span>
                       </button>
                       <button
                         onClick={() => void handleDislike(c.id)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${
-                          userVotes[c.id] === 'dislike'
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${userVotes[c.id] === 'dislike'
                             ? 'bg-[#473472] border-red-400 text-red-400'
                             : 'bg-transparent border-[#53629E] text-[#87BAC3] hover:border-red-400'
-                        }`}
+                          }`}
                       >
                         <BiDislike size={24} /> <span>{c.dislikes || 0}</span>
                       </button>
@@ -284,7 +265,3 @@ export function GameBack({
     </div>
   );
 }
-
-
-
-

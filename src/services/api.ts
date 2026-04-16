@@ -282,7 +282,7 @@ export interface Comment {
   id: number;
   content: string;
   userId: number;
-  GameId: number;
+  gameId: number;
   likes: number;
   dislikes: number;
   userVote: number; // 0: none, 1: like, -1: dislike
@@ -296,12 +296,12 @@ export interface Comment {
 
 export interface CreateCommentRequest {
   content: string;
-  GameId: number;
+  gameId: number;
 }
 
 export class CommentsService {
-  async getGameComments(GameId: number): Promise<Comment[]> {
-    const response = await fetch(`${API_URL}/comments/Game/${GameId}`, {
+  async getGameComments(gameId: number): Promise<Comment[]> {
+    const response = await fetch(`${API_URL}/comments/game/${gameId}`, {
       headers: getAuthHeader(),
     });
 
@@ -312,14 +312,14 @@ export class CommentsService {
     return response.json();
   }
 
-  async createComment(GameId: number, content: string): Promise<Comment> {
+  async createComment(gameId: number, content: string): Promise<Comment> {
     const response = await fetch(`${API_URL}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeader(),
       },
-      body: JSON.stringify({ GameId, content }),
+      body: JSON.stringify({ gameId, content }),
     });
 
     if (!response.ok) {
@@ -401,14 +401,14 @@ export class CommentsService {
 }
 
 export class RatingsService {
-  async rateGame(userId: number, GameId: number, rating: number): Promise<Rating> {
+  async rateGame(userId: number, gameId: number, rating: number): Promise<Rating> {
     const response = await fetch(`${API_URL}/ratings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeader(),
       },
-      body: JSON.stringify({ userId, GameId, rating }),
+      body: JSON.stringify({ userId, gameId, rating }),
     });
 
     if (!response.ok) {
@@ -419,8 +419,8 @@ export class RatingsService {
     return response.json();
   }
 
-  async getUserRating(userId: number, GameId: number): Promise<Rating | null> {
-    const response = await fetch(`${API_URL}/ratings/user/${userId}/Game/${GameId}`, {
+  async getUserRating(userId: number, gameId: number): Promise<Rating | null> {
+    const response = await fetch(`${API_URL}/ratings/user/${userId}/game/${gameId}`, {
       headers: getAuthHeader(),
     });
 
@@ -435,8 +435,8 @@ export class RatingsService {
     return response.json();
   }
 
-  async getGameRating(GameId: number): Promise<GameRating> {
-    const response = await fetch(`${API_URL}/ratings/Game/${GameId}`, {
+  async getGameRating(gameId: number): Promise<GameRating> {
+    const response = await fetch(`${API_URL}/ratings/game/${gameId}`, {
       headers: getAuthHeader(),
     });
 
@@ -475,8 +475,8 @@ export interface SteamAchievementsResponse {
 }
 
 export class SteamService {
-  async getGameAchievements(GameId: number): Promise<SteamAchievementsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/steam/achievementsByGame/${GameId}`, {
+  async getGameAchievements(gameId: number): Promise<SteamAchievementsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/steam/achievementsByGame/${gameId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

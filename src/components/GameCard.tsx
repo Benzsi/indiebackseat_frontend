@@ -20,11 +20,11 @@ interface GameCardProps {
   isWishlisted?: boolean;
 }
 
-export function GameCard({ 
-  game, 
-  isHovered, 
-  onMouseEnter, 
-  onMouseLeave, 
+export function GameCard({
+  game,
+  isHovered,
+  onMouseEnter,
+  onMouseLeave,
   onOpenAddList,
   onToggleFavorite,
   onToggleWishlist,

@@ -27,7 +27,7 @@ export function MyLists({ user }: MyListsProps) {
     if (!user) return {};
     const cached = localStorage.getItem(`steam_ach_${user.id}`);
     if (cached) {
-       try { return JSON.parse(cached); } catch { return {}; }
+      try { return JSON.parse(cached); } catch { return {}; }
     }
     return {};
   });
@@ -51,7 +51,7 @@ export function MyLists({ user }: MyListsProps) {
 
   useEffect(() => {
     if (!openListId || !lists.length) return;
-    
+
     const activeList = lists.find(l => l.id === openListId);
     if (!activeList || !activeList.items) return;
 
@@ -62,8 +62,8 @@ export function MyLists({ user }: MyListsProps) {
 
       if (!gameAchievements[game.id]) {
         setgameAchievements(prev => ({ ...prev, [game.id]: 'loading' }));
-        
-        steamSvc.getgameAchievements(game.id)
+
+        steamSvc.getGameAchievements(game.id)
           .then(data => {
             if (data.achievements && data.achievements.length > 0) {
               setgameAchievements(prev => ({ ...prev, [game.id]: data }));
@@ -134,7 +134,7 @@ export function MyLists({ user }: MyListsProps) {
   const handleDeleteGalleryItem = async (e: React.MouseEvent, itemId: number) => {
     e.stopPropagation();
     if (!window.confirm('Biztosan törölni szeretnéd ezt az emléket?')) return;
-    
+
     try {
       await deleteGalleryItem(itemId);
       await fetchLists();
@@ -201,7 +201,7 @@ export function MyLists({ user }: MyListsProps) {
   const handleUploadImage = async (listId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
-    
+
     try {
       await uploadListImage(listId, file);
       await fetchLists();
@@ -213,7 +213,7 @@ export function MyLists({ user }: MyListsProps) {
   const handleUploadGameGallery = async (listId: number, gameId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
-    
+
     try {
       await uploadGameItemGallery(listId, gameId, file);
       await fetchLists();
@@ -239,17 +239,17 @@ export function MyLists({ user }: MyListsProps) {
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
       {/* ... hidden inputs ... */}
-      <input 
+      <input
         ref={listUploadInputRef}
-        type="file" 
-        className="hidden" 
+        type="file"
+        className="hidden"
         accept="image/*"
         onChange={(e) => activeUploadId && handleUploadImage(activeUploadId, e)}
       />
-      <input 
+      <input
         ref={GameItemUploadInputRef}
-        type="file" 
-        className="hidden" 
+        type="file"
+        className="hidden"
         accept="image/*,video/*"
         onChange={(e) => activeUploadId && activeGameId && handleUploadGameGallery(activeUploadId, activeGameId, e)}
       />
@@ -276,8 +276,8 @@ export function MyLists({ user }: MyListsProps) {
             disabled={isCreating}
             className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-[#473472] placeholder-[#53629E]/50 text-sm font-bold"
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={!newListName.trim() || isCreating}
             className="bg-[#473472] text-[#D6F4ED] px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-[#53629E] transition-all disabled:opacity-50"
           >
@@ -307,7 +307,7 @@ export function MyLists({ user }: MyListsProps) {
           {allLists.map(list => (
             <div key={list.id} className="bg-[#473472] border border-[#53629E] rounded-3xl overflow-hidden shadow-xl transition-all">
               {/* List Header */}
-              <div 
+              <div
                 className={`flex items-center justify-between p-6 cursor-pointer transition-colors ${openListId === list.id ? 'bg-[#53629E]/30' : 'hover:bg-[#53629E]/20'}`}
                 onClick={(e) => {
                   if (e.target instanceof HTMLElement && (e.target.closest('button') || e.target.closest('label') || e.target.closest('a'))) return;
@@ -318,9 +318,9 @@ export function MyLists({ user }: MyListsProps) {
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden border border-[#53629E]/30 shadow-md bg-[#53629E] text-[#D6F4ED]">
                       {list.imagePath ? (
-                        <img 
-                          src={`http://localhost:3000/uploads/${list.imagePath}`} 
-                          alt={list.name} 
+                        <img
+                          src={`http://localhost:3000/uploads/${list.imagePath}`}
+                          alt={list.name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -335,11 +335,11 @@ export function MyLists({ user }: MyListsProps) {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-3 relative z-30" onClick={e => e.stopPropagation()}>
                   {!list.isProjectList && (
                     <>
-                      <button 
+                      <button
                         type="button"
                         className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#87BAC3] text-[#473472] hover:bg-[#D6F4ED] transition-all cursor-pointer shadow-lg active:scale-95 font-bold text-xs"
                         title="Borítókép feltöltése"
@@ -368,9 +368,9 @@ export function MyLists({ user }: MyListsProps) {
                     </>
                   )}
                   {list.isProjectList && (
-                     <div className="px-3 py-1.5 rounded-xl bg-[#53629E]/20 text-[#87BAC3] text-[10px] font-black uppercase tracking-widest border border-[#53629E]/30">
-                        Automatikus Lista
-                     </div>
+                    <div className="px-3 py-1.5 rounded-xl bg-[#53629E]/20 text-[#87BAC3] text-[10px] font-black uppercase tracking-widest border border-[#53629E]/30">
+                      Automatikus Lista
+                    </div>
                   )}
                   <div className="ml-2 text-[#87BAC3]">
                     {openListId === list.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
@@ -382,75 +382,75 @@ export function MyLists({ user }: MyListsProps) {
               {openListId === list.id && (
                 <div className="p-6 pt-2 bg-[#1a1228]/30">
                   {list.isProjectList ? (
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {list.items.map((project: any) => (
-                           <div
-                             key={project.id}
-                             onClick={() => navigate(`/devlogs/${project.id}`)}
-                             className="project-card group"
-                           >
-                             <div className="project-card-image-wrapper !h-40">
-                               {project.imagePath ? (
-                                 <img
-                                   src={
-                                     project.imagePath.startsWith('http') 
-                                       ? project.imagePath 
-                                       : project.imagePath.startsWith('dev_covers')
-                                         ? `http://localhost:3000/${project.imagePath}`
-                                         : `http://localhost:3000/uploads/${project.imagePath}`
-                                   }
-                                   alt={project.name}
-                                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                 />
-                               ) : (
-                                 <>
-                                   <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#87BAC3] via-transparent to-transparent"></div>
-                                   <Gamepad2 size={40} className="text-[#D6F4ED]/20 transform -rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-all duration-500" />
-                                 </>
-                               )}
-                             </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {list.items.map((project: any) => (
+                        <div
+                          key={project.id}
+                          onClick={() => navigate(`/devlogs/${project.id}`)}
+                          className="project-card group"
+                        >
+                          <div className="project-card-image-wrapper !h-40">
+                            {project.imagePath ? (
+                              <img
+                                src={
+                                  project.imagePath.startsWith('http')
+                                    ? project.imagePath
+                                    : project.imagePath.startsWith('dev_covers')
+                                      ? `http://localhost:3000/${project.imagePath}`
+                                      : `http://localhost:3000/uploads/${project.imagePath}`
+                                }
+                                alt={project.name}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            ) : (
+                              <>
+                                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#87BAC3] via-transparent to-transparent"></div>
+                                <Gamepad2 size={40} className="text-[#D6F4ED]/20 transform -rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-all duration-500" />
+                              </>
+                            )}
+                          </div>
 
-                             <div className="p-5 flex-1 flex flex-col gap-4">
-                               <div className="flex flex-col gap-2">
-                                 <h2 className="text-lg font-black text-[#D6F4ED] group-hover:text-white transition-colors tracking-tighter uppercase leading-tight">{project.name}</h2>
-                                 <div className="flex flex-wrap gap-1.5">
-                                   <div className="glass-badge glass-badge-purple !px-2 !py-0.5 !text-[9px]">
-                                     {project.genre}
-                                   </div>
-                                   <div className="glass-badge glass-badge-blue !px-2 !py-0.5 !text-[9px]">
-                                     {project.literaryForm}
-                                   </div>
-                                 </div>
-                               </div>
+                          <div className="p-5 flex-1 flex flex-col gap-4">
+                            <div className="flex flex-col gap-2">
+                              <h2 className="text-lg font-black text-[#D6F4ED] group-hover:text-white transition-colors tracking-tighter uppercase leading-tight">{project.name}</h2>
+                              <div className="flex flex-wrap gap-1.5">
+                                <div className="glass-badge glass-badge-purple !px-2 !py-0.5 !text-[9px]">
+                                  {project.genre}
+                                </div>
+                                <div className="glass-badge glass-badge-blue !px-2 !py-0.5 !text-[9px]">
+                                  {project.literaryForm}
+                                </div>
+                              </div>
+                            </div>
 
-                               <div className="developer-pill">
-                                 <div className="developer-avatar !w-8 !h-8">
-                                   <span className="text-[10px] font-black text-[#D6F4ED] uppercase">{(project.developer?.username || '??').slice(0, 2)}</span>
-                                 </div>
-                                 <div className="flex flex-col">
-                                   <p className="text-[7px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Fejlesztő</p>
-                                   <p className="text-[11px] font-black text-white tracking-tighter uppercase">{project.developer?.username}</p>
-                                 </div>
-                               </div>
+                            <div className="developer-pill">
+                              <div className="developer-avatar !w-8 !h-8">
+                                <span className="text-[10px] font-black text-[#D6F4ED] uppercase">{(project.developer?.username || '??').slice(0, 2)}</span>
+                              </div>
+                              <div className="flex flex-col">
+                                <p className="text-[7px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Fejlesztő</p>
+                                <p className="text-[11px] font-black text-white tracking-tighter uppercase">{project.developer?.username}</p>
+                              </div>
+                            </div>
 
-                               <div className="mt-auto pt-3 border-t border-[#53629E]/30 flex items-center justify-between">
-                                 <div className="flex items-center gap-2 text-white/70">
-                                    <div className="flex items-center gap-1">
-                                      <BiUpvote size={16} className="text-amber-400" />
-                                      <span className="text-[11px] font-black">{project._count?.upvotes || 0}</span>
-                                    </div>
-                                    <div className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
-                                      {project._count?.devlogentry || 0} bejegyzés
-                                    </div>
-                                 </div>
-                                 <div className="primary-btn-pill !px-3 !py-1.5 !text-[9px]">
-                                   Mutasd <ChevronRight size={12} strokeWidth={3} />
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                        ))}
-                     </div>
+                            <div className="mt-auto pt-3 border-t border-[#53629E]/30 flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-white/70">
+                                <div className="flex items-center gap-1">
+                                  <BiUpvote size={16} className="text-amber-400" />
+                                  <span className="text-[11px] font-black">{project._count?.upvotes || 0}</span>
+                                </div>
+                                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                                  {project._count?.devlogentry || 0} bejegyzés
+                                </div>
+                              </div>
+                              <div className="primary-btn-pill !px-3 !py-1.5 !text-[9px]">
+                                Mutasd <ChevronRight size={12} strokeWidth={3} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : list.items && list.items.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {list.items.map((item: any) => {
@@ -463,16 +463,15 @@ export function MyLists({ user }: MyListsProps) {
                         return (
                           <div
                             key={game.id}
-                            className={`relative bg-[#473472] border border-[#53629E] rounded-2xl overflow-hidden transition-all duration-500 shadow-lg ${
-                              isExpanded ? 'col-span-full ring-2 ring-[#87BAC3]/50' : 'hover:scale-[1.02]'
-                            }`}
+                            className={`relative bg-[#473472] border border-[#53629E] rounded-2xl overflow-hidden transition-all duration-500 shadow-lg ${isExpanded ? 'col-span-full ring-2 ring-[#87BAC3]/50' : 'hover:scale-[1.02]'
+                              }`}
                             onClick={(e) => {
                               if (e.target instanceof HTMLElement && (e.target.closest('button') || e.target.closest('label') || e.target.closest('a'))) return;
                               setExpandedGames(prev => ({ ...prev, [game.id]: !isExpanded }));
                             }}
                           >
                             <div className={`flex flex-col md:flex-row h-full ${isExpanded ? '' : 'cursor-pointer'}`}>
-                              
+
                               {/* game Main Section (Left) */}
                               <div className={`${isExpanded ? 'w-full md:w-[320px]' : 'w-full'} flex flex-col border-r border-[#53629E]/30`}>
                                 {/* Header */}
@@ -497,9 +496,9 @@ export function MyLists({ user }: MyListsProps) {
                                     <div className="px-4 mb-6">
                                       <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden border-2 border-[#53629E]/30 flex-shrink-0 bg-gradient-to-br from-[#473472] to-[#53629E] flex items-center justify-center shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
                                         {game.coverUrl ? (
-                                          <img 
-                                            src={game.coverUrl} 
-                                            alt={game.title} 
+                                          <img
+                                            src={game.coverUrl}
+                                            alt={game.title}
                                             className="w-full h-full object-cover"
                                             referrerPolicy="no-referrer"
                                           />
@@ -562,14 +561,14 @@ export function MyLists({ user }: MyListsProps) {
                                             </div>
                                             <Gamepad2 className={`text-[#87BAC3] ${ach === 'loading' ? 'animate-bounce' : ''}`} size={24} />
                                           </div>
-                                          
+
                                           <div className="h-3 w-full bg-[#53629E]/30 rounded-full overflow-hidden border border-[#53629E]/50">
-                                            <div 
+                                            <div
                                               className="h-full bg-gradient-to-r from-[#53629E] to-[#87BAC3] rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(135,186,195,0.4)]"
                                               style={{ width: `${pct}%` }}
                                             />
                                           </div>
-                                          
+
                                           <p className="text-xs font-semibold text-[#87BAC3]/80 italic">
                                             {ach === 'loading' ? 'Steam szinkronizálás folyamatban...' : achData ? `${achievedCount} a ${totalCount} achievementből feloldva` : 'Még nem kezdtél bele ebbe a kalandba.'}
                                           </p>
@@ -585,7 +584,7 @@ export function MyLists({ user }: MyListsProps) {
                                         <span className="text-[10px] font-black text-[#87BAC3] uppercase tracking-[0.2em] block mb-1">Emlékek</span>
                                         <h4 className="text-xl font-black text-[#D6F4ED] leading-none">Backseat galéria</h4>
                                       </div>
-                                      <button 
+                                      <button
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           triggerGameItemGalleryUpload(list.id, game.id);
@@ -600,29 +599,29 @@ export function MyLists({ user }: MyListsProps) {
                                     {item.gallery && item.gallery.length > 0 ? (
                                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                         {item.gallery.map((galleryItem: any) => (
-                                          <div 
-                                            key={galleryItem.id} 
+                                          <div
+                                            key={galleryItem.id}
                                             className="aspect-video rounded-xl overflow-hidden border border-[#53629E]/30 bg-[#473472]/40 relative group/gallery-item cursor-zoom-in"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              setSelectedMedia({ 
-                                                url: `http://localhost:3000/uploads/${galleryItem.filePath}`, 
-                                                type: galleryItem.fileType 
+                                              setSelectedMedia({
+                                                url: `http://localhost:3000/uploads/${galleryItem.filePath}`,
+                                                type: galleryItem.fileType
                                               });
                                             }}
                                           >
                                             {galleryItem.fileType === 'VIDEO' ? (
-                                              <video 
-                                                src={`http://localhost:3000/uploads/${galleryItem.filePath}`} 
+                                              <video
+                                                src={`http://localhost:3000/uploads/${galleryItem.filePath}`}
                                                 className="w-full h-full object-cover"
                                               />
                                             ) : (
-                                              <img 
-                                                src={`http://localhost:3000/uploads/${galleryItem.filePath}`} 
+                                              <img
+                                                src={`http://localhost:3000/uploads/${galleryItem.filePath}`}
                                                 className="w-full h-full object-cover"
                                               />
                                             )}
-                                            
+
                                             {/* Delete Button */}
                                             <button
                                               onClick={(e) => handleDeleteGalleryItem(e, galleryItem.id)}
@@ -647,7 +646,7 @@ export function MyLists({ user }: MyListsProps) {
 
                                   {/* Achievements Section */}
                                   <div className="space-y-4">
-                                    <button 
+                                    <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setExpandedAchievements(prev => ({ ...prev, [game.id]: !prev[game.id] }));
@@ -657,7 +656,7 @@ export function MyLists({ user }: MyListsProps) {
                                       <span>Eredmények (Steam)</span>
                                       {expandedAchievements[game.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                     </button>
-                                    
+
                                     {expandedAchievements[game.id] && (
                                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                         {ach === 'loading' ? (
@@ -669,11 +668,10 @@ export function MyLists({ user }: MyListsProps) {
                                         ) : (
                                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                             {achData.achievements.map((a, idx) => (
-                                              <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                                                a.achieved === 1 
-                                                  ? 'bg-blue-500/10 border-blue-400/20 text-[#D6F4ED]' 
+                                              <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${a.achieved === 1
+                                                  ? 'bg-blue-500/10 border-blue-400/20 text-[#D6F4ED]'
                                                   : 'bg-[#53629E]/10 border-[#53629E]/30 opacity-60 grayscale'
-                                              }`}>
+                                                }`}>
                                                 <img src={a.icon} alt={a.name} className="w-10 h-10 rounded-lg flex-shrink-0" />
                                                 <div className="min-w-0">
                                                   <div className="text-xs font-black truncate">{a.name}</div>
@@ -690,7 +688,7 @@ export function MyLists({ user }: MyListsProps) {
                                 </div>
                               )}
                             </div>
-                            
+
                             {/* Hover Indicator for closed card */}
                             {!isExpanded && (
                               <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#87BAC3] to-transparent opacity-0 hover:opacity-100 transition-opacity" />
@@ -713,29 +711,29 @@ export function MyLists({ user }: MyListsProps) {
       )}
       {/* Lightbox Modal */}
       {selectedMedia && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 sm:p-10 animate-in fade-in zoom-in duration-200"
           onClick={() => setSelectedMedia(null)}
         >
-          <button 
+          <button
             className="absolute top-6 right-6 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-[110]"
             onClick={() => setSelectedMedia(null)}
           >
             <Trash2 className="rotate-45" size={24} /> {/* X character icon */}
           </button>
-          
+
           <div className="max-w-7xl max-h-full w-full h-full flex items-center justify-center relative">
             {selectedMedia.type === 'VIDEO' ? (
-              <video 
-                src={selectedMedia.url} 
-                controls 
+              <video
+                src={selectedMedia.url}
+                controls
                 autoPlay
                 className="max-w-full max-h-full rounded-2xl shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <img 
-                src={selectedMedia.url} 
+              <img
+                src={selectedMedia.url}
                 alt="Nagyított kép"
                 className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
                 onClick={(e) => e.stopPropagation()}

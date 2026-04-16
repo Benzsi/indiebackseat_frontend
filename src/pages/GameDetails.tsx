@@ -152,9 +152,9 @@ export function GameDetails({ user }: GameDetailsProps) {
   }
 
   return (
-    <div className="page-container max-w-[1200px] py-12">
+    <div className="page-container max-w-[1200px] pt-0 pb-12">
       {/* Back button */}
-      <div className="mb-10">
+      <div className="mb-4">
         <Link to="/" className="secondary-btn-pill">
           ← Vissza a katalógushoz
         </Link>
@@ -196,9 +196,8 @@ export function GameDetails({ user }: GameDetailsProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#473472]/60 to-transparent pointer-events-none" />
             </div>
 
-            {/* Rating + Comment form */}
+            {/* Rating */}
             <div className="bg-[#473472] rounded-[2.5rem] border border-[#53629E] shadow-2xl p-8 flex flex-col gap-6">
-              {/* User rating */}
               <div className="space-y-4">
                 <div className="glass-label !mb-0 text-center">
                   {pendingRating ? 'Az értékelésed' : 'Értékeld a játékot'}
@@ -207,10 +206,10 @@ export function GameDetails({ user }: GameDetailsProps) {
                   <StarRating rating={pendingRating} onRate={handleRate} size="medium" />
                 </div>
               </div>
+            </div>
 
-              <div className="h-px w-full bg-gradient-to-r from-transparent via-[#53629E]/40 to-transparent" />
-
-              {/* Comment input */}
+            {/* Comment form */}
+            <div className="bg-[#473472] rounded-[2.5rem] border border-[#53629E] shadow-2xl p-8 flex flex-col gap-6">
               <div className="space-y-4">
                 <div className="glass-label !mb-0">Start backseating</div>
                 <textarea
