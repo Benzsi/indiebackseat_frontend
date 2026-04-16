@@ -63,7 +63,7 @@ export function Header({ isAuthenticated, searchQuery, onSearchChange, isFilterO
           {/* Desktop Nav Links */}
           <div className="flex-1 hidden md:flex items-center gap-2 justify-end">
             <Link to="/ai-search" className="neon-bubble-wrapper">
-              <span className="neon-bubble-inner">AI Keresés</span>
+              <span className="neon-bubble-inner whitespace-nowrap">AI Keresés</span>
             </Link>
             {isAuthenticated && (
               <Link to="/mylists" className="px-3 py-1.5 rounded-full text-sm font-semibold text-[#D6F4ED] border border-[#53629E] bg-[#53629E]/30 hover:bg-[#53629E]/60 transition-all duration-200">
