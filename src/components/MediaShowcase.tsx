@@ -51,10 +51,43 @@ export function Showcase({ gameTitle }: ShowcaseProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const mediaFiles = useMemo(() => buildMediaFiles(gameTitle), [gameTitle]);
+  const currentFile = mediaFiles[currentIndex] ?? null;
+
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? mediaFiles.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === mediaFiles.length - 1 ? 0 : prev + 1));
+  };
 
   useEffect(() => {
     setCurrentIndex(0);
   }, [gameTitle]);
+
+  useEffect(() => {
+    if (!currentFile || currentFile.type !== 'video' || !videoRef.current) {
+      return;
+    }
+
+    void videoRef.current.play().catch(() => {
+      // Autoplay can still be blocked in some browsers.
+    });
+  }, [currentFile]);
+
+  useEffect(() => {
+    if (!currentFile || currentFile.type !== 'image') {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      handleNext();
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [currentFile, mediaFiles.length]);
 
   if (mediaFiles.length === 0) {
     return (
@@ -65,26 +98,6 @@ export function Showcase({ gameTitle }: ShowcaseProps) {
       </section>
     );
   }
- 
-  const currentFile = mediaFiles[currentIndex];
-
-  useEffect(() => {
-    if (currentFile.type !== 'video' || !videoRef.current) {
-      return;
-    }
-
-    void videoRef.current.play().catch(() => {
-      // Autoplay can still be blocked in some browsers.
-    });
-  }, [currentFile]);
- 
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? mediaFiles.length - 1 : prev - 1));
-  };
- 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === mediaFiles.length - 1 ? 0 : prev + 1));
-  };
  
   return (
     <section className="mb-6 space-y-4">
@@ -104,6 +117,7 @@ export function Showcase({ gameTitle }: ShowcaseProps) {
               key={currentFile.path}
               ref={videoRef}
               src={currentFile.path}
+              onEnded={handleNext}
               controls
               autoPlay
               muted
