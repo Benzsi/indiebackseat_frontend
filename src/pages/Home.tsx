@@ -884,6 +884,17 @@ export function Home({
         {/* Tab Content: Dev Logs */}
         {activeTab === 'devlogs' && (
           <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
+            {user?.role === 'DEVELOPER' && (
+              <div className="flex justify-center mb-10">
+                <button
+                  className="flex items-center justify-center gap-3 px-8 py-3.5 rounded-2xl bg-[#473472] text-[#D6F4ED] font-black text-sm hover:bg-[#53629E] transition-all shadow-lg shadow-[#473472]/20 border border-[#53629E]/30"
+                  onClick={() => navigate('/devlogs?create=true')}
+                >
+                  <SiDevbox size={20} className="text-[#87BAC3]" />
+                  Új projekt létrehozása
+                </button>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-1">
             {projectsLoading ? (
               <div className="col-span-full py-20 text-center text-[#87BAC3] font-bold">Betöltés...</div>

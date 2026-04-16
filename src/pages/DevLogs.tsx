@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Gamepad2, ChevronRight, Plus, X, Trash2, Camera } from 'lucide-react';
 import { SiDevbox } from "react-icons/si";
 import { HiOutlineCollection } from 'react-icons/hi';
@@ -57,6 +57,7 @@ export function DevLogs({
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [wishlisted, setWishlisted] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Form state
   const [name, setName] = useState('');
@@ -116,8 +117,15 @@ export function DevLogs({
   useEffect(() => {
     fetchProjects();
     if (user) loadUserInteractions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+
+    // Check for create=true in URL to open modal automatically
+    const params = new URLSearchParams(location.search);
+    if (params.get('create') === 'true' && user?.role === 'DEVELOPER') {
+      setShowModal(true);
+      // Clean up the URL to prevent re-opening on refresh
+      navigate('/devlogs', { replace: true });
+    }
+  }, [user, location.search, navigate]);
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
