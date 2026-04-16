@@ -21,6 +21,7 @@ interface DevProject {
   imagePath?: string;
   developerId: number;
   developer: { username: string };
+  progress: number;
   devlogentry: DevLogEntry[];
   _count: { devlogentry: number; favorites: number; upvotes: number };
 }
@@ -44,6 +45,7 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
   
   const [isFavorited, setIsFavorited] = useState(false);
   const [isUpvoted, setIsUpvoted] = useState(false);
+  const [updatingProgress, setUpdatingProgress] = useState(false);
 
   const fetchProject = async () => {
     try {
@@ -235,6 +237,30 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
     }
   };
 
+  const handleUpdateProgress = async (progress: number) => {
+    if (!id || !isOwner) return;
+    const token = localStorage.getItem('authToken');
+    try {
+      setUpdatingProgress(true);
+      const response = await fetch(`http://localhost:3000/api/devlogs/${id}/progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ progress })
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setProject(prev => prev ? { ...prev, progress: updated.progress } : null);
+      }
+    } catch (err) {
+      console.error('Hiba a haladás frissítésekor:', err);
+    } finally {
+      setUpdatingProgress(false);
+    }
+  };
+
   const isOwner = user?.id === project.developerId && user?.role === 'DEVELOPER';
 
   return (
@@ -324,6 +350,37 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
             <p className="text-[#D6F4ED]/80 text-lg leading-relaxed italic border-l-4 border-[#87BAC3] pl-6 py-2 bg-[#53629E]/10 rounded-r-xl max-w-2xl mb-8">
               "{project.description}"
             </p>
+
+            {/* Progress Bar & Slider */}
+            <div className="max-w-xl mb-12 space-y-5 bg-[#53629E]/10 p-6 rounded-3xl border border-[#53629E]/20">
+              <div className="flex justify-between items-center text-sm font-black text-[#87BAC3] uppercase tracking-[0.2em]">
+                <span className="flex items-center gap-2"><Layout size={18} /> A projekt haladása</span>
+                <span className="text-[#D6F4ED] text-xl bg-[#473472] px-4 py-1 rounded-xl border border-[#87BAC3]/30 shadow-xl">{project.progress || 0}%</span>
+              </div>
+              <div className="h-5 w-full bg-black/40 rounded-full overflow-hidden border border-[#53629E]/40 relative shadow-2xl">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#53629E] via-[#87BAC3] to-[#D6F4ED] transition-all duration-700 ease-out shadow-[0_0_20px_rgba(135,186,195,0.5)]"
+                  style={{ width: `${project.progress || 0}%` }}
+                />
+              </div>
+              
+              {isOwner && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={project.progress || 0}
+                      onChange={(e) => handleUpdateProgress(parseInt(e.target.value))}
+                      disabled={updatingProgress}
+                      className="flex-1 accent-[#87BAC3] cursor-pointer"
+                    />
+                    <span className="text-[10px] font-black text-[#87BAC3] uppercase opacity-60">Csúsztasd a módosításhoz</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <button

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Gamepad2, ChevronRight, Plus, X, Trash2, Camera } from 'lucide-react';
+import { Gamepad2, ChevronRight, Plus, X, Trash2, Camera, Layout } from 'lucide-react';
 import { SiDevbox } from "react-icons/si";
 import { HiOutlineCollection } from 'react-icons/hi';
 import { BiHeart, BiSolidHeart, BiUpvote, BiSolidUpvote } from "react-icons/bi";
@@ -15,6 +15,7 @@ export interface DevLog {
   imagePath?: string;
   developer: { username: string };
   developerId: number;
+  progress: number;
   _count: { devlogentry: number; favorites: number; upvotes: number };
 }
 
@@ -53,7 +54,7 @@ export function DevLogs({
   const [projects, setProjects] = useState<DevLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [wishlisted, setWishlisted] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
@@ -68,6 +69,8 @@ export function DevLogs({
 
   const fetchProjects = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch('http://localhost:3000/api/devlogs');
       if (response.ok) {
         const data = await response.json();
@@ -75,15 +78,15 @@ export function DevLogs({
           setProjects(data);
         } else {
           console.error('Hibás adatformátum a devlogoknál:', data);
-          setError('Hiba a projektek betöltésekor: érvénytelen adat érkezett.');
+          setError('Szerver hiba: a kapott adatformátum érvénytelen.');
         }
       } else {
         const err = await response.json().catch(() => ({ message: 'Ismeretlen szerver hiba' }));
-        setError(`Szerver hiba: ${err.message || response.statusText}`);
+        setError(`Szerver hiba történt a projektek betöltésekor: ${err.message || response.statusText}`);
       }
     } catch (err) {
       console.error('Hiba a projektek lekérésekor:', err);
-      setError('Hálózati hiba: a szerver nem érhető el.');
+      setError('Nem sikerült csatlakozni a szerverhez. Ellenőrizd, hogy fut-e a backend!');
     } finally {
       setLoading(false);
     }
@@ -97,7 +100,7 @@ export function DevLogs({
         const lists = await response.json();
         const favs = new Set<number>();
         const wish = new Set<number>();
-        
+
         lists.forEach((list: any) => {
           if (list.name === 'Kedvelt Dev Logok') {
             list.items.forEach((item: any) => favs.add(item.id));
@@ -105,7 +108,7 @@ export function DevLogs({
             list.items.forEach((item: any) => wish.add(item.id));
           }
         });
-        
+
         setFavorites(favs);
         setWishlisted(wish);
       }
@@ -260,9 +263,9 @@ export function DevLogs({
           if (wasWishlisted) next.delete(id); else next.add(id);
           return next;
         });
-        
-        setProjects(current => current.map(p => 
-          p.id === id 
+
+        setProjects(current => current.map(p =>
+          p.id === id
             ? { ...p, _count: { ...p._count, upvotes: Math.max(0, (p._count?.upvotes || 0) + (wasWishlisted ? -1 : 1)) } }
             : p
         ));
@@ -466,13 +469,13 @@ export function DevLogs({
       )}
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {error && (
-          <div className="col-span-full mb-6 p-4 rounded-2xl bg-red-500/20 border border-red-400/40 text-red-300 text-sm font-bold flex flex-col items-center gap-2">
-            <p>{error}</p>
-            <button 
+          <div className="col-span-full py-10 px-6 mb-8 text-center bg-red-500/10 border border-red-500/30 rounded-3xl">
+            <p className="text-red-300 font-bold mb-4">{error}</p>
+            <button
               onClick={fetchProjects}
-              className="px-4 py-2 bg-red-500/40 hover:bg-red-500/60 rounded-xl transition-all text-xs"
+              className="px-6 py-2 bg-red-500/20 hover:bg-red-500/40 text-white rounded-xl transition-all font-black text-xs uppercase tracking-widest"
             >
               Újrapróbálás
             </button>
@@ -497,8 +500,8 @@ export function DevLogs({
                 {log.imagePath ? (
                   <img
                     src={
-                      log.imagePath.startsWith('http') 
-                        ? log.imagePath 
+                      log.imagePath.startsWith('http')
+                        ? log.imagePath
                         : log.imagePath.startsWith('dev_covers')
                           ? `http://localhost:3000/${log.imagePath}`
                           : `http://localhost:3000/uploads/${log.imagePath}`
@@ -538,11 +541,11 @@ export function DevLogs({
 
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-[#53629E] flex items-center justify-center border border-[#87BAC3]/40 shadow-lg shrink-0">
-                    <span className="text-xs font-black text-[#D6F4ED] uppercase">{log.developer.username.slice(0, 2)}</span>
+                    <span className="text-xs font-black text-[#D6F4ED] uppercase">{log.developer?.username?.slice(0, 2) || '??'}</span>
                   </div>
                   <div className="flex flex-col">
                     <p className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Fejlesztő</p>
-                    <p className="text-xs font-black text-white tracking-tighter uppercase">{log.developer.username}</p>
+                    <p className="text-xs font-black text-white tracking-tighter uppercase">{log.developer?.username || 'Ismeretlen'}</p>
                   </div>
                 </div>
 
@@ -550,6 +553,20 @@ export function DevLogs({
                   <div className="text-[8px] font-black text-white/50 uppercase tracking-[0.3em]">Projekt leírása</div>
                   <div className="description-box">
                     <p className="text-white/80 text-[11px] leading-relaxed line-clamp-3 italic relative z-10">"{log.description}"</p>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex justify-between items-center text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+                    <span className="flex items-center gap-1.5"><Layout size={12} className="text-[#87BAC3]" /> Haladás</span>
+                    <span className="text-[#D6F4ED] text-xs px-2 py-0.5 rounded-lg bg-[#53629E]/40 border border-[#87BAC3]/20 shadow-inner">{log.progress || 0}%</span>
+                  </div>
+                  <div className="h-3 w-full bg-[#53629E]/30 rounded-full overflow-hidden border border-[#53629E]/20 relative shadow-inner">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#53629E] via-[#87BAC3] to-[#D6F4ED] transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(135,186,195,0.4)]"
+                      style={{ width: `${log.progress || 0}%` }}
+                    />
                   </div>
                 </div>
 

@@ -29,6 +29,7 @@ export interface DevLog {
   description: string;
   imagePath?: string;
   user: { username: string };
+  progress: number;
   _count: { devlogentry: number; favorites: number; upvotes: number };
 }
 
@@ -93,7 +94,7 @@ export function Home({
     if (hash && (hash === '#faq' || hash === '#how-it-works')) {
       // Ensure we are on overview tab to see these sections
       setActiveTab('overview');
-      
+
       setTimeout(() => {
         const element = document.getElementById(hash.substring(1));
         if (element) {
@@ -102,7 +103,7 @@ export function Home({
       }, 100);
     }
   }, [window.location.hash, setActiveTab]);
-  
+
   const gamesService = new GamesService();
   const ratingsService = new RatingsService();
 
@@ -129,7 +130,7 @@ export function Home({
         const lists = await response.json();
         const favs = new Set<number>();
         const up = new Set<number>();
-        
+
         lists.forEach((list: any) => {
           if (list.name === 'Kedvelt Dev Logok') {
             list.items.forEach((item: any) => favs.add(item.id));
@@ -137,7 +138,7 @@ export function Home({
             list.items.forEach((item: any) => up.add(item.id));
           }
         });
-        
+
         setDevFavorites(favs);
         setDevUpvoted(up);
       }
@@ -147,13 +148,13 @@ export function Home({
   };
 
   useEffect(() => {
+    void fetchGames();
+    void fetchProjects();
+
     if (user) {
-      void fetchGames();
       void loadUserLists(String(user.id));
-      void fetchProjects();
       void loadProjectInteractions();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const loadUserLists = async (userId: string) => {
@@ -235,8 +236,8 @@ export function Home({
           const wasUpvoted = next.has(id);
           if (wasUpvoted) next.delete(id); else next.add(id);
 
-          setProjects(current => current.map(p => 
-            p.id === id 
+          setProjects(current => current.map(p =>
+            p.id === id
               ? { ...p, _count: { ...p._count, upvotes: Math.max(0, (p._count?.upvotes || 0) + (wasUpvoted ? -1 : 1)) } }
               : p
           ));
@@ -517,7 +518,7 @@ export function Home({
             </ul>
           </div>
         </div>
-        
+
         {/* Hogyan működik Section (Unauthenticated) */}
         <div id="how-it-works" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#D6F4ED]/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
@@ -527,21 +528,21 @@ export function Home({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
-                { 
-                  title: "1. Fedezd fel a legújabb indie kincseket", 
-                  text: "Merülj el a folyamatosan bővülő játék-katalógusunkban, ahol kézzel válogatott, minőségi független projekteket találsz. Ne csak a kész játékokat nézd: böngéssz a fejlesztői naplók (Dev Logs) között is, hogy lásd a projektek formálódását az ötlettől a megvalósításig." 
+                {
+                  title: "1. Fedezd fel a legújabb indie kincseket",
+                  text: "Merülj el a folyamatosan bővülő játék-katalógusunkban, ahol kézzel válogatott, minőségi független projekteket találsz. Ne csak a kész játékokat nézd: böngéssz a fejlesztői naplók (Dev Logs) között is, hogy lásd a projektek formálódását az ötlettől a megvalósításig."
                 },
-                { 
-                  title: "2. Kövesd és építsd a gyűjteményed", 
-                  text: "Találtál valamit, ami tetszik? Add hozzá a személyes várólistádhoz vagy jelöld kedvencnek egyetlen kattintással. Hozz létre egyedi listákat a gyűjteményed rendszerezéséhez, így sosem maradsz le a legfontosabb frissítésekről és mérföldkövekről." 
+                {
+                  title: "2. Kövesd és építsd a gyűjteményed",
+                  text: "Találtál valamit, ami tetszik? Add hozzá a személyes várólistádhoz vagy jelöld kedvencnek egyetlen kattintással. Hozz létre egyedi listákat a gyűjteményed rendszerezéséhez, így sosem maradsz le a legfontosabb frissítésekről és mérföldkövekről."
                 },
-                { 
-                  title: "3. Támogasd a fejlesztőket (Backseating)", 
-                  text: "A visszajelzésed aranyat ér! Csatlakozz a párbeszédhez a fejlesztői naplók alatt, tegyél fel kérdéseket, vagy tegyél javaslatokat a játékmenetre vonatkozóan. Ez a közvetlen segítés segít az alkotóknak, hogy a lehető legjobb élményt fejlesszék ki." 
+                {
+                  title: "3. Támogasd a fejlesztőket (Backseating)",
+                  text: "A visszajelzésed aranyat ér! Csatlakozz a párbeszédhez a fejlesztői naplók alatt, tegyél fel kérdéseket, vagy tegyél javaslatokat a játékmenetre vonatkozóan. Ez a közvetlen segítés segít az alkotóknak, hogy a lehető legjobb élményt fejlesszék ki."
                 },
-                { 
-                  title: "4. Építsd az indie közösséget", 
-                  text: "Oszd meg tapasztalataidat a közösséggel csillag alapú értékelésekkel és véleményekkel. Segíts más játékosoknak megtalálni a következő kedvencüket, és járulj hozzá az indie stúdiók sikeréhez és láthatóságához a platformon." 
+                {
+                  title: "4. Építsd az indie közösséget",
+                  text: "Oszd meg tapasztalataidat a közösséggel csillag alapú értékelésekkel és véleményekkel. Segíts más játékosoknak megtalálni a következő kedvencüket, és járulj hozzá az indie stúdiók sikeréhez és láthatóságához a platformon."
                 }
               ].map((step, idx) => (
                 <div key={idx} className="flex flex-col gap-4 p-6 rounded-2xl bg-[#D6F4ED]/5 border border-[#D6F4ED]/10 backdrop-blur-md hover:bg-[#D6F4ED]/10 transition-all duration-300">
@@ -562,47 +563,45 @@ export function Home({
             </h2>
             <div className="flex flex-col gap-4">
               {[
-                { 
-                  q: "Ki láthatja a Dev Logjaimat?", 
-                  a: "A publikált Dev Logokat minden látogató láthatja a platformon, de csak regisztrált felhasználók tudnak felpontozni vagy hozzászólni az egyes bejegyzésekhez." 
+                {
+                  q: "Ki láthatja a Dev Logjaimat?",
+                  a: "A publikált Dev Logokat minden látogató láthatja a platformon, de csak regisztrált felhasználók tudnak felpontozni vagy hozzászólni az egyes bejegyzésekhez."
                 },
-                { 
-                  q: "Milyen gyakran érdemes frissíteni a naplómat?", 
-                  a: "Nincs kötött szabály, de a legsikeresebb projektek hetente vagy kéthetente tesznek közzé új bejegyzést, hogy fenntartsák a közösség érdeklődését." 
+                {
+                  q: "Milyen gyakran érdemes frissíteni a naplómat?",
+                  a: "Nincs kötött szabály, de a legsikeresebb projektek hetente vagy kéthetente tesznek közzé új bejegyzést, hogy fenntartsák a közösség érdeklődését."
                 },
-                { 
-                  q: "Milyen fájlformátumokat támogattok a képeknél?", 
-                  a: "Jelenleg a JPG, PNG és WebP formátumokat támogatjuk. A maximális fájlméret 10MB, a képek pedig automatikusan optimalizálva jelennek meg." 
+                {
+                  q: "Milyen fájlformátumokat támogattok a képeknél?",
+                  a: "Jelenleg a JPG, PNG és WebP formátumokat támogatjuk. A maximális fájlméret 10MB, a képek pedig automatikusan optimalizálva jelennek meg."
                 },
-                { 
-                  q: "Hogyan érhetem el a fejlesztőket?", 
-                  a: "Minden bejegyzés alatt találsz egy hozzászólási szekciót, ahol közvetlenül kérdezhetsz az alkotótól, vagy csatlakozhatsz a Discord szerverünkhöz." 
+                {
+                  q: "Hogyan érhetem el a fejlesztőket?",
+                  a: "Minden bejegyzés alatt találsz egy hozzászólási szekciót, ahol közvetlenül kérdezhetsz az alkotótól, vagy csatlakozhatsz a Discord szerverünkhöz."
                 },
-                { 
-                  q: "Van lehetőség a bejegyzések utólagos szerkesztésére?", 
-                  a: "Igen, a készítő bármikor módosíthatja a projekt leírását vagy a bejegyzések tartalmát a saját profilján keresztül, így a napló mindig naprakész marad." 
+                {
+                  q: "Van lehetőség a bejegyzések utólagos szerkesztésére?",
+                  a: "Igen, a készítő bármikor módosíthatja a projekt leírását vagy a bejegyzések tartalmát a saját profilján keresztül, így a napló mindig naprakész marad."
                 }
               ].map((item, idx) => (
-                <div 
-                  key={idx} 
-                  className={`rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${
-                    activeFaqIndex === idx 
-                      ? 'bg-[#D6F4ED]/10 border-[#87BAC3]/40' 
+                <div
+                  key={idx}
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${activeFaqIndex === idx
+                      ? 'bg-[#D6F4ED]/10 border-[#87BAC3]/40'
                       : 'bg-[#D6F4ED]/5 border-[#D6F4ED]/10 hover:bg-[#D6F4ED]/8'
-                  }`}
+                    }`}
                   onClick={() => setActiveFaqIndex(activeFaqIndex === idx ? null : idx)}
                 >
                   <div className="p-6 flex items-center justify-between">
                     <h4 className="text-sm font-black text-[#87BAC3] uppercase tracking-widest">{item.q}</h4>
-                    <ChevronRight 
-                      size={18} 
-                      className={`text-[#87BAC3] transition-transform duration-300 ${activeFaqIndex === idx ? 'rotate-90' : ''}`} 
+                    <ChevronRight
+                      size={18}
+                      className={`text-[#87BAC3] transition-transform duration-300 ${activeFaqIndex === idx ? 'rotate-90' : ''}`}
                     />
                   </div>
-                  <div 
-                    className={`transition-all duration-300 ease-in-out ${
-                      activeFaqIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
-                    }`}
+                  <div
+                    className={`transition-all duration-300 ease-in-out ${activeFaqIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
                   >
                     <p className="px-6 pb-6 text-[#D6F4ED]/80 text-[13px] leading-relaxed font-medium">{item.a}</p>
                   </div>
@@ -763,21 +762,21 @@ export function Home({
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {[
-                    { 
-                      title: "1. Fedezd fel a legújabb indie kincseket", 
-                      text: "Merülj el a folyamatosan bővülő játék-katalógusunkban, ahol kézzel válogatott, minőségi független projekteket találsz. Ne csak a kész játékokat nézd: böngéssz a fejlesztői naplók (Dev Logs) között is, hogy lásd a projektek formálódását az ötlettől a megvalósításig." 
+                    {
+                      title: "1. Fedezd fel a legújabb indie kincseket",
+                      text: "Merülj el a folyamatosan bővülő játék-katalógusunkban, ahol kézzel válogatott, minőségi független projekteket találsz. Ne csak a kész játékokat nézd: böngéssz a fejlesztői naplók (Dev Logs) között is, hogy lásd a projektek formálódását az ötlettől a megvalósításig."
                     },
-                    { 
-                      title: "2. Kövesd és építsd a gyűjteményed", 
-                      text: "Találtál valamit, ami tetszik? Add hozzá a személyes várólistádhoz vagy jelöld kedvencnek egyetlen kattintással. Hozz létre egyedi listákat a gyűjteményed rendszerezéséhez, így sosem maradsz le a legfontosabb frissítésekről és mérföldkövekről." 
+                    {
+                      title: "2. Kövesd és építsd a gyűjteményed",
+                      text: "Találtál valamit, ami tetszik? Add hozzá a személyes várólistádhoz vagy jelöld kedvencnek egyetlen kattintással. Hozz létre egyedi listákat a gyűjteményed rendszerezéséhez, így sosem maradsz le a legfontosabb frissítésekről és mérföldkövekről."
                     },
-                    { 
-                      title: "3. Támogasd a fejlesztőket (Backseating)", 
-                      text: "A visszajelzésed aranyat ér! Csatlakozz a párbeszédhez a fejlesztői naplók alatt, tegyél fel kérdéseket, vagy tegyél javaslatokat a játékmenetre vonatkozóan. Ez a közvetlen segítés segít az alkotóknak, hogy a lehető legjobb élményt fejlesszék ki." 
+                    {
+                      title: "3. Támogasd a fejlesztőket (Backseating)",
+                      text: "A visszajelzésed aranyat ér! Csatlakozz a párbeszédhez a fejlesztői naplók alatt, tegyél fel kérdéseket, vagy tegyél javaslatokat a játékmenetre vonatkozóan. Ez a közvetlen segítés segít az alkotóknak, hogy a lehető legjobb élményt fejlesszék ki."
                     },
-                    { 
-                      title: "4. Építsd az indie közösséget", 
-                      text: "Oszd meg tapasztalataidat a közösséggel csillag alapú értékelésekkel és véleményekkel. Segíts más játékosoknak megtalálni a következő kedvencüket, és járulj hozzá az indie stúdiók sikeréhez és láthatóságához a platformon." 
+                    {
+                      title: "4. Építsd az indie közösséget",
+                      text: "Oszd meg tapasztalataidat a közösséggel csillag alapú értékelésekkel és véleményekkel. Segíts más játékosoknak megtalálni a következő kedvencüket, és járulj hozzá az indie stúdiók sikeréhez és láthatóságához a platformon."
                     }
                   ].map((step, idx) => (
                     <div key={idx} className="flex flex-col gap-4 p-6 rounded-2xl bg-[#D6F4ED]/5 border border-[#D6F4ED]/10 backdrop-blur-md hover:bg-[#D6F4ED]/10 transition-all duration-300">
@@ -797,47 +796,45 @@ export function Home({
                 </h2>
                 <div className="flex flex-col gap-4">
                   {[
-                    { 
-                      q: "Ki láthatja a Dev Logjaimat?", 
-                      a: "A publikált Dev Logokat minden látogató láthatja a platformon, de csak regisztrált felhasználók tudnak felpontozni vagy hozzászólni az egyes bejegyzésekhez." 
+                    {
+                      q: "Ki láthatja a Dev Logjaimat?",
+                      a: "A publikált Dev Logokat minden látogató láthatja a platformon, de csak regisztrált felhasználók tudnak felpontozni vagy hozzászólni az egyes bejegyzésekhez."
                     },
-                    { 
-                      q: "Milyen gyakran érdemes frissíteni a naplómat?", 
-                      a: "Nincs kötött szabály, de a legsikeresebb projektek hetente vagy kéthetente tesznek közzé új bejegyzést, hogy fenntartsák a közösség érdeklődését." 
+                    {
+                      q: "Milyen gyakran érdemes frissíteni a naplómat?",
+                      a: "Nincs kötött szabály, de a legsikeresebb projektek hetente vagy kéthetente tesznek közzé új bejegyzést, hogy fenntartsák a közösség érdeklődését."
                     },
-                    { 
-                      q: "Milyen fájlformátumokat támogattok a képeknél?", 
-                      a: "Jelenleg a JPG, PNG és WebP formátumokat támogatjuk. A maximális fájlméret 10MB, a képek pedig automatikusan optimalizálva jelennek meg." 
+                    {
+                      q: "Milyen fájlformátumokat támogattok a képeknél?",
+                      a: "Jelenleg a JPG, PNG és WebP formátumokat támogatjuk. A maximális fájlméret 10MB, a képek pedig automatikusan optimalizálva jelennek meg."
                     },
-                    { 
-                      q: "Hogyan érhetem el a fejlesztőket?", 
-                      a: "Minden bejegyzés alatt találsz egy hozzászólási szekciót, ahol közvetlenül kérdezhetsz az alkotótól, vagy csatlakozhatsz a Discord szerverünkhöz." 
+                    {
+                      q: "Hogyan érhetem el a fejlesztőket?",
+                      a: "Minden bejegyzés alatt találsz egy hozzászólási szekciót, ahol közvetlenül kérdezhetsz az alkotótól, vagy csatlakozhatsz a Discord szerverünkhöz."
                     },
-                    { 
-                      q: "Van lehetőség a bejegyzések utólagos szerkesztésére?", 
-                      a: "Igen, a készítő bármikor módosíthatja a projekt leírását vagy a bejegyzések tartalmát a saját profilján keresztül, így a napló mindig naprakész marad." 
+                    {
+                      q: "Van lehetőség a bejegyzések utólagos szerkesztésére?",
+                      a: "Igen, a készítő bármikor módosíthatja a projekt leírását vagy a bejegyzések tartalmát a saját profilján keresztül, így a napló mindig naprakész marad."
                     }
                   ].map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${
-                        activeFaqIndex === idx 
-                          ? 'bg-[#D6F4ED]/10 border-[#87BAC3]/40' 
+                    <div
+                      key={idx}
+                      className={`rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${activeFaqIndex === idx
+                          ? 'bg-[#D6F4ED]/10 border-[#87BAC3]/40'
                           : 'bg-[#D6F4ED]/5 border-[#D6F4ED]/10 hover:bg-[#D6F4ED]/8'
-                      }`}
+                        }`}
                       onClick={() => setActiveFaqIndex(activeFaqIndex === idx ? null : idx)}
                     >
                       <div className="p-6 flex items-center justify-between">
                         <h4 className="text-sm font-black text-[#87BAC3] uppercase tracking-widest">{item.q}</h4>
-                        <ChevronRight 
-                          size={18} 
-                          className={`text-[#87BAC3] transition-transform duration-300 ${activeFaqIndex === idx ? 'rotate-90' : ''}`} 
+                        <ChevronRight
+                          size={18}
+                          className={`text-[#87BAC3] transition-transform duration-300 ${activeFaqIndex === idx ? 'rotate-90' : ''}`}
                         />
                       </div>
-                      <div 
-                        className={`transition-all duration-300 ease-in-out ${
-                          activeFaqIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
-                        }`}
+                      <div
+                        className={`transition-all duration-300 ease-in-out ${activeFaqIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                          }`}
                       >
                         <p className="px-6 pb-6 text-[#D6F4ED]/80 text-[13px] leading-relaxed font-medium">{item.a}</p>
                       </div>
@@ -896,18 +893,18 @@ export function Home({
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-1">
-            {projectsLoading ? (
-              <div className="col-span-full py-20 text-center text-[#87BAC3] font-bold">Betöltés...</div>
-            ) : projects.length === 0 ? (
-              <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
-                <p className="text-[#87BAC3] text-lg">Még nincsenek projektek.</p>
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
-                <p className="text-[#87BAC3] text-lg">Nincs a szűrésnek megfelelő projekt.</p>
-              </div>
-            ) : (
-              filteredProjects.map((log) => (
+              {projectsLoading ? (
+                <div className="col-span-full py-20 text-center text-[#87BAC3] font-bold">Betöltés...</div>
+              ) : projects.length === 0 ? (
+                <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
+                  <p className="text-[#87BAC3] text-lg">Még nincsenek projektek.</p>
+                </div>
+              ) : filteredProjects.length === 0 ? (
+                <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
+                  <p className="text-[#87BAC3] text-lg">Nincs a szűrésnek megfelelő projekt.</p>
+                </div>
+              ) : (
+                filteredProjects.map((log) => (
                   <div
                     key={log.id}
                     onClick={() => navigate(`/devlogs/${log.id}`)}
@@ -917,8 +914,8 @@ export function Home({
                       {log.imagePath ? (
                         <img
                           src={
-                            log.imagePath.startsWith('http') 
-                              ? log.imagePath 
+                            log.imagePath.startsWith('http')
+                              ? log.imagePath
                               : log.imagePath.startsWith('dev_covers')
                                 ? `http://localhost:3000/${log.imagePath}`
                                 : `http://localhost:3000/uploads/${log.imagePath}`
@@ -959,6 +956,20 @@ export function Home({
                         <div className="text-[8px] font-black text-white/50 uppercase tracking-[0.3em]">Projekt leírása</div>
                         <div className="description-box">
                           <p className="text-white/80 text-[11px] leading-relaxed line-clamp-3 italic relative z-10">"{log.description}"</p>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="flex flex-col gap-2 mt-3">
+                        <div className="flex justify-between items-center text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+                          <span className="flex items-center gap-1.5"><Gamepad2 size={12} className="text-[#87BAC3]" /> Haladás</span>
+                          <span className="text-[#D6F4ED] text-xs px-2 py-0.5 rounded-lg bg-[#53629E]/40 border border-[#87BAC3]/20 shadow-inner">{log.progress || 0}%</span>
+                        </div>
+                        <div className="h-3 w-full bg-[#53629E]/30 rounded-full overflow-hidden border border-[#53629E]/20 relative shadow-inner">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#53629E] via-[#87BAC3] to-[#D6F4ED] transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(135,186,195,0.4)]"
+                            style={{ width: `${log.progress || 0}%` }}
+                          />
                         </div>
                       </div>
 
