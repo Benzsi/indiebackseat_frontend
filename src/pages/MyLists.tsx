@@ -266,20 +266,20 @@ export function MyLists({ user }: MyListsProps) {
           </div>
         </div>
 
-        <form onSubmit={handleCreateList} className="flex items-center bg-white border-2 border-[#53629E]/30 rounded-2xl p-1.5 focus-within:border-[#473472] transition-all min-w-[320px] shadow-sm">
-          <FolderPlus size={20} className="text-[#53629E] ml-3" />
+        <form onSubmit={handleCreateList} className="flex items-center bg-white border-2 border-[#53629E]/30 rounded-2xl p-1.5 focus-within:border-[#473472] transition-all w-full sm:max-w-sm shadow-sm">
+          <FolderPlus size={20} className="text-[#53629E] ml-3 flex-shrink-0" />
           <input
             type="text"
             value={newListName}
             onChange={(e) => setNewListName(e.target.value)}
             placeholder="Új lista neve..."
             disabled={isCreating}
-            className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-[#473472] placeholder-[#53629E]/50 text-sm font-bold"
+            className="flex-1 min-w-0 bg-transparent border-none outline-none px-2 sm:px-3 py-2 text-[#473472] placeholder-[#53629E]/50 text-sm font-bold"
           />
           <button
             type="submit"
             disabled={!newListName.trim() || isCreating}
-            className="bg-[#473472] text-[#D6F4ED] px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-[#53629E] transition-all disabled:opacity-50"
+            className="flex-shrink-0 bg-[#473472] text-[#D6F4ED] px-3 sm:px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-[#53629E] transition-all disabled:opacity-50"
           >
             <Plus size={14} />
             {isCreating ? '...' : 'Létrehozás'}
@@ -308,13 +308,13 @@ export function MyLists({ user }: MyListsProps) {
             <div key={list.id} className="bg-[#473472] border border-[#53629E] rounded-3xl overflow-hidden shadow-xl transition-all">
               {/* List Header */}
               <div
-                className={`flex items-center justify-between p-6 cursor-pointer transition-colors ${openListId === list.id ? 'bg-[#53629E]/30' : 'hover:bg-[#53629E]/20'}`}
+                className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 cursor-pointer transition-colors ${openListId === list.id ? 'bg-[#53629E]/30' : 'hover:bg-[#53629E]/20'}`}
                 onClick={(e) => {
                   if (e.target instanceof HTMLElement && (e.target.closest('button') || e.target.closest('label') || e.target.closest('a'))) return;
                   setOpenListId(openListId === list.id ? null : list.id);
                 }}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden border border-[#53629E]/30 shadow-md bg-[#53629E] text-[#D6F4ED]">
                       {list.imagePath ? (
@@ -336,7 +336,7 @@ export function MyLists({ user }: MyListsProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 relative z-30" onClick={e => e.stopPropagation()}>
+                <div className="flex flex-wrap items-center gap-3 relative z-30 w-full sm:w-auto" onClick={e => e.stopPropagation()}>
                   {!list.isProjectList && (
                     <>
                       <button
@@ -353,7 +353,7 @@ export function MyLists({ user }: MyListsProps) {
                         <span>Feltöltés</span>
                       </button>
                       <Link
-                        to="/"
+                        to="/?tab=games"
                         title="Játék hozzáadása"
                         className="p-2.5 rounded-xl bg-[#53629E]/40 text-[#D6F4ED] hover:bg-[#87BAC3] hover:text-[#473472] transition-all"
                       >
@@ -372,7 +372,7 @@ export function MyLists({ user }: MyListsProps) {
                       Automatikus Lista
                     </div>
                   )}
-                  <div className="ml-2 text-[#87BAC3]">
+                  <div className="ml-auto sm:ml-2 text-[#87BAC3]">
                     {openListId === list.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                   </div>
                 </div>

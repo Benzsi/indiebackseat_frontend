@@ -199,11 +199,11 @@ function App() {
 
             {/* Row 2: Sorting */}
             <div className="flex flex-wrap gap-4 items-center pt-4 border-t border-[#53629E]/20">
-               <div className="flex items-center gap-3">
+               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <label className="text-xs font-bold text-[#87BAC3] uppercase tracking-widest whitespace-nowrap">
                     Rendezés:
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {[
                       { id: 'abc', label: 'ABC' },
                       { id: 'kedvelt', label: 'Kedveltek' },
@@ -225,7 +225,7 @@ function App() {
                   </div>
                </div>
 
-               <div className="flex items-center gap-2 ml-auto">
+               <div className="flex flex-wrap items-center gap-2 sm:ml-auto mt-2 sm:mt-0">
                   <button
                     onClick={() => setSortOrder('asc')}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${

@@ -88,6 +88,15 @@ export function Home({
     }
   }, [window.location.hash]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'games') {
+      setActiveTab('games');
+      // Clean up the URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, [setActiveTab]);
+
   // Handle hash scroll and tab switching
   useEffect(() => {
     const hash = window.location.hash;
@@ -436,10 +445,10 @@ export function Home({
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#473472] border border-[#53629E] text-[#87BAC3] text-xs font-bold uppercase tracking-widest mb-6">
             <Gamepad2 size={13} /> Indie játékok közössége
           </div>
-          <h1 className="text-5xl sm:text-6xl font-black text-[#473472] tracking-tight mb-5 leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#473472] tracking-tight mb-5 leading-tight">
             indie<span className="text-[#53629E]">.</span>backseat
           </h1>
-          <p className="text-[#473472]/70 text-lg max-w-xl mx-auto leading-relaxed mb-10">
+          <p className="text-[#473472]/70 text-base sm:text-lg max-w-xl mx-auto leading-relaxed mb-10 px-2 sm:px-0">
             Fedezd fel a legjobb független játékokat, kövess fejlesztői naplókat, és csatlakozz egy szenvedélyes közösséghez.
           </p>
         </div>
@@ -520,13 +529,13 @@ export function Home({
         </div>
 
         {/* Hogyan működik Section (Unauthenticated) */}
-        <div id="how-it-works" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+        <div id="how-it-works" className="mt-12 p-6 sm:p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#D6F4ED]/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
           <div className="relative z-10">
-            <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#D6F4ED] mb-8 sm:mb-10 flex items-center gap-3 tracking-tight">
               <HiOutlineLightBulb className="text-[#87BAC3]" /> Hogyan működik az indie.backseat?
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
               {[
                 {
                   title: "1. Fedezd fel a legújabb indie kincseket",
@@ -555,10 +564,10 @@ export function Home({
         </div>
 
         {/* FAQ Section (Unauthenticated) */}
-        <div id="faq" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+        <div id="faq" className="mt-12 p-6 sm:p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-64 h-64 bg-[#87BAC3]/5 rounded-full blur-3xl -ml-32 -mt-32"></div>
           <div className="relative z-10">
-            <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#D6F4ED] mb-8 sm:mb-10 flex items-center gap-3 tracking-tight">
               <HelpCircle className="text-[#87BAC3]" /> Gyakori Kérdések
             </h2>
             <div className="flex flex-col gap-4">
@@ -646,13 +655,13 @@ export function Home({
             Játékok
           </button>
 
-          <button
-            onClick={() => setActiveTab('devlogs')}
-            className={`hanging-tab hanging-tab-lg ${activeTab === 'devlogs' ? 'hanging-tab-active' : 'hanging-tab-inactive'}`}
+          <Link
+            to="/devlogs"
+            className={`hanging-tab hanging-tab-lg hanging-tab-inactive`}
           >
             <SiDevbox size={20} />
             Dev Logs
-          </button>
+          </Link>
         </div>
 
         {/* Dashboard / Home Content */}
@@ -754,13 +763,13 @@ export function Home({
             </div>
 
             {/* Global Informational Sections (Back inside overview) */}
-            <div id="how-it-works" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+            <div id="how-it-works" className="mt-12 p-6 sm:p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#D6F4ED]/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
               <div className="relative z-10">
-                <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+                <h2 className="text-3xl sm:text-4xl font-black text-[#D6F4ED] mb-8 sm:mb-10 flex items-center gap-3 tracking-tight">
                   <HiOutlineLightBulb className="text-[#87BAC3]" /> Hogyan működik az indie.backseat?
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   {[
                     {
                       title: "1. Fedezd fel a legújabb indie kincseket",
@@ -788,10 +797,10 @@ export function Home({
               </div>
             </div>
 
-            <div id="faq" className="mt-12 p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
+            <div id="faq" className="mt-12 p-6 sm:p-10 rounded-3xl bg-[#473472] border border-[#53629E] shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-64 h-64 bg-[#87BAC3]/5 rounded-full blur-3xl -ml-32 -mt-32"></div>
               <div className="relative z-10">
-                <h2 className="text-4xl font-black text-[#D6F4ED] mb-10 flex items-center gap-3 tracking-tight">
+                <h2 className="text-3xl sm:text-4xl font-black text-[#D6F4ED] mb-8 sm:mb-10 flex items-center gap-3 tracking-tight">
                   <HelpCircle className="text-[#87BAC3]" /> Gyakori Kérdések
                 </h2>
                 <div className="flex flex-col gap-4">
@@ -878,131 +887,7 @@ export function Home({
           </div>
         )}
 
-        {/* Tab Content: Dev Logs */}
-        {activeTab === 'devlogs' && (
-          <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
-            {user?.role === 'DEVELOPER' && (
-              <div className="flex justify-center mb-10">
-                <button
-                  className="flex items-center justify-center gap-3 px-8 py-3.5 rounded-2xl bg-[#473472] text-[#D6F4ED] font-black text-sm hover:bg-[#53629E] transition-all shadow-lg shadow-[#473472]/20 border border-[#53629E]/30"
-                  onClick={() => navigate('/devlogs?create=true')}
-                >
-                  <SiDevbox size={20} className="text-[#87BAC3]" />
-                  Új projekt létrehozása
-                </button>
-              </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-1">
-              {projectsLoading ? (
-                <div className="col-span-full py-20 text-center text-[#87BAC3] font-bold">Betöltés...</div>
-              ) : projects.length === 0 ? (
-                <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
-                  <p className="text-[#87BAC3] text-lg">Még nincsenek projektek.</p>
-                </div>
-              ) : filteredProjects.length === 0 ? (
-                <div className="col-span-full py-20 text-center bg-[#473472] border border-dashed border-[#53629E] rounded-3xl">
-                  <p className="text-[#87BAC3] text-lg">Nincs a szűrésnek megfelelő projekt.</p>
-                </div>
-              ) : (
-                filteredProjects.map((log) => (
-                  <div
-                    key={log.id}
-                    onClick={() => navigate(`/devlogs/${log.id}`)}
-                    className="project-card group"
-                  >
-                    <div className="project-card-image-wrapper">
-                      {log.imagePath ? (
-                        <img
-                          src={
-                            log.imagePath.startsWith('http')
-                              ? log.imagePath
-                              : log.imagePath.startsWith('dev_covers')
-                                ? `http://localhost:3000/${log.imagePath}`
-                                : `http://localhost:3000/uploads/${log.imagePath}`
-                          }
-                          alt={log.name}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#87BAC3] via-transparent to-transparent"></div>
-                      )}
-                      <Gamepad2 size={48} className="text-[#D6F4ED]/20 transform -rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-all duration-500" />
-                    </div>
 
-                    <div className="p-5 flex-1 flex flex-col gap-4">
-                      <div className="flex flex-col gap-2">
-                        <h2 className="text-xl font-black text-[#D6F4ED] group-hover:text-white transition-colors tracking-tighter uppercase leading-tight">{log.name}</h2>
-                        <div className="flex flex-wrap gap-1.5">
-                          <div className="glass-badge glass-badge-purple">
-                            {log.genre}
-                          </div>
-                          <div className="glass-badge glass-badge-blue">
-                            {log.literaryForm}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="developer-pill">
-                        <div className="developer-avatar">
-                          <span className="text-xs font-black text-[#D6F4ED] uppercase">{(log.user?.username || '??').slice(0, 2)}</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <p className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Fejlesztő</p>
-                          <p className="text-xs font-black text-white tracking-tighter uppercase">{log.user?.username}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <div className="text-[8px] font-black text-white/50 uppercase tracking-[0.3em]">Projekt leírása</div>
-                        <div className="description-box">
-                          <p className="text-white/80 text-[11px] leading-relaxed line-clamp-3 italic relative z-10">"{log.description}"</p>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="flex flex-col gap-2 mt-3">
-                        <div className="flex justify-between items-center text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
-                          <span className="flex items-center gap-1.5"><Gamepad2 size={12} className="text-[#87BAC3]" /> Haladás</span>
-                          <span className="text-[#D6F4ED] text-xs px-2 py-0.5 rounded-lg bg-[#53629E]/40 border border-[#87BAC3]/20 shadow-inner">{log.progress || 0}%</span>
-                        </div>
-                        <div className="h-3 w-full bg-[#53629E]/30 rounded-full overflow-hidden border border-[#53629E]/20 relative shadow-inner">
-                          <div
-                            className="h-full bg-gradient-to-r from-[#53629E] via-[#87BAC3] to-[#D6F4ED] transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(135,186,195,0.4)]"
-                            style={{ width: `${log.progress || 0}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-auto pt-3 border-t border-[#53629E]/30 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={(e) => toggleDevFavorite(e, log.id)}
-                            className={`glass-action-btn ${devFavorites.has(log.id) ? 'glass-action-btn-active-rose' : ''}`}
-                          >
-                            {devFavorites.has(log.id) ? <BiSolidHeart size={20} /> : <BiHeart size={20} />}
-                          </button>
-                          <button
-                            onClick={(e) => toggleDevUpvote(e, log.id)}
-                            className={`glass-action-btn ${devUpvoted.has(log.id) ? 'glass-action-btn-active-amber' : ''}`}
-                          >
-                            {devUpvoted.has(log.id) ? <BiSolidUpvote size={20} /> : <BiUpvote size={20} />}
-                            <span className="text-xs font-black">{log._count?.upvotes || 0}</span>
-                          </button>
-                          <span className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
-                            {log._count?.devlogentry || 0} bejegyzés
-                          </span>
-                        </div>
-                        <div className="primary-btn-pill">
-                          Mutasd <ChevronRight size={14} strokeWidth={3} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       <AddToListModal

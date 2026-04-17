@@ -194,7 +194,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
             <div className="w-12 h-12 rounded-xl bg-[#53629E]/30 flex items-center justify-center flex-shrink-0 border border-white/5">
               <UserIcon size={20} className="text-[#87BAC3]" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-[200px] w-full sm:w-auto">
               <div className="glass-label !mb-0.5">Felhasználónév</div>
               {isEditingUsername ? (
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -229,7 +229,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
             <div className="w-12 h-12 rounded-xl bg-[#53629E]/30 flex items-center justify-center flex-shrink-0 border border-white/5">
               <Mail size={20} className="text-[#87BAC3]" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-[200px] w-full sm:w-auto">
               <div className="glass-label !mb-0.5">Email cím</div>
               {isEditingEmail ? (
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -265,7 +265,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
               <div className="w-12 h-12 rounded-xl bg-[#53629E]/30 flex items-center justify-center flex-shrink-0">
                 <Shield size={20} className="text-[#87BAC3]" />
               </div>
-              <div>
+              <div className="min-w-[120px]">
                 <div className="glass-label !mb-0.5">Szerepkör</div>
                 <div className="text-sm font-black text-[#D6F4ED] uppercase">{user.role === 'ADMIN' ? 'Admin' : 'Tag'}</div>
               </div>
@@ -274,7 +274,7 @@ export function Profile({ user, onUserUpdate }: ProfileProps) {
               <div className="w-12 h-12 rounded-xl bg-[#53629E]/30 flex items-center justify-center flex-shrink-0">
                 <Calendar size={20} className="text-[#87BAC3]" />
               </div>
-              <div>
+              <div className="min-w-[120px]">
                 <div className="glass-label !mb-0.5">Tagság kezdete</div>
                 <div className="text-sm font-black text-[#D6F4ED]">{new Date(user.createdAt).toLocaleDateString('hu-HU')}</div>
               </div>

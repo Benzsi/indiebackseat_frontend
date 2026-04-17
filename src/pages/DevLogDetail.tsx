@@ -541,7 +541,7 @@ export function DevLogDetail({ user }: DevLogDetailProps) {
                                 : `http://localhost:3000/uploads/${entry.imagePath}`
                           }
                           alt={entry.title}
-                          className="w-full h-auto object-contain max-h-[500px]"
+                          className="max-w-full w-auto h-auto object-contain max-h-[600px] mx-auto rounded-xl"
                         />
                         {isOwner && (
                           <button

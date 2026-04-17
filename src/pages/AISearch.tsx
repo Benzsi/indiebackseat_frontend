@@ -189,7 +189,7 @@ export function AISearch({ user }: AISearchProps) {
           {/* Header text - hide when searched */}
           {!hasSearched && (
             <div className="text-center mb-12 fade-in">
-              <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-[#473472] to-[#53629E] bg-clip-text text-transparent tracking-tighter">
+              <h1 className="text-5xl md:text-7xl font-black mb-6 py-4 px-4 leading-normal bg-gradient-to-r from-[#473472] to-[#53629E] bg-clip-text text-transparent tracking-tighter">
                 Válaszd ki a következő játékod!
               </h1>
               <p className="text-xl text-[#53629E] font-bold opacity-80">

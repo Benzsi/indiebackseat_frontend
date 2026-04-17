@@ -55,12 +55,12 @@ export function Register({ onRegisterSuccess }: RegisterProps) {
   };
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center p-6 sm:p-12">
+    <div className="min-h-[90vh] flex items-center justify-center p-4 sm:p-12">
       <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
         <div className="glass-auth-card relative">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#D6F4ED] via-[#87BAC3] to-[#D6F4ED]" />
 
-          <div className="p-10 sm:p-12">
+          <div className="p-8 sm:p-12">
             <Link to="/" className="inline-flex items-center gap-2 group mb-10 text-xs font-black uppercase tracking-widest text-[#87BAC3] hover:text-[#D6F4ED] transition-all">
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Vissza a kezdőlapra
             </Link>

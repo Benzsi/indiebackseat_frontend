@@ -25,7 +25,7 @@
 
   /* Variations for larger tabs (Home / DevLogs) */
   .hanging-tab-lg {
-    @apply gap-3 px-10 py-4 rounded-b-3xl text-sm tracking-[0.15em];
+    @apply gap-2 sm:gap-3 px-4 sm:px-10 py-3 sm:py-4 rounded-b-2xl sm:rounded-b-3xl text-sm tracking-widest sm:tracking-[0.15em] shrink-0;
   }
 
   /* Project Card & UI Components */
@@ -96,7 +96,7 @@
 
   /* Page Layouts */
   .page-container {
-    @apply w-full max-w-[1200px] mx-auto px-6 py-8;
+    @apply w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8;
   }
 
   .flex-center {
@@ -109,16 +109,15 @@
   }
 
   .glass-search-input {
-    @apply flex-1 px-8 py-5 text-lg font-medium bg-transparent outline-none text-[#473472] placeholder-[#87BAC3]/50;
+    @apply flex-1 px-4 sm:px-8 py-3 sm:py-5 text-base sm:text-lg font-medium bg-transparent outline-none text-[#473472] placeholder-[#87BAC3]/50 w-full min-w-0;
   }
 
   .glass-search-btn {
-    @apply px-10 py-4 bg-[#473472] text-white font-black rounded-full flex items-center gap-2 hover:bg-[#53629E] transition-all disabled:opacity-70 disabled:cursor-not-allowed;
+    @apply px-4 sm:px-10 py-3 sm:py-4 text-sm sm:text-base bg-[#473472] text-white font-black rounded-full flex justify-center items-center gap-2 hover:bg-[#53629E] transition-all disabled:opacity-70 disabled:cursor-not-allowed shrink-0;
   }
 
-  /* Profile & List Rows */
   .glass-card-row {
-    @apply bg-[#53629E]/20 border border-[#53629E]/40 rounded-2xl p-5 flex items-center gap-4 hover:border-[#87BAC3]/40 transition-all;
+    @apply bg-[#53629E]/20 border border-[#53629E]/40 rounded-2xl p-4 sm:p-5 flex flex-wrap sm:flex-nowrap items-center gap-4 hover:border-[#87BAC3]/40 transition-all;
   }
 
   .secondary-btn-pill {

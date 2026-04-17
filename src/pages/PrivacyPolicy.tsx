@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 
 export function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-[#473472] py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="page-container">
+      <div className="max-w-4xl mx-auto bg-[#473472] border border-[#53629E]/30 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
         {/* Navigation */}
         <div className="mb-8">
           <Link 
