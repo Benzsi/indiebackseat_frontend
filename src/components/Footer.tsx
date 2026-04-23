@@ -21,9 +21,7 @@ export function Footer() {
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-1 flex flex-col gap-4">
             <Link to="/" className="flex items-center gap-3 no-underline group">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#87BAC3] to-[#53629E] rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <Gamepad2 size={24} color="#D6F4ED" />
-              </div>
+              <img src="/logo.png" alt="indie.backseat" className="w-10 h-10 rounded-xl object-contain shadow-lg group-hover:scale-110 transition-transform duration-300" />
               <span className="text-2xl font-black text-[#D6F4ED] tracking-tighter uppercase">
                 indie.backseat<span className="text-[#87BAC3]">.</span>
               </span>
