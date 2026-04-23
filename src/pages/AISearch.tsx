@@ -23,6 +23,10 @@ export function AISearch({ user }: AISearchProps) {
   const [addListModalOpen, setAddListModalOpen] = useState(false);
   const [lists, setLists] = useState<GameList[]>([]);
   const [selectedGameForList, setSelectedGameForList] = useState<GameWithRating | null>(null);
+  const [specialListsGames, setSpecialListsGames] = useState<{ favorites: Set<number>, wishlist: Set<number> }>({
+    favorites: new Set(),
+    wishlist: new Set()
+  });
 
   const ratingsService = new RatingsService();
 
@@ -35,6 +39,20 @@ export function AISearch({ user }: AISearchProps) {
   const loadUserLists = async (userId: string) => {
     const userLists = await getListsForUser(userId);
     setLists(userLists);
+
+    // Identify Games in "Kedveltek" and "Wishlist"
+    const favs = new Set<number>();
+    const wish = new Set<number>();
+
+    userLists.forEach(list => {
+      if (list.name === 'Kedveltek') {
+        list.items?.forEach(item => item.game && favs.add(item.game.id));
+      } else if (list.name === 'Wishlist') {
+        list.items?.forEach(item => item.game && wish.add(item.game.id));
+      }
+    });
+
+    setSpecialListsGames({ favorites: favs, wishlist: wish });
   };
 
   const handleOpenAddList = (game: GameWithRating) => {
@@ -67,6 +85,22 @@ export function AISearch({ user }: AISearchProps) {
         throw new Error('Lista létrehozása sikertelen');
       }
       await loadUserLists(String(user.id));
+    }
+  };
+
+  const handleToggleSpecialList = async (game: GameWithRating, listName: string) => {
+    if (!user) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/lists/${user.id}/toggle-special`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId: game.id, listName })
+      });
+      if (response.ok) {
+        await loadUserLists(String(user.id));
+      }
+    } catch (err) {
+      console.error('Hiba a speciális lista váltásakor:', err);
     }
   };
 
@@ -174,6 +208,10 @@ export function AISearch({ user }: AISearchProps) {
                 onMouseEnter={() => setHoveredGameId(game.id)}
                 onMouseLeave={() => setHoveredGameId(null)}
                 onOpenAddList={handleOpenAddList}
+                onToggleFavorite={(g) => handleToggleSpecialList(g, 'Kedveltek')}
+                onToggleWishlist={(g) => handleToggleSpecialList(g, 'Wishlist')}
+                isFavorited={specialListsGames.favorites.has(game.id)}
+                isWishlisted={specialListsGames.wishlist.has(game.id)}
               />
             ))}
           </div>
