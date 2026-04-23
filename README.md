@@ -4,6 +4,15 @@ Ez a dokumentáció tartalmazza az **IndieBackseat** projekt felhasználói olda
 
 ---
 
+## 📖 Dokumentáció és Tesztelés
+
+A projekthez tartozó kiegészítő dokumentációk a [docs](./docs) mappában érhetőek el:
+
+- **Felhasználói Útmutató**: Részletes segédlet a rendszer használatához. [Megtekintés](./docs/IndieBackseat%20–%20felhasznalo_utmutato.pdf)
+- **Tesztek**: A manuális tesztelési jegyzőkönyvek és esetek leírása (Manual Test Plan). [Megtekintés](./docs/ManualTestSb.pdf)
+
+---
+
 ## 1. Technikai Ökoszisztéma és Architektúra
 
 A projekt komponens-alapú szeparációra és utility-first stílusalapelvekre íródott, ezzel támogatva a nagy méretű SPA (Single Page Application) karbantarthatóságát:
